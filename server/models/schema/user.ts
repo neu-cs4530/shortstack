@@ -4,8 +4,8 @@ import { Schema } from 'mongoose';
  *
  * This schema defines the structure for storing users in the database.
  * Each User includes the following fields:
- * - `username`: The user's username.
- * - `password`: The user's password.
+ * - `username`: The user's username. This field is required.
+ * - `password`: The user's password. This field is required.
  * - `totalPoints`: The total reward points the user has.
  * - `unlockedFrames`: An array of strings representing the file paths of the frames the user has unlocked.
  * - `unlockedTitles`: An array of the string titles the user has unlocked.
@@ -16,20 +16,25 @@ const userSchema: Schema = new Schema(
   {
     username: {
       type: String,
+      required: true,
     },
     password: {
       type: String,
+      required: true,
     },
     totalPoints: {
-      type: String,
+      type: Number,
+      default: 0,
     },
-    unlockedFrames: [{ type: String }],
-    unlockedTitles: [{ type: String }],
+    unlockedFrames: { type: [String], default: [] },
+    unlockedTitles: { type: [String], default: [] },
     equippedFrame: {
       type: String,
+      default: '',
     },
     equippedTitle: {
       type: String,
+      default: '',
     },
   },
   { collection: 'User' },
