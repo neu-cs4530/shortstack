@@ -15,6 +15,7 @@ const pollOptionSchema: Schema = new Schema(
     },
     usersVoted: {
       type: [{ type: String }],
+      default: [],
     },
   },
   { collection: 'PollOption' },
