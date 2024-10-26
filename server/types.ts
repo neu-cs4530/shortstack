@@ -122,6 +122,28 @@ export interface AddQuestionRequest extends Request {
 }
 
 /**
+ * Interface representing a User document, which contains:
+ * - _id - The unique identifier for the user. Optional field
+ * - username - The username for the user
+ * - password - The password for the user
+ * - totalPoints - The total rewards points the user has
+ * - unlockedFrames - The filepaths of the frames the user has unlocked
+ * - unlockedTitles - The titles the user has unlocked
+ * - equippedFrame - The filepath of the frame the user has equipped
+ * - equippedTitle - The title the user has equipped
+ */
+export interface User {
+  _id?: ObjectId;
+  username: string;
+  password: string;
+  totalPoints: number;
+  unlockedFrames: string[];
+  unlockedTitles: string[];
+  equippedFrame: string;
+  equippedTitle: string;
+}
+
+/**
  * Interface for the request body when upvoting or downvoting a question.
  * - body - The question ID and the username of the user voting.
  *  - qid - The unique identifier of the question.
