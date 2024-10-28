@@ -262,3 +262,33 @@ export interface Poll {
   pollDateTime: Date;
   pollDueDate: Date;
 }
+
+/**
+ * Interface representing an Article, which contains:
+ * - _id - The unique identifier for the article. Optional field
+ * - title - The title of the article.
+ * - body - The content of the article.
+ */
+export interface Article {
+  _id?: ObjectId;
+  title: string;
+  body: string;
+}
+
+/**
+ * Interface representing a Community, which contains:
+ * - _id - The unique identifier for the community. Optional field
+ * - name - The name of the community.
+ * - members - An array of users who are members of the community.
+ * - questions - An array of questions that have been asked in the community.
+ * - polls - An array of polls that have been posted in the community.
+ * - articles - An array of articles that have been posted in the community.
+ */
+export interface Community {
+  _id?: ObjectId;
+  name: string;
+  members: User[];
+  questions: Question[];
+  polls: Poll[];
+  articles: Article[];
+}
