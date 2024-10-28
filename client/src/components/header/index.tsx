@@ -19,20 +19,22 @@ const Header = () => {
 
   return (
     <div id='header' className='header'>
-      <div></div>
-      <div></div>
-      <div className='title'>Fake Stack Overflow</div>
-      <input
-        id='searchBar'
-        placeholder='Search ...'
-        type='text'
-        value={val}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-      />
-      <button className='notifications_btn' onClick={handleNotifications}>
-        Notifications
-      </button>
+      <div className='headerContents'>
+        <div className='title'>Fake Stack Overflow</div>
+        <div className='headerButtons'>
+          <input
+            id='searchBar'
+            placeholder='Search ...'
+            type='text'
+            value={val}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+          />
+          <button className='notifications_btn' onClick={handleNotifications}>
+            Notifications
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
