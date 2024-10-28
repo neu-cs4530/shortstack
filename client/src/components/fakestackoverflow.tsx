@@ -10,6 +10,9 @@ import TagPage from './main/tagPage';
 import NewQuestionPage from './main/newQuestion';
 import NewAnswerPage from './main/newAnswer';
 import AnswerPage from './main/answerPage';
+import CommunityPage from './main/communityPage/communityPage';
+import CommunityQuestionPage from './main/communityPage/question/communityQuestionPage';
+import CommunityArticlePage from './main/communityPage/article/communityArticlePage';
 
 const ProtectedRoute = ({
   user,
@@ -53,6 +56,9 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/question/:qid' element={<AnswerPage />} />
             <Route path='/new/question' element={<NewQuestionPage />} />
             <Route path='/new/answer/:qid' element={<NewAnswerPage />} />
+            <Route path='/community' element={<CommunityPage />} />
+            <Route path='/community/question/:questionId' element={<CommunityQuestionPage />} />
+            <Route path='/community/article/:articleId' element={<CommunityArticlePage />} />
           </Route>
         }
       </Routes>

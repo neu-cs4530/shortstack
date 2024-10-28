@@ -1,0 +1,22 @@
+.community-page h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.community-page h2 {
+  font-size: 1.5em;
+  margin-top: 20px;
+  color: #333;
+}
+
+.question-item,
+.article-item {
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.question-item:hover,
+.article-item:hover {
+  color: #0056b3;
+}

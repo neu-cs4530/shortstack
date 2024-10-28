@@ -30,7 +30,15 @@ const useLogin = () => {
    */
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setUser({ username });
+    setUser({
+      username,
+      password: '',
+      totalPoints: 0,
+      unlockedFrames: [],
+      unlockedTitles: [],
+      equippedFrame: '',
+      equippedTitle: '',
+    });
     navigate('/home');
   };
 
