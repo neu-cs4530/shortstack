@@ -1,68 +1,67 @@
 .community-question-page {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    color: #333;
-  }
-  
-  .community-question-page h2 {
-    font-size: 2em;
-    color: #333;
-    margin-bottom: 10px;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 5px;
-  }
-  
-  .question-text {
-    font-size: 1.1em;
-    line-height: 1.6;
-    margin-top: 10px;
-  }
-  
-  .question-meta {
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 10px;
-  }
-  
-  .question-tags {
-    margin-top: 10px;
-  }
-  
-  .question-tag {
-    display: inline-block;
-    background-color: #e0e0e0;
-    border-radius: 3px;
-    padding: 2px 8px;
-    font-size: 0.9em;
-    color: #333;
-    margin-right: 5px;
-  }
-  
-  .answers-section {
-    margin-top: 30px;
-  }
-  
-  .answers-section h3 {
-    font-size: 1.5em;
-    color: #333;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-  }
-  
-  .answer {
-    padding: 15px 0;
-    border-top: 1px dotted #ccc;
-  }
-  
-  .answer-meta {
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 5px;
-  }
-  
-  .answer-meta strong {
-    color: #333;
-  }
-  
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.community-question-page h2 {
+  font-size: 2em;
+  color: #333;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 5px;
+}
+
+.question-text {
+  font-size: 1.1em;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+.question-meta {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 10px;
+}
+
+.question-tags {
+  margin-top: 10px;
+}
+
+.question-tag {
+  display: inline-block;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 0.9em;
+  color: #333;
+  margin-right: 5px;
+}
+
+.answers-section {
+  margin-top: 30px;
+}
+
+.answers-section h3 {
+  font-size: 1.5em;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.answer {
+  padding: 15px 0;
+  border-top: 1px dotted #ccc;
+}
+
+.answer-meta {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
+
+.answer-meta strong {
+  color: #333;
+}

@@ -9,14 +9,26 @@
   color: #333;
 }
 
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
 .question-item,
 .article-item {
   color: #007bff;
   cursor: pointer;
   text-decoration: underline;
+  margin-bottom: 10px;
 }
 
 .question-item:hover,
 .article-item:hover {
   color: #0056b3;
+}
+
+.poll-item {
+  font-size: 1em;
+  color: #333;
+  margin-bottom: 10px;
 }

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Question, Poll, Article } from '../../../types';
 import useCommunityPage from '../../../hooks/useCommunityPage';
@@ -21,37 +20,49 @@ const CommunityPage = () => {
       <h1>{titleText}</h1>
 
       <h2>Community Questions</h2>
-      <ul>
-        {questions.map((question: Question) => (
-          <li
-            key={question._id}
-            className='question-item'
-            onClick={() => handleQuestionClick(question._id!)}>
-            {question.title} - Asked by {question.askedBy}
-          </li>
-        ))}
-      </ul>
+      {questions.length > 0 ? (
+        <ul>
+          {questions.map((question: Question) => (
+            <li
+              key={question._id}
+              className='question-item'
+              onClick={() => handleQuestionClick(question._id!)}>
+              {question.title} - Asked by {question.askedBy}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No questions found.</p>
+      )}
 
       <h2>Community Articles</h2>
-      <ul>
-        {articles.map((article: Article) => (
-          <li
-            key={article._id}
-            className='article-item'
-            onClick={() => handleArticleClick(article._id!)}>
-            {article.title}
-          </li>
-        ))}
-      </ul>
+      {articles.length > 0 ? (
+        <ul>
+          {articles.map((article: Article) => (
+            <li
+              key={article._id}
+              className='article-item'
+              onClick={() => handleArticleClick(article._id!)}>
+              {article.title}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No articles found.</p>
+      )}
 
       <h2>Community Polls</h2>
-      <ul>
-        {polls.map((poll: Poll) => (
-          <li key={poll._id}>
-            {poll.title} - Created by {poll.createdBy.username}
-          </li>
-        ))}
-      </ul>
+      {polls.length > 0 ? (
+        <ul>
+          {polls.map((poll: Poll) => (
+            <li key={poll._id} className='poll-item'>
+              {poll.title} - Created by {poll.createdBy.username}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No polls found.</p>
+      )}
     </div>
   );
 };

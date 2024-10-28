@@ -1,42 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Question } from '../../../../types';
 import './communityQuestionPage.css';
-
-const mockCommunity = {
-  _id: 'community123',
-  name: 'JavaScript Enthusiasts',
-  questions: [
-    {
-      _id: 'q1',
-      title: 'What is the difference between var, let, and const?',
-      text: 'Can someone explain the main differences?',
-      tags: [{ name: 'JavaScript', description: 'Questions about JavaScript' }],
-      askedBy: 'User1',
-      askDateTime: new Date(),
-      answers: [
-        {
-          _id: 'a1',
-          text: 'The main difference is scope. `var` is function-scoped, `let` and `const` are block-scoped.',
-          ansBy: 'User3',
-          ansDateTime: new Date(),
-          comments: [],
-        },
-        {
-          _id: 'a2',
-          text: '`const` is also used to declare constants that cannot be reassigned, unlike `let`.',
-          ansBy: 'User4',
-          ansDateTime: new Date(),
-          comments: [],
-        },
-      ],
-      views: ['User2'],
-      upVotes: ['User2'],
-      downVotes: [],
-      comments: [],
-    },
-  ],
-};
+// Mock data
+import mockCommunity from '../mockCommunityData';
 
 const CommunityQuestionPage = () => {
   const { questionId } = useParams<{ questionId: string }>();
@@ -44,6 +11,7 @@ const CommunityQuestionPage = () => {
 
   useEffect(() => {
     if (questionId) {
+      // Using mock data for now
       const foundQuestion = mockCommunity.questions.find(q => q._id === questionId);
       setQuestion(foundQuestion || null);
     }
