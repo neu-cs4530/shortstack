@@ -30,6 +30,8 @@ const usePoll = (poll: Poll) => {
 
   /**
    * Function that handles the user hitting the vote button and submitting their vote.
+   *
+   * @param event: The form event from submission.
    */
   const voteButtonClick = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
