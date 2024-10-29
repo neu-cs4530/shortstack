@@ -7,24 +7,69 @@ import useLogin from '../../hooks/useLogin';
  * to the application's context through the useLoginContext hook.
  */
 const Login = () => {
-  const { username, handleSubmit, handleInputChange } = useLogin();
+  const {
+    username,
+    password,
+    handleLogIn,
+    handleSignUp,
+    handleUsernameInputChange,
+    handlePasswordInputChange,
+    hasAccount,
+    setHasAccount,
+    clearInputs,
+  } = useLogin();
 
   return (
     <div className='container'>
       <h2>Welcome to FakeStackOverflow!</h2>
-      <h4>Please enter your username.</h4>
-      <form onSubmit={handleSubmit}>
+      {hasAccount ? (
+        <h4>
+          Please login or{' '}
+          <a
+            className='sign-up-toggle'
+            onClick={_ => {
+              setHasAccount(!hasAccount);
+              clearInputs();
+            }}>
+            sign up
+          </a>
+        </h4>
+      ) : (
+        <h4>
+          Have an account already?{' '}
+          <a
+            className='sign-up-toggle'
+            onClick={_ => {
+              setHasAccount(!hasAccount);
+              clearInputs();
+            }}>
+            Log in
+          </a>
+        </h4>
+      )}
+      <form onSubmit={hasAccount ? handleLogIn : handleSignUp}>
         <input
           type='text'
           value={username}
-          onChange={handleInputChange}
+          onChange={handleUsernameInputChange}
           placeholder='Enter your username'
           required
           className='input-text'
           id={'usernameInput'}
         />
+        <br />
+        <input
+          type='text'
+          value={password}
+          onChange={handlePasswordInputChange}
+          placeholder='Enter your password'
+          required
+          className='input-text'
+          id={'passwordInput'}
+        />
+        <br />
         <button type='submit' className='login-button'>
-          Submit
+          {hasAccount ? 'Log In' : 'Sign Up'}
         </button>
       </form>
     </div>
