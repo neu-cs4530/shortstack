@@ -3,12 +3,15 @@ import { Question, Poll, Article } from '../../../types';
 import useCommunityPage from '../../../hooks/useCommunityPage';
 import './communityPage.css';
 
+/**
+ * The CommunityPage component displays a list of community questions, articles, and polls.
+ */
 const CommunityPage = () => {
   const { titleText, questions, polls, articles } = useCommunityPage();
   const navigate = useNavigate();
 
   const handleQuestionClick = (questionID: string) => {
-    navigate(`/community/question/${questionID}`);
+    navigate(`/question/${questionID}`);
   };
 
   const handleArticleClick = (articleID: string) => {

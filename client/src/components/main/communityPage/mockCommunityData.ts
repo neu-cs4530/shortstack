@@ -1,36 +1,68 @@
-import { Community } from '../../../types';
-
-const mockCommunity: Community = {
+// This file contains mock data for the community page
+// The question holds the same data as an already present question in the DB
+const mockCommunity = {
   _id: 'community123',
   name: 'JavaScript Enthusiasts',
   questions: [
     {
-      _id: 'q1',
-      title: 'What is the difference between var, let, and const?',
-      text: 'Can someone explain the main differences?',
-      tags: [{ name: 'JavaScript', description: 'Questions about JavaScript' }],
-      askedBy: 'User1',
-      askDateTime: new Date(),
-      answers: [
+      _id: '671a4dc9f8cf750f55a6c965',
+      title: 'Programmatically navigate using React router',
+      text: 'the alert shows the proper index for the li clicked, and when I alert …',
+      tags: [
         {
-          _id: 'a1',
-          text: 'The main difference is scope. `var` is function-scoped, `let` and `const` are block-scoped.',
-          ansBy: 'User3',
-          ansDateTime: new Date(),
-          comments: [],
+          _id: '671a4dc7f8cf750f55a6c930',
+          name: 'react',
+          description: 'React is a JavaScript-based UI development library. Although React is ...',
         },
         {
-          _id: 'a2',
-          text: '`const` is also used to declare constants that cannot be reassigned, unlike `let`.',
-          ansBy: 'User4',
-          ansDateTime: new Date(),
-          comments: [],
+          _id: '671a4dc8f8cf750f55a6c933',
+          name: 'javascript',
+          description: 'JavaScript is a versatile programming language primarily used in web d...',
         },
       ],
-      views: ['User2'],
-      upVotes: ['User2'],
+      askedBy: 'Joji John',
+      askDateTime: new Date('2022-01-20T08:00:00.000+00:00'),
+      answers: [
+        {
+          _id: '671a4dc9f8cf750f55a6c955',
+          text: 'React Router is mostly a wrapper around the history library. history h…',
+          ansBy: 'hamkalo',
+          ansDateTime: new Date('2023-11-20T08:24:42.000+00:00'),
+          comments: [
+            {
+              _id: '671a4dc9f8cf750f55a6c94d',
+              text: 'The question about React Router really resonates with me, I faced the ...',
+              commentBy: 'ihba001',
+              commentDateTime: new Date('2022-02-20T08:00:00.000+00:00'),
+            },
+          ],
+        },
+        {
+          _id: '671a4dc9f8cf750f55a6c957',
+          text: 'On my end, I like to have a single history object that I can carry eve…',
+          ansBy: 'azad',
+          ansDateTime: new Date('2023-11-23T13:24:00.000+00:00'),
+          comments: [
+            {
+              _id: '671a4dc9f8cf750f55a6c94d',
+              text: 'The question about React Router really resonates with me, I faced the ...',
+              commentBy: 'ihba001',
+              commentDateTime: new Date('2022-02-20T08:00:00.000+00:00'),
+            },
+          ],
+        },
+      ],
+      views: ['sana', 'abaya', 'alia'],
+      upVotes: [],
       downVotes: [],
-      comments: [],
+      comments: [
+        {
+          _id: '671a4dc9f8cf750f55a6c94d',
+          text: 'The question about React Router really resonates with me, I faced the ...',
+          commentBy: 'ihba001',
+          commentDateTime: new Date('2022-02-20T08:00:00.000+00:00'),
+        },
+      ],
     },
   ],
   articles: [
@@ -68,7 +100,6 @@ const mockCommunity: Community = {
       pollDueDate: new Date(new Date().setDate(new Date().getDate() + 7)),
     },
   ],
-  members: [],
 };
 
 export default mockCommunity;

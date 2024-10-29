@@ -5,6 +5,9 @@ import './communityArticlePage.css';
 // Mock data
 import mockCommunity from '../mockCommunityData';
 
+/**
+ * The CommunityArticlePage component displays the articles within the community.
+ */
 const CommunityArticlePage = () => {
   const { articleId } = useParams<{ articleId: string }>();
   const [article, setArticle] = useState<Article | null>(null);
