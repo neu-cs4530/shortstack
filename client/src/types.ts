@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react';
+import { ChangeEvent, FormEvent } from 'react';
 import { Socket } from 'socket.io-client';
 
 export type FakeSOSocket = Socket<ServerToClientEvents>;
@@ -190,7 +190,7 @@ export interface Poll {
  */
 export interface PollProps {
   selectedOption?: PollOption | undefined;
-  voteButtonClick?: () => void;
+  voteButtonClick?: (event: FormEvent<HTMLFormElement>) => void;
   onOptionChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   poll: Poll;
 }

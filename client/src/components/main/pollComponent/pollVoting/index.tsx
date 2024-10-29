@@ -7,7 +7,7 @@ import './index.css';
  * After submitting a vote, the user will see a bar chart that represents the results of the poll.
  */
 const PollVoting = ({ poll, selectedOption, voteButtonClick, onOptionChange }: PollProps) => (
-  <div className='pollVotingContainer'>
+  <form className='pollVotingContainer' onSubmit={voteButtonClick}>
     <div className='votingOptionsContainer'>
       {poll.options.map((opt, idx) => (
         <div className='optionContainer' key={idx}>
@@ -17,15 +17,16 @@ const PollVoting = ({ poll, selectedOption, voteButtonClick, onOptionChange }: P
             name='pollOption'
             checked={selectedOption === opt}
             onChange={onOptionChange}
+            required
           />
           <label>{opt.text}</label>
         </div>
       ))}
     </div>
-    <button id='voteButton' onClick={voteButtonClick}>
+    <button id='voteButton' type='submit'>
       Vote
     </button>
-  </div>
+  </form>
 );
 
 export default PollVoting;
