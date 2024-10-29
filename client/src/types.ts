@@ -158,36 +158,6 @@ export interface ServerToClientEvents {
 }
 
 /**
- * Interface representing a PollOption, which contains:
- * - _id - The unique identifier for the poll. Optional field
- * - text - The description of the poll option
- * - usersVoted - An array of usernames who voted for this poll option
- */
-export interface PollOption {
-  _id?: string;
-  text: string;
-  usersVoted: string[];
-}
-
-/**
- * Interface representing a Poll, which contains:
- * - _id - The unique identifier for the poll. Optional field
- * - title - The title of the poll.
- * - options - Object IDs of poll options written for this poll that users can vote on.
- * - createdBy - The user that created the poll.
- * - pollDateTime - The date and time when the poll was posted.
- * - pollDueDate - The date and time when the poll stops accepting votes.
- */
-export interface Poll {
-  _id?: string;
-  title: string;
-  options: PollOption[];
-  createdBy: User;
-  pollDateTime: Date;
-  pollDueDate: Date;
-}
-
-/**
  * Interface representing an Article, which contains:
  * - _id - The unique identifier for the article. Optional field
  * - title - The title of the article.
