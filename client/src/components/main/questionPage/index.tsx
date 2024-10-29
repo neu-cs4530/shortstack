@@ -20,13 +20,13 @@ const QuestionPage = () => {
   };
 
   const opt1: PollOption = {
-    text: 'Option 1',
+    text: 'Option 1 adf,ksjdhf,kasdhf',
     usersVoted: ['v', 'a', 'n', 'e', 's', 's', 'a'],
   };
 
   const opt2: PollOption = {
     text: 'Option 2',
-    usersVoted: ['v', 'a', 'n'],
+    usersVoted: ['vanessa', 'a', 'n'],
   };
 
   const opt3: PollOption = {

@@ -1,3 +1,4 @@
+import { ChangeEvent } from 'react';
 import { Socket } from 'socket.io-client';
 
 export type FakeSOSocket = Socket<ServerToClientEvents>;
@@ -182,20 +183,14 @@ export interface Poll {
 /**
  * Interface representing the props for the Poll components.
  *
- * votedStatus - a boolean representing whether the poll has been voted on.
+ * selectedOption - the poll option currently selected by the user while voting.
+ * voteButtonClick - the function that handles a user hitting the vote button for a poll.
+ * onOptionChange - the function to update the selected poll option when the user clicks a different option.
  * poll - The Poll object containing details about the Poll.
  */
 export interface PollProps {
-  updateVoteStatus?: (status: boolean) => void;
-  updateVotedOption?: (option: PollOption) => void;
+  selectedOption?: PollOption | undefined;
+  voteButtonClick?: () => void;
+  onOptionChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   poll: Poll;
-}
-
-/**
- * Interface representing the props for the PollOption components.
- *
- * pOption - The PollOption object containing details about the PollOption.
- */
-export interface PollOptionProps {
-  pOption: PollOption;
 }
