@@ -49,8 +49,16 @@ const useLogin = () => {
    */
   const handleLogIn = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setUser({
+      username,
+      password: '',
+      totalPoints: 0,
+      unlockedFrames: [],
+      unlockedTitles: [],
+      equippedFrame: '',
+      equippedTitle: '',
+    });
     // TODO: fetch User record from db, validate username + password, call setUser with User object
-    setUser({ username });
     navigate('/home');
   };
 
