@@ -1,3 +1,4 @@
+import useUserContext from '../../../../hooks/useUserContext';
 import { PollProps } from '../../../../types';
 import './index.css';
 
@@ -7,8 +8,12 @@ import './index.css';
  * The component will also visually indicate which option the logged in user voted on.
  */
 const PollResults = ({ poll }: PollProps) => {
-  // The poll option that the logged in user voted for (PLACEHOLDER FOR TESTING)
-  const optionUserVotedFor = poll.options.filter(opt => opt.usersVoted.includes('vanessa')).at(0);
+  const { user } = useUserContext();
+
+  // Finding the option that the logged in user voted on for the poll.
+  const optionUserVotedFor = poll.options
+    .filter(opt => opt.usersVoted.includes(user.username))
+    .at(0);
 
   /**
    * Function that finds the width of the bar chart for an option based on its number of votes
