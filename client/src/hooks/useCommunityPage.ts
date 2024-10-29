@@ -1,7 +1,5 @@
-import { useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import useUserContext from './useUserContext';
-import { Question, Poll, Community, Article } from '../types';
+import { Question, Poll, Article } from '../types';
 import mockCommunity from '../components/main/communityPage/mockCommunityData';
 
 /**
@@ -12,7 +10,6 @@ import mockCommunity from '../components/main/communityPage/mockCommunityData';
  * @returns polls - List of polls in the community
  */
 const useCommunityPage = () => {
-  const { socket } = useUserContext();
   const [titleText, setTitleText] = useState<string>('Community');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [polls, setPolls] = useState<Poll[]>([]);
