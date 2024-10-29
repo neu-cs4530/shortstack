@@ -49,7 +49,7 @@ const useLogin = () => {
    */
   const handleLogIn = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // TODO: fetch User record from db, call setUser with User object
+    // TODO: fetch User record from db, validate username + password, call setUser with User object
     setUser({ username });
     navigate('/home');
   };
@@ -57,6 +57,7 @@ const useLogin = () => {
   const handleSignUp = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // TODO: implement signup here
+    // verify username is unique
     navigate('/home');
   };
 
