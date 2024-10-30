@@ -13,13 +13,30 @@ const QUESTION_API_URL = `${process.env.REACT_APP_SERVER_URL}/question`;
 const getQuestionsByFilter = async (
   order: string = 'newest',
   search: string = '',
+  askedBy: string = '',
 ): Promise<Question[]> => {
-  const res = await api.get(`${QUESTION_API_URL}/getQuestion?order=${order}&search=${search}`);
+  const res = await api.get(
+    `${QUESTION_API_URL}/getQuestion?order=${order}&search=${search}&askedBy=${askedBy}`,
+  );
   if (res.status !== 200) {
     throw new Error('Error when fetching or filtering questions');
   }
   return res.data;
 };
+
+// /**
+//  * Function to get questions by the username of the person that asked them.
+//  *
+//  * @param username - The search term to filter questions. Default is an empty string.
+//  * @throws Error if there is an issue fetching or filtering questions.
+//  */
+// const getQuestionsByUsername = async (username: string): Promise<Question[]> => {
+//   const res = await api.get(`${QUESTION_API_URL}/getQuestion?askedBy=${username}`);
+//   if (res.status !== 200) {
+//     throw new Error('Error when fetching questions with username');
+//   }
+//   return res.data;
+// };
 
 /**
  * Function to get a question by its ID.

@@ -6,6 +6,7 @@ import { Answer, Question, Tag } from '../types';
 
 const getQuestionsByOrderSpy: jest.SpyInstance = jest.spyOn(util, 'getQuestionsByOrder');
 const filterQuestionsBySearchSpy: jest.SpyInstance = jest.spyOn(util, 'filterQuestionsBySearch');
+const filterQuestionsByAskedBySpy: jest.SpyInstance = jest.spyOn(util, 'filterQuestionsByAskedBy');
 
 const tag1: Tag = {
   _id: new mongoose.Types.ObjectId('507f191e810c19729de860ea'),
@@ -131,6 +132,24 @@ describe('GET /getQuestion', () => {
       search: 'dummySearch',
     };
     getQuestionsByOrderSpy.mockResolvedValueOnce(MOCK_QUESTIONS);
+    filterQuestionsBySearchSpy.mockReturnValueOnce(MOCK_QUESTIONS);
+    // Making the request
+    const response = await supertest(app).get('/question/getQuestion').query(mockReqQuery);
+
+    // Asserting the response
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(EXPECTED_QUESTIONS);
+  });
+
+  it('should return the result of filterQuestionsByAskedBy as response for an order and search criteria and askedBy in the request parameters', async () => {
+    // Mock request query parameters
+    const mockReqQuery = {
+      order: 'dummyOrder',
+      search: 'dummySearch',
+      askedBy: 'question2_user',
+    };
+    getQuestionsByOrderSpy.mockResolvedValueOnce(MOCK_QUESTIONS);
+    filterQuestionsByAskedBySpy.mockReturnValueOnce(MOCK_QUESTIONS);
     filterQuestionsBySearchSpy.mockReturnValueOnce(MOCK_QUESTIONS);
     // Making the request
     const response = await supertest(app).get('/question/getQuestion').query(mockReqQuery);

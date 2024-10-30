@@ -13,6 +13,7 @@ import AnswerPage from './main/answerPage';
 import CommunityPage from './main/communityPage/communityPage';
 import CommunityArticlePage from './main/communityPage/article/communityArticlePage';
 import NotificationPage from './main/notificationPage';
+import ProfilePage from './main/profilePage';
 
 const ProtectedRoute = ({
   user,
@@ -59,6 +60,7 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/new/answer/:qid' element={<NewAnswerPage />} />
             <Route path='/community' element={<CommunityPage />} />
             <Route path='/community/article/:articleId' element={<CommunityArticlePage />} />
+            <Route path='/profile' element={<ProfilePage />} />
           </Route>
         }
       </Routes>

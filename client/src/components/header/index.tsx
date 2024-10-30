@@ -18,6 +18,10 @@ const Header = () => {
     navigate('/notifications');
   };
 
+  const handleProfile = () => {
+    navigate('/profile');
+  };
+
   return (
     <div id='header' className='header'>
       <div className='headerContents'>
@@ -34,9 +38,9 @@ const Header = () => {
           <button className='notifications_btn' onClick={handleNotifications}>
             Notifications
           </button>
-          <FaUserCircle size='32px' className='profile_icon'>
-            <button />
-          </FaUserCircle>
+          <button className='profile_btn' onClick={handleProfile}>
+            <FaUserCircle size='32px' className='profile_icon' />
+          </button>
         </div>
       </div>
     </div>

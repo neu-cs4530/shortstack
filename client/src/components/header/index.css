@@ -37,6 +37,12 @@
   background-color: darkgray;
 }
 
+.profile_btn {
+  background-color: transparent;
+  border-style: none;
+  height: 100%;
+}
+
 .profile_icon {
   color: rgb(49, 49, 49);
 }
