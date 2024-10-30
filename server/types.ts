@@ -141,6 +141,7 @@ export interface User {
   unlockedTitles: string[];
   equippedFrame: string;
   equippedTitle: string;
+  notifications: Notification[];
 }
 
 /**
