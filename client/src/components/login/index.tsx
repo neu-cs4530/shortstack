@@ -12,6 +12,7 @@ const Login = () => {
     password,
     handleLogIn,
     handleSignUp,
+    signupErr,
     handleUsernameInputChange,
     handlePasswordInputChange,
     hasAccount,
@@ -72,6 +73,7 @@ const Login = () => {
           {hasAccount ? 'Log In' : 'Sign Up'}
         </button>
       </form>
+      {signupErr && <div className='input_error'>{signupErr}</div>}
     </div>
   );
 };
