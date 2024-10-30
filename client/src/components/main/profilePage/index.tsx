@@ -1,32 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FaUserCircle } from 'react-icons/fa';
-import useUserContext from '../../../hooks/useUserContext';
 import './index.css';
-import { Question } from '../../../types';
 import QuestionView from '../questionPage/question';
-import { getQuestionsByFilter } from '../../../services/questionService';
+import useProfilePage from '../../../hooks/useProfilePage';
 
 const ProfilePage = () => {
-  const { user } = useUserContext();
-  const [userQuestions, setUserQuestions] = useState([] as Question[]);
-
-  useEffect(() => {
-    /**
-     * Function to fetch the questions asked by this user.
-     */
-    const fetchData = async () => {
-      try {
-        const res = await getQuestionsByFilter('newest', '', user.username);
-        setUserQuestions(res || null);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching questions with username:', error);
-      }
-    };
-
-    // eslint-disable-next-line no-console
-    fetchData().catch(e => console.log(e));
-  }, [user.username]);
+  const { user, userQuestions } = useProfilePage();
 
   return (
     <div className='profile_container'>

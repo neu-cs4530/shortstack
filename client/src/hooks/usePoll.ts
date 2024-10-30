@@ -2,6 +2,17 @@ import { ChangeEvent, FormEvent, useState } from 'react';
 import { Poll, PollOption } from '../types';
 import useUserContext from './useUserContext';
 
+/**
+ * Custom hook for managing the state and logic of an answer submission form.
+ *
+ * @returns voted - the boolean indicating whether the user has voted on the poll.
+ * @returns setVoted - the function to update the poll's voted state.
+ * @returns selectedOption - the PollOption the user currently has selected while voted.
+ * @returns voteButtonClick - the function to handle a user submitting a vote.
+ * @returns onOptionChange - the function to handle a user changing the selected poll option.
+ * @returns optionUserVotedFor - the function that handles finding the option the user voted for.
+ * @returns findBarChartWidth - the function that calculates an option's bar chart size based on number of votes.
+ */
 const usePoll = (poll: Poll) => {
   const [voted, setVoted] = useState(false);
   const [selectedOption, setSelectedOption] = useState<PollOption | undefined>(undefined);

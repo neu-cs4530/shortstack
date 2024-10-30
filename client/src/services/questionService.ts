@@ -8,6 +8,7 @@ const QUESTION_API_URL = `${process.env.REACT_APP_SERVER_URL}/question`;
  *
  * @param order - The order in which to fetch questions. Default is 'newest'.
  * @param search - The search term to filter questions. Default is an empty string.
+ * @param askedBy - The username to filter questions by askedBy. Default is an empty string.
  * @throws Error if there is an issue fetching or filtering questions.
  */
 const getQuestionsByFilter = async (
@@ -23,20 +24,6 @@ const getQuestionsByFilter = async (
   }
   return res.data;
 };
-
-// /**
-//  * Function to get questions by the username of the person that asked them.
-//  *
-//  * @param username - The search term to filter questions. Default is an empty string.
-//  * @throws Error if there is an issue fetching or filtering questions.
-//  */
-// const getQuestionsByUsername = async (username: string): Promise<Question[]> => {
-//   const res = await api.get(`${QUESTION_API_URL}/getQuestion?askedBy=${username}`);
-//   if (res.status !== 200) {
-//     throw new Error('Error when fetching questions with username');
-//   }
-//   return res.data;
-// };
 
 /**
  * Function to get a question by its ID.
