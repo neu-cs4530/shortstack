@@ -22,12 +22,12 @@ const CommunityList = () => {
   const joinedCommunitiesID = ['1'];
 
   // TODO : Filter the joined and available communities based on the user's username and community [members]
-  const joinedCommunities = MOCK_COMMUNITIES.filter(community =>
-    joinedCommunitiesID.includes(community._id),
+  const joinedCommunities = MOCK_COMMUNITIES.filter(
+    community => community._id && joinedCommunitiesID.includes(community._id),
   );
 
   const availableCommunities = MOCK_COMMUNITIES.filter(
-    community => !joinedCommunitiesID.includes(community._id),
+    community => community._id && !joinedCommunitiesID.includes(community._id),
   );
 
   return (
@@ -43,7 +43,7 @@ const CommunityList = () => {
         <ul>
           {joinedCommunities.map(community => (
             <li key={community._id} className='community-item'>
-              <span className='community-name' onClick={() => handleCommunityClick(community._id)}>
+              <span className='community-name' onClick={() => handleCommunityClick(community._id!)}>
                 {community.name}
               </span>
             </li>
@@ -58,10 +58,10 @@ const CommunityList = () => {
         <ul>
           {availableCommunities.map(community => (
             <li key={community._id} className='community-item'>
-              <span className='community-name' onClick={() => handleCommunityClick(community._id)}>
+              <span className='community-name' onClick={() => handleCommunityClick(community._id!)}>
                 {community.name}
               </span>
-              <button className='join-button' onClick={() => handleCommunityClick(community._id)}>
+              <button className='join-button' onClick={() => handleCommunityClick(community._id!)}>
                 Join
               </button>
             </li>
