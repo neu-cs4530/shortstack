@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Question, Poll, Article } from '../types';
-import mockCommunity from '../components/main/communityPage/mockCommunityData';
+import MOCK_COMMUNITIES from '../components/main/communityPage/mockCommunityData';
 
 /**
  * Custom hook for managing the community page state, fetching community data, and handling real-time updates.
@@ -17,10 +17,10 @@ const useCommunityPage = () => {
 
   useEffect(() => {
     // Directly set mock data for testing
-    setTitleText(mockCommunity.name);
-    setQuestions(mockCommunity.questions || []);
-    setPolls(mockCommunity.polls || []);
-    setArticles(mockCommunity.articles || []);
+    setTitleText(MOCK_COMMUNITIES[0].name);
+    setQuestions(MOCK_COMMUNITIES[0].questions || []);
+    setPolls(MOCK_COMMUNITIES[0].polls || []);
+    setArticles(MOCK_COMMUNITIES[0].articles || []);
   }, []);
 
   return { titleText, questions, polls, articles };
