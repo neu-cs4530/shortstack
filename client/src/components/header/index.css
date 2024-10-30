@@ -5,7 +5,7 @@
   width: auto;
   background: #dddddd;
   padding-left: 40%;
-  padding-right: 5%;
+  padding-right: 3%;
 }
 
 .headerContents {
@@ -35,4 +35,12 @@
 
 .notifications_btn:hover {
   background-color: darkgray;
+}
+
+.profile_icon {
+  color: rgb(49, 49, 49);
+}
+
+.profile_icon:hover {
+  color: black;
 }
