@@ -4,7 +4,7 @@ import { Question } from '../types';
 import useUserContext from './useUserContext';
 
 /**
- * Custom hook for managing the state and logic of an answer submission form.
+ * Custom hook for managing the state and logic of a poll.
  *
  * @returns userQuestions - the questions that were asked by the user
  */
