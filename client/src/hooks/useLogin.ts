@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ChangeEvent, useState } from 'react';
 import useLoginContext from './useLoginContext';
+import addUser from '../services/userService';
 
 /**
  * Custom hook to handle login input and submission.
@@ -13,6 +14,7 @@ const useLogin = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [hasAccount, setHasAccount] = useState<boolean>(true);
+  const [signupErr, setSignupErr] = useState<string>('');
   const { setUser } = useLoginContext();
   const navigate = useNavigate();
 
@@ -62,11 +64,36 @@ const useLogin = () => {
     navigate('/home');
   };
 
-  const handleSignUp = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // TODO: implement signup here
-    // verify username is unique
-    navigate('/home');
+    try {
+      const newUser = await addUser({
+        username,
+        password,
+        totalPoints: 0,
+        unlockedFrames: [],
+        unlockedTitles: [],
+        equippedFrame: '',
+        equippedTitle: '',
+      });
+      setUser(newUser);
+      navigate('/home');
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        typeof error.response === 'object' &&
+        error.response !== null &&
+        'data' in error.response &&
+        typeof error.response.data === 'string'
+      ) {
+        // get response to display unique username error message
+        setSignupErr(error.response.data);
+      } else {
+        setSignupErr((error as Error).message);
+      }
+    }
   };
 
   return {
@@ -76,6 +103,7 @@ const useLogin = () => {
     handlePasswordInputChange,
     handleLogIn,
     handleSignUp,
+    signupErr,
     hasAccount,
     setHasAccount,
     clearInputs,

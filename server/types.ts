@@ -144,6 +144,19 @@ export interface User {
 }
 
 /**
+ * Interface for the request body when adding a new user.
+ * - body - The user being added.
+ */
+export interface AddUserRequest extends Request {
+  body: User;
+}
+
+/**
+ * Type representing the possible responses for a User-related operation.
+ */
+export type UserResponse = User | { error: string };
+
+/**
  * Interface for the request body when upvoting or downvoting a question.
  * - body - The question ID and the username of the user voting.
  *  - qid - The unique identifier of the question.
