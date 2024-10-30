@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Article } from '../../../../types';
+import { Article } from '../../../../../types';
 import './communityArticlePage.css';
 // Mock data
-import mockCommunity from '../mockCommunityData';
+import MOCK_COMMUNITIES from '../../mockCommunityData';
 
 /**
  * The CommunityArticlePage component displays the articles within the community.
@@ -14,8 +14,8 @@ const CommunityArticlePage = () => {
 
   useEffect(() => {
     if (articleId) {
-      // Using mock data for now
-      const foundArticle = mockCommunity.articles.find(a => a._id === articleId);
+      // TODO: Replace this with an API call to fetch the article data within the community
+      const foundArticle = MOCK_COMMUNITIES[0].articles.find(a => a._id === articleId);
       setArticle(foundArticle || null);
     }
   }, [articleId]);
