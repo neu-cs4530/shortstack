@@ -16,6 +16,7 @@ const userSchema: Schema = new Schema(
   {
     username: {
       type: String,
+      unique: true,
       required: true,
     },
     password: {
@@ -35,6 +36,10 @@ const userSchema: Schema = new Schema(
     equippedTitle: {
       type: String,
       default: '',
+    },
+    notifications: {
+      type: Schema.Types.ObjectId,
+      ref: 'Notification',
     },
   },
   { collection: 'User' },

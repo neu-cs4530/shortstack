@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { Question, Poll, Article } from '../../../types';
-import useCommunityPage from '../../../hooks/useCommunityPage';
+import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
+import useCommunityPage from '../../../../hooks/useCommunityPage';
 
 /**
- * The CommunityPage component displays a list of community questions, articles, and polls.
+ * Represents the community page component. Displays the questions, articles, and polls of a community.
  */
 const CommunityPage = () => {
   const { titleText, questions, polls, articles } = useCommunityPage();

@@ -9,11 +9,14 @@ import {
   Question,
   QuestionResponse,
   Tag,
+  User,
+  UserResponse,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
 import TagModel from './tags';
 import CommentModel from './comments';
+import UserModel from './users';
 
 /**
  * Parses tags from a search string.
@@ -393,6 +396,34 @@ export const saveComment = async (comment: Comment): Promise<CommentResponse> =>
     return result;
   } catch (error) {
     return { error: 'Error when saving a comment' };
+  }
+};
+
+// type checking utility for type-safe access to error code
+const isMongoError = (error: unknown): error is { code?: number } =>
+  typeof error === 'object' && error !== null && 'code' in error;
+
+// TODO: addUser function in new file users.ts
+// testing for saveUser
+/**
+ * Saves a new user to the database.
+ *
+ * @param {User} user - The user to save
+ *
+ * @returns {Promise<UserResponse>} - The saved user, or an error message if the save failed
+ */
+export const saveUser = async (user: User): Promise<UserResponse> => {
+  try {
+    const result = await UserModel.create(user);
+    return result;
+  } catch (error) {
+    if (isMongoError(error)) {
+      if (error.code === 11000) {
+        // return specific message if error code matched MongoDB duplicate key error
+        return { error: 'Username must be unique' };
+      }
+    }
+    return { error: 'Error when saving a user' };
   }
 };
 

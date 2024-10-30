@@ -1,6 +1,6 @@
 // User Document Schema
 import mongoose, { Model } from 'mongoose';
-import userSchema from './schema/question';
+import userSchema from './schema/user';
 import { User } from '../types';
 
 /**
