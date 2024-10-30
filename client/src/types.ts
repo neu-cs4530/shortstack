@@ -1,3 +1,4 @@
+import { ChangeEvent, FormEvent } from 'react';
 import { Socket } from 'socket.io-client';
 
 export type FakeSOSocket = Socket<ServerToClientEvents>;
@@ -157,36 +158,6 @@ export interface ServerToClientEvents {
 }
 
 /**
- * Interface representing a PollOption, which contains:
- * - _id - The unique identifier for the poll. Optional field
- * - text - The description of the poll option
- * - usersVoted - An array of usernames who voted for this poll option
- */
-export interface PollOption {
-  _id?: string;
-  text: string;
-  usersVoted: string[];
-}
-
-/**
- * Interface representing a Poll, which contains:
- * - _id - The unique identifier for the poll. Optional field
- * - title - The title of the poll.
- * - options - Object IDs of poll options written for this poll that users can vote on.
- * - createdBy - The user that created the poll.
- * - pollDateTime - The date and time when the poll was posted.
- * - pollDueDate - The date and time when the poll stops accepting votes.
- */
-export interface Poll {
-  _id?: string;
-  title: string;
-  options: PollOption[];
-  createdBy: User;
-  pollDateTime: Date;
-  pollDueDate: Date;
-}
-
-/**
  * Interface representing an Article, which contains:
  * - _id - The unique identifier for the article. Optional field
  * - title - The title of the article.
@@ -214,4 +185,49 @@ export interface Community {
   questions: Question[];
   polls: Poll[];
   articles: Article[];
+}
+
+/**
+ * Interface representing a PollOption, which contains:
+ * - _id - The unique identifier for the poll. Optional field
+ * - text - The description of the poll option
+ * - usersVoted - An array of usernames who voted for this poll option
+ */
+export interface PollOption {
+  _id?: string;
+  text: string;
+  usersVoted: string[];
+}
+
+/**
+ * Interface representing a Poll, which contains:
+ * - _id - The unique identifier for the poll. Optional field
+ * - title - The title of the poll.
+ * - options - An array of poll options written for this poll for users can vote on.
+ * - createdBy - The user that created the poll.
+ * - pollDateTime - The date and time when the poll was posted.
+ * - pollDueDate - The date and time when the poll stops accepting votes.
+ */
+export interface Poll {
+  _id?: string;
+  title: string;
+  options: PollOption[];
+  createdBy: User;
+  pollDateTime: Date;
+  pollDueDate: Date;
+}
+
+/**
+ * Interface representing the props for the Poll components.
+ *
+ * selectedOption - the poll option currently selected by the user while voting.
+ * voteButtonClick - the function that handles a user hitting the vote button for a poll.
+ * onOptionChange - the function to update the selected poll option when the user clicks a different option.
+ * poll - The Poll object containing details about the Poll.
+ */
+export interface PollProps {
+  selectedOption?: PollOption | undefined;
+  voteButtonClick?: (event: FormEvent<HTMLFormElement>) => void;
+  onOptionChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  poll: Poll;
 }
