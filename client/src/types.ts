@@ -42,6 +42,7 @@ export type OrderType = keyof typeof orderTypeDisplayName;
  * commentDateTime - Time at which the comment was created.
  */
 export interface Comment {
+  _id?: string;
   text: string;
   commentBy: string;
   commentDateTime: Date;

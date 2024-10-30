@@ -4,6 +4,7 @@ import { validateHyperlink } from '../tool';
 import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
 import { Question } from '../types';
+import MOCK_COMMUNITIES from '../components/main/communityPage/mockCommunityData';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -19,9 +20,11 @@ import { Question } from '../types';
 const useNewQuestion = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
+  const communities = MOCK_COMMUNITIES; // Initialize communities with mock data
   const [title, setTitle] = useState<string>('');
   const [text, setText] = useState<string>('');
   const [tagNames, setTagNames] = useState<string>('');
+  const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
 
   const [titleErr, setTitleErr] = useState<string>('');
   const [textErr, setTextErr] = useState<string>('');
@@ -86,10 +89,7 @@ const useNewQuestion = () => {
     if (!validateForm()) return;
 
     const tagnames = tagNames.split(' ').filter(tagName => tagName.trim() !== '');
-    const tags = tagnames.map(tagName => ({
-      name: tagName,
-      description: 'user added tag',
-    }));
+    const tags = tagnames.map(tagName => ({ name: tagName, description: 'user added tag' }));
 
     const question: Question = {
       title,
@@ -104,11 +104,15 @@ const useNewQuestion = () => {
       comments: [],
     };
 
-    const res = await addQuestion(question);
-
-    if (res && res._id) {
-      navigate('/home');
+    // If a community is selected, add the question to that community in mock data
+    if (selectedCommunity) {
+      const community = MOCK_COMMUNITIES.find(c => c._id === selectedCommunity);
+      community?.questions.push(question);
     }
+
+    // Still post the question the main questions page
+    await addQuestion(question);
+    navigate('/home');
   };
 
   return {
@@ -122,6 +126,9 @@ const useNewQuestion = () => {
     textErr,
     tagErr,
     postQuestion,
+    communities, // List of communities for dropdown
+    selectedCommunity, // Currently selected community
+    setSelectedCommunity, // Setter for selected community
   };
 };
 

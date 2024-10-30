@@ -1,9 +1,10 @@
-// This file contains mock data for the community page
-// The question holds the same data as an already present question in the DB
-const MOCK_COMMUNITIES = [
+import { User, Community, Question, Article, Poll, Answer, Comment } from '../../../types'; // Adjust path as needed
+
+const MOCK_COMMUNITIES: Community[] = [
   {
     _id: '1',
     name: 'JavaScript Enthusiasts',
+    members: [] as User[], // Empty members array of User type
     questions: [
       {
         _id: '671a4dc9f8cf750f55a6c965',
@@ -38,7 +39,7 @@ const MOCK_COMMUNITIES = [
                 commentBy: 'ihba001',
                 commentDateTime: new Date('2022-02-20T08:00:00.000+00:00'),
               },
-            ],
+            ] as Comment[], // Explicitly cast to Comment array
           },
           {
             _id: '671a4dc9f8cf750f55a6c957',
@@ -52,9 +53,9 @@ const MOCK_COMMUNITIES = [
                 commentBy: 'ihba001',
                 commentDateTime: new Date('2022-02-20T08:00:00.000+00:00'),
               },
-            ],
+            ] as Comment[], // Explicitly cast to Comment array
           },
-        ],
+        ] as Answer[], // Explicitly cast to Answer array
         views: ['sana', 'abaya', 'alia'],
         upVotes: [],
         downVotes: [],
@@ -65,9 +66,9 @@ const MOCK_COMMUNITIES = [
             commentBy: 'ihba001',
             commentDateTime: new Date('2022-02-20T08:00:00.000+00:00'),
           },
-        ],
+        ] as Comment[], // Explicitly cast to Comment array
       },
-    ],
+    ] as Question[], // Explicitly cast to Question array
     articles: [
       {
         _id: 'a1',
@@ -79,7 +80,7 @@ const MOCK_COMMUNITIES = [
         title: 'JavaScript ES6 Features',
         body: 'ES6 introduced many new features including let/const, arrow functions...',
       },
-    ],
+    ] as Article[], // Explicitly cast to Article array
     polls: [
       {
         _id: 'poll1',
@@ -102,28 +103,31 @@ const MOCK_COMMUNITIES = [
         pollDateTime: new Date(),
         pollDueDate: new Date(new Date().setDate(new Date().getDate() + 7)),
       },
-    ],
+    ] as Poll[], // Explicitly cast to Poll array
   },
   {
     _id: '2',
     name: 'Python Developers',
-    questions: [],
-    articles: [],
-    polls: [],
+    members: [] as User[],
+    questions: [] as Question[],
+    articles: [] as Article[],
+    polls: [] as Poll[],
   },
   {
     _id: '3',
     name: 'Web Dev Wizards',
-    questions: [],
-    articles: [],
-    polls: [],
+    members: [] as User[],
+    questions: [] as Question[],
+    articles: [] as Article[],
+    polls: [] as Poll[],
   },
   {
     _id: '4',
     name: 'Data Science Enthusiasts',
-    questions: [],
-    articles: [],
-    polls: [],
+    members: [] as User[],
+    questions: [] as Question[],
+    articles: [] as Article[],
+    polls: [] as Poll[],
   },
 ];
 
