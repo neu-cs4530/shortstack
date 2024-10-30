@@ -14,6 +14,7 @@ const newUser: User = {
   unlockedTitles: [],
   equippedFrame: '',
   equippedTitle: '',
+  notifications: [],
 };
 
 const mockNewUser: User = {
@@ -25,6 +26,7 @@ const mockNewUser: User = {
   unlockedTitles: [],
   equippedFrame: '',
   equippedTitle: '',
+  notifications: [],
 };
 
 describe('POST /addUser', () => {

@@ -33,6 +33,7 @@ const newUser: User = {
   unlockedTitles: [],
   equippedFrame: '',
   equippedTitle: '',
+  notifications: [],
 };
 
 const tag1: Tag = {
