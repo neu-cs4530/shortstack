@@ -1,5 +1,7 @@
-import { User, Community, Question, Article, Poll, Answer, Comment } from '../../../types'; // Adjust path as needed
+import { User, Community, Question, Article, Poll, Answer, Comment } from '../../../types';
 
+// Mock data for communities
+// Explicitly cast to the types defined in types.ts
 const MOCK_COMMUNITIES: Community[] = [
   {
     _id: '1',

@@ -16,6 +16,9 @@ import MOCK_COMMUNITIES from '../components/main/communityPage/mockCommunityData
  * @returns textErr - Error message for the text field, if any.
  * @returns tagErr - Error message for the tag field, if any.
  * @returns postQuestion - Function to validate the form and submit a new question.
+ * @returns communities - List of communities for dropdown.
+ * @returns selectedCommunity - Currently selected community.
+ * @returns setSelectedCommunity - Setter for selected community.
  */
 const useNewQuestion = () => {
   const navigate = useNavigate();
@@ -126,9 +129,9 @@ const useNewQuestion = () => {
     textErr,
     tagErr,
     postQuestion,
-    communities, // List of communities for dropdown
-    selectedCommunity, // Currently selected community
-    setSelectedCommunity, // Setter for selected community
+    communities,
+    selectedCommunity,
+    setSelectedCommunity,
   };
 };
 
