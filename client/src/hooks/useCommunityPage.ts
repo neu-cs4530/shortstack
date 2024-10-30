@@ -9,6 +9,7 @@ import MOCK_COMMUNITIES from '../components/main/communityPage/mockCommunityData
  * @returns titleText - The title of the community page
  * @returns questions - List of questions in the community
  * @returns polls - List of polls in the community
+ * @returns articles - List of articles in the community
  */
 const useCommunityPage = () => {
   const { communityID } = useParams<{ communityID: string }>();

@@ -18,9 +18,10 @@ const CommunityList = () => {
     navigate('/community/create');
   };
 
-  // TODO: Fetch the real joined communities
+  // TODO : Remove when not using mock data
   const joinedCommunitiesID = ['1'];
 
+  // TODO : Filter the joined and available communities based on the user's username and community [members]
   const joinedCommunities = MOCK_COMMUNITIES.filter(community =>
     joinedCommunitiesID.includes(community._id),
   );
