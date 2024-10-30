@@ -45,7 +45,7 @@ const useLogin = () => {
   };
 
   /**
-   * Function to handle the form submission event.
+   * Function to handle a login form submission event.
    *
    * @param event - the form event object.
    */
@@ -64,6 +64,11 @@ const useLogin = () => {
     navigate('/home');
   };
 
+  /**
+   * Function to handle a signup form submission event.
+   *
+   * @param e - the event object.
+   */
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
