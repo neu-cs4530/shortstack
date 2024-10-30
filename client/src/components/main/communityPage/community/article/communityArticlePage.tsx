@@ -14,7 +14,7 @@ const CommunityArticlePage = () => {
 
   useEffect(() => {
     if (articleId) {
-      // Using mock data for now
+      // TODO: Replace this with an API call to fetch the article data within the community
       const foundArticle = MOCK_COMMUNITIES[0].articles.find(a => a._id === articleId);
       setArticle(foundArticle || null);
     }

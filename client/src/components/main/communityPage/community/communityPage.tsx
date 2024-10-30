@@ -1,24 +1,14 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
-import MOCK_COMMUNITIES from '../mockCommunityData';
+import useCommunityPage from '../../../../hooks/useCommunityPage';
 
 /**
  * Represents the community page component. Displays the questions, articles, and polls of a community.
  */
 const CommunityPage = () => {
-  const { communityID } = useParams<{ communityID: string }>();
+  const { titleText, questions, polls, articles } = useCommunityPage();
   const navigate = useNavigate();
-
-  const communityData = MOCK_COMMUNITIES.find(
-    community => community._id === String(communityID).trim(),
-  );
-
-  if (!communityData) {
-    return <p>Community not found.</p>;
-  }
-
-  const { name: titleText, questions, polls, articles } = communityData;
 
   const handleQuestionClick = (questionID: string) => {
     navigate(`/question/${questionID}`);
