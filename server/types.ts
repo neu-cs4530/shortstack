@@ -292,3 +292,33 @@ export interface Community {
   polls: Poll[];
   articles: Article[];
 }
+
+/**
+ * NotificationType enum enumerating all possible types of notifications.
+ */
+export enum NotificationType {
+  Answer = 'Answer',
+  Comment = 'Comment',
+  AnswerComment = 'AnswerComment',
+  Upvote = 'Upvote',
+  NewQuestion = 'NewQuestion',
+  NewPoll = 'NewPoll',
+  PollClosed = 'PollClosed',
+  NewArticle = 'NewArticle',
+  ArticleUpdate = 'ArticleUpdate',
+  NewReward = 'NewReward',
+}
+
+/**
+ * Interface representing a Notification, which contains:
+ * - notificationType - The type of notification.
+ * - sourceType - The type of the source of the notification.
+ * - source - The source of the notification.
+ * - isRead - Whether the notification has been read or not.
+ */
+export interface Notification {
+  notificationType: NotificationType,
+  sourceType: 'Question' | 'Poll' | 'Article',
+  source: Question | Poll | Article,
+  isRead: boolean,
+}
