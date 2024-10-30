@@ -90,8 +90,6 @@ const useLogin = () => {
       ) {
         // get response to display unique username error message
         setSignupErr(error.response.data);
-      } else {
-        setSignupErr((error as Error).message);
       }
     }
   };

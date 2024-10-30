@@ -15,13 +15,25 @@ import {
   saveComment,
   addComment,
   addVoteToQuestion,
+  saveUser,
 } from '../models/application';
-import { Answer, Question, Tag, Comment } from '../types';
+import { Answer, Question, Tag, Comment, User } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
+import UserModel from '../models/users';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
+
+const newUser: User = {
+  username: 'UserA',
+  password: 'abc123',
+  totalPoints: 0,
+  unlockedFrames: [],
+  unlockedTitles: [],
+  equippedFrame: '',
+  equippedTitle: '',
+};
 
 const tag1: Tag = {
   _id: new ObjectId('507f191e810c19729de860ea'),
@@ -881,6 +893,24 @@ describe('application module', () => {
           expect(err).toBeInstanceOf(Error);
           if (err instanceof Error) expect(err.message).toBe('Invalid comment');
         }
+      });
+    });
+  });
+
+  describe('User model', () => {
+    describe('saveUser', () => {
+      test('saveUser should return the saved user', async () => {
+        mockingoose(UserModel).toReturn(new Error('Error from create'), 'create');
+        const result = (await saveUser(newUser)) as User;
+
+        expect(result._id).toBeDefined();
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.totalPoints).toEqual(newUser.totalPoints);
+        expect(result.unlockedFrames).toEqual(newUser.unlockedFrames);
+        expect(result.unlockedTitles).toEqual(newUser.unlockedTitles);
+        expect(result.equippedFrame).toEqual(newUser.equippedFrame);
+        expect(result.equippedTitle).toEqual(newUser.equippedTitle);
       });
     });
   });

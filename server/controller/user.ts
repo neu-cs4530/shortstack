@@ -6,17 +6,6 @@ const userController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
-   * Checks if the provided add user request contains the required fields.
-   *
-   * @param req The request object containing the user data.
-   *
-   * @returns `true` if the request is valid, otherwise `false`.
-   */
-  function isAddRequestValid(req: AddUserRequest): boolean {
-    return !!req.body;
-  }
-
-  /**
    * Checks if the provided user contains the required fields.
    *
    * @param user The user object to validate.
@@ -37,10 +26,6 @@ const userController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addUser = async (req: AddUserRequest, res: Response): Promise<void> => {
-    if (!isAddRequestValid(req)) {
-      res.status(400).send('Invalid request');
-      return;
-    }
     if (!isUserValid(req.body)) {
       res.status(400).send('Invalid user');
       return;
