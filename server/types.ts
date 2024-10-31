@@ -336,3 +336,16 @@ export interface Notification {
   source: Question | Poll | Article,
   isRead: boolean,
 }
+
+/**
+ * Interface for the request body when adding a new community.
+ * - body - The community being added.
+ */
+export interface AddCommunityRequest extends Request {
+  body: Community;
+}
+
+/**
+ * Type representing the possible responses for a Community-related operation.
+ */
+export type CommunityResponse = Community | { error: string };
