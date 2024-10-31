@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useUserContext from './useUserContext';
 import { Community } from '../types';
 import { addCommunity } from '../services/communityService';
 
@@ -13,7 +12,6 @@ import { addCommunity } from '../services/communityService';
  * @returns nameErr - the error message related to the name text input.
  */
 const useCommunityForm = () => {
-  const { user } = useUserContext();
   const navigate = useNavigate();
 
   const [name, setName] = useState<string>('');
