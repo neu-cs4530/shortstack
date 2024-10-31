@@ -70,7 +70,7 @@ describe('POST /add', () => {
     const response = await supertest(app).post('/community/add').send(mockReqBody);
 
     expect(response.status).toBe(400);
-    expect(response.text).toBe('Invalid question body');
+    expect(response.text).toBe('Invalid community body');
   });
 
   it('should return bad request error if community object has members property missing', async () => {

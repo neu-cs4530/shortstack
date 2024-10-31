@@ -31,7 +31,7 @@ const communityController = () => {
    */
   const addCommunity = async (req: AddCommunityRequest, res: Response): Promise<void> => {
     if (!isCommunityBodyValid(req.body)) {
-      res.status(400).send('Invalid question body');
+      res.status(400).send('Invalid community body');
       return;
     }
     const community: Community = req.body;
