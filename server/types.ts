@@ -210,8 +210,8 @@ export type CommentResponse = Comment | { error: string };
  * - type - The type of the updated item, either 'question' or 'answer'.
  */
 export interface CommentUpdatePayload {
-  result: AnswerResponse | QuestionResponse | null;
-  type: 'question' | 'answer';
+  result: AnswerResponse | QuestionResponse | CommunityResponse | null;
+  type: 'question' | 'answer' | 'community';
 }
 
 /**
@@ -336,3 +336,16 @@ export interface Notification {
   source: Question | Poll | Article,
   isRead: boolean,
 }
+
+/**
+ * Interface for the request body when adding a new community.
+ * - body - The community being added.
+ */
+export interface AddCommunityRequest extends Request {
+  body: Community;
+}
+
+/**
+ * Type representing the possible responses for a Community-related operation.
+ */
+export type CommunityResponse = Community | { error: string };

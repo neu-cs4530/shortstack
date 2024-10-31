@@ -5,6 +5,8 @@ import {
   AnswerResponse,
   Comment,
   CommentResponse,
+  Community,
+  CommunityResponse,
   OrderType,
   Question,
   QuestionResponse,
@@ -17,6 +19,9 @@ import QuestionModel from './questions';
 import TagModel from './tags';
 import CommentModel from './comments';
 import UserModel from './users';
+import CommunityModel from './communities';
+import PollModel from './polls';
+import ArticleModel from './articles';
 
 /**
  * Parses tags from a search string.
@@ -272,18 +277,18 @@ export const filterQuestionsBySearch = (qlist: Question[], search: string): Ques
  * Fetches and populates a question or answer document based on the provided ID and type.
  *
  * @param {string | undefined} id - The ID of the question or answer to fetch.
- * @param {'question' | 'answer'} type - Specifies whether to fetch a question or an answer.
+ * @param {'question' | 'answer' | 'community'} type - Specifies whether to fetch a question or an answer.
  *
- * @returns {Promise<QuestionResponse | AnswerResponse>} - Promise that resolves to the
+ * @returns {Promise<QuestionResponse | AnswerResponse | CommunityResponse>} - Promise that resolves to the
  *          populated question or answer, or an error message if the operation fails
  */
 export const populateDocument = async (
   id: string | undefined,
-  type: 'question' | 'answer',
-): Promise<QuestionResponse | AnswerResponse> => {
+  type: 'question' | 'answer' | 'community',
+): Promise<QuestionResponse | AnswerResponse | CommunityResponse> => {
   try {
     if (!id) {
-      throw new Error('Provided question ID is undefined.');
+      throw new Error(`Provided ${type} ID is undefined.`);
     }
 
     let result = null;
@@ -304,6 +309,13 @@ export const populateDocument = async (
     } else if (type === 'answer') {
       result = await AnswerModel.findOne({ _id: id }).populate([
         { path: 'comments', model: CommentModel },
+      ]);
+    } else if (type === 'community') {
+      result = await CommunityModel.findOne({ _id: id }).populate([
+        { path: 'members', model: UserModel },
+        { path: 'questions', model: QuestionModel },
+        { path: 'polls', model: PollModel },
+        { path: 'articles', model: ArticleModel },
       ]);
     }
     if (!result) {
@@ -396,6 +408,21 @@ export const saveComment = async (comment: Comment): Promise<CommentResponse> =>
     return result;
   } catch (error) {
     return { error: 'Error when saving a comment' };
+  }
+};
+
+/**
+ * Saves a new community to the database.
+ *
+ * @param {Community} community - The community to save
+ * @returns {Promise<CommunityResponse>} - The saved community, or an error message if the save failed
+ */
+export const saveCommunity = async (community: Community): Promise<CommunityResponse> => {
+  try {
+    const result = await CommunityModel.create(community);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a community' };
   }
 };
 
