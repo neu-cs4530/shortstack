@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ChangeEvent, useState } from 'react';
 import useLoginContext from './useLoginContext';
-import addUser from '../services/userService';
+import { addUser, loginUser } from '../services/userService';
 
 /**
  * Custom hook to handle login input and submission.
@@ -49,19 +49,30 @@ const useLogin = () => {
    *
    * @param event - the form event object.
    */
-  const handleLogIn = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLogIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setUser({
-      username,
-      password: '',
-      totalPoints: 0,
-      unlockedFrames: [],
-      unlockedTitles: [],
-      equippedFrame: '',
-      equippedTitle: '',
-    });
-    // TODO: fetch User record from db, validate username + password, call setUser with User object
-    navigate('/home');
+    try {
+      const user = await loginUser({ username, password });
+
+      setUser(user);
+
+      navigate('/home');
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        typeof error.response === 'object' &&
+        error.response !== null &&
+        'data' in error.response &&
+        typeof error.response.data === 'string'
+      ) {
+        // Show the error message returned by the backend (e.g., "User not found" or "Invalid password")
+        setSignupErr(error.response.data);
+      } else {
+        setSignupErr('Error logging in');
+      }
+    }
   };
 
   /**
@@ -95,6 +106,8 @@ const useLogin = () => {
       ) {
         // get response to display unique username error message
         setSignupErr(error.response.data);
+      } else {
+        setSignupErr('Error signing up');
       }
     }
   };
