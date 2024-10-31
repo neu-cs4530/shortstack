@@ -428,6 +428,19 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
 };
 
 /**
+ * Finds a user by their username.
+ * @param username The username of the user to find.
+ * @returns The user if found, otherwise null.
+ */
+export const findUser = async (username: string): Promise<User | null> => {
+  try {
+    return await UserModel.findOne({ username });
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
  * Processes a list of tags by removing duplicates, checking for existing tags in the database,
  * and adding non-existing tags. Returns an array of the existing or newly added tags.
  * If an error occurs during the process, it is logged, and an empty array is returned.

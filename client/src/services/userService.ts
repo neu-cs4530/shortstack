@@ -19,4 +19,20 @@ const addUser = async (u: User): Promise<User> => {
   return res.data;
 };
 
-export default addUser;
+/**
+ * Function to log in a user.
+ *
+ * @param credentials - The user's login credentials.
+ * @throws Error if there is an issue logging in the user.
+ */
+const loginUser = async (credentials: { username: string; password: string }): Promise<User> => {
+  const res = await api.post(`${USER_API_URL}/login`, credentials);
+
+  if (res.status !== 200) {
+    throw new Error('Error while logging in');
+  }
+
+  return res.data;
+};
+
+export { addUser, loginUser };

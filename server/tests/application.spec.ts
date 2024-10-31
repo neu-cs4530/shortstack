@@ -16,6 +16,7 @@ import {
   addComment,
   addVoteToQuestion,
   saveUser,
+  findUser,
 } from '../models/application';
 import { Answer, Question, Tag, Comment, User } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
@@ -912,6 +913,37 @@ describe('application module', () => {
         expect(result.unlockedTitles).toEqual(newUser.unlockedTitles);
         expect(result.equippedFrame).toEqual(newUser.equippedFrame);
         expect(result.equippedTitle).toEqual(newUser.equippedTitle);
+      });
+    });
+    describe('findUser', () => {
+      it('findUser should return the user if found', async () => {
+        const mockUser = { ...newUser, _id: new ObjectId('507f191e810c19729de860eb') };
+        mockingoose(UserModel).toReturn(mockUser, 'findOne');
+
+        const result = await findUser(newUser.username);
+
+        expect(result).toBeDefined();
+        expect(result?._id).toEqual(mockUser._id);
+        expect(result?.username).toEqual(mockUser.username);
+        expect(result?.password).toEqual(mockUser.password);
+      });
+      test('findUser should return null if the user is not found', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await findUser('nonexistentUser');
+
+        expect(result).toBeNull();
+      });
+
+      test('findUser should return an error if findOne throws an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('Database error'), 'findOne');
+
+        try {
+          await findUser(newUser.username);
+        } catch (error: unknown) {
+          expect(error).toBeInstanceOf(Error);
+          if (error instanceof Error) expect(error.message).toBe('Database error');
+        }
       });
     });
   });

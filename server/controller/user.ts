@@ -1,6 +1,6 @@
 import express, { Response } from 'express';
 import { AddUserRequest, FakeSOSocket, User } from '../types';
-import { saveUser } from '../models/application';
+import { findUser, saveUser } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -46,7 +46,36 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Logs in an existing user. The user is retrieved from the database and checked against the provided password.
+   * @param req - The request object containing the user data.
+   * @param res - The HTTp response object.
+   * @returns - The user object if the login is successful, otherwise an error message.
+   */
+  const loginUser = async (req: AddUserRequest, res: Response): Promise<void> => {
+    const { username, password } = req.body;
+
+    try {
+      const user = await findUser(username);
+
+      if (!user) {
+        res.status(404).send('User not found');
+        return;
+      }
+
+      if (user.password !== password) {
+        res.status(401).send('Invalid password');
+        return;
+      }
+
+      res.json(user);
+    } catch (error) {
+      res.status(500).send(`${(error as Error).message}`);
+    }
+  };
+
   router.post('/addUser', addUser);
+  router.post('/login', loginUser);
 
   return router;
 };
