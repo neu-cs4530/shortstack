@@ -17,6 +17,7 @@ import {
   addVoteToQuestion,
   saveUser,
   findUser,
+  addPointsToUser,
 } from '../models/application';
 import { Answer, Question, Tag, Comment, User } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
@@ -902,7 +903,6 @@ describe('application module', () => {
   describe('User model', () => {
     describe('saveUser', () => {
       test('saveUser should return the saved user', async () => {
-        mockingoose(UserModel).toReturn(new Error('Error from create'), 'create');
         const result = (await saveUser(newUser)) as User;
 
         expect(result._id).toBeDefined();
@@ -933,6 +933,39 @@ describe('application module', () => {
         const result = await findUser('nonexistentUser');
 
         expect(result).toBeNull();
+      });
+    });
+
+    describe('addPointsToUser', () => {
+      test('addPointsToUser should return the updated user', async () => {
+        mockingoose(UserModel).toReturn({ ...newUser, totalPoints: 5 }, 'findOneAndUpdate');
+        const result = (await addPointsToUser('ValidUserId', 5)) as User;
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.totalPoints).toEqual(5);
+      });
+
+      test('addPointsToUser should return an object with error if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+        const result = await addPointsToUser('UserA', 5);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addPointsToUser should return an object with error if findOneAndUpdate returns an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
+        const result = await addPointsToUser('UserA', 5);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
       });
     });
   });

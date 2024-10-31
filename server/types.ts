@@ -158,6 +158,19 @@ export interface AddUserRequest extends Request {
 export type UserResponse = User | { error: string };
 
 /**
+ * Interface for the request body when adding points to a user.
+ * - body - The username and the number of points to add.
+ *  - username - The unique username of the user.
+ *  - numPoints - The number of points to add.
+ */
+export interface AddPointsRequest extends Request {
+  body: {
+    username: string,
+    numPoints: number,
+  };
+}
+
+/**
  * Interface for the request body when upvoting or downvoting a question.
  * - body - The question ID and the username of the user voting.
  *  - qid - The unique identifier of the question.

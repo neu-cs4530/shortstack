@@ -1,6 +1,6 @@
 import express, { Response } from 'express';
-import { AddUserRequest, FakeSOSocket, User } from '../types';
-import { findUser, saveUser } from '../models/application';
+import { AddPointsRequest, AddUserRequest, FakeSOSocket, User } from '../types';
+import { findUser, saveUser, addPointsToUser } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -74,8 +74,38 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Adds points to a user to the database.
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The AddPointsRequest object containing user data and number of points to add.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const addPoints = async (req: AddPointsRequest, res: Response) => {
+    if (!req.body.username || !req.body.numPoints) {
+      res.status(400).send('Invalid request');
+      return;
+    }
+
+    const { username, numPoints } = req.body;
+
+    try {
+      const updatedUser = await addPointsToUser(username, numPoints);
+      if (updatedUser && 'error' in updatedUser) {
+        throw new Error(updatedUser.error as string);
+      }
+
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).send('Error when adding points to user');
+    }
+  };
+
   router.post('/addUser', addUser);
   router.post('/login', loginUser);
+  router.post('/addPoints', addPoints);
 
   return router;
 };
