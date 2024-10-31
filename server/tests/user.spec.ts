@@ -33,7 +33,6 @@ const mockNewUser: User = {
 
 describe('User API', () => {
   afterEach(async () => {
-    jest.resetAllMocks();
     await mongoose.connection.close(); // Ensure the connection is properly closed
   });
 
@@ -175,7 +174,6 @@ describe('User API', () => {
       const mockReqBody = {
         numPoints: 10,
       };
-      addPointsToUserSpy.mockResolvedValueOnce(mockNewUser);
       // Making the request
       const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
 
@@ -187,7 +185,6 @@ describe('User API', () => {
       const mockReqBody = {
         username: 'UserA',
       };
-      addPointsToUserSpy.mockResolvedValueOnce(mockNewUser);
       // Making the request
       const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
 
