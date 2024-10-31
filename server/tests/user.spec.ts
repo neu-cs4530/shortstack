@@ -33,6 +33,7 @@ const mockNewUser: User = {
 
 describe('User API', () => {
   afterEach(async () => {
+    jest.resetAllMocks();
     await mongoose.connection.close(); // Ensure the connection is properly closed
   });
 
@@ -153,7 +154,6 @@ describe('User API', () => {
     });
 
     it('should return the user with points added', async () => {
-      jest.clearAllMocks();
       const mockReqBody = {
         username: 'UserA',
         numPoints: 10,
@@ -193,6 +193,20 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(400);
+    });
+
+    it('should return 500 if error object returned by `addPointsToUser`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        numPoints: 10,
+      };
+      addPointsToUserSpy.mockResolvedValueOnce({ error: 'Error when adding points to a user' });
+      // Making the request
+      const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+      // Wait yall im struggling with the final test for my updating points PR. I'm so confused why its not passingggg. I think it might be the spy/mock not work
     });
   });
 });
