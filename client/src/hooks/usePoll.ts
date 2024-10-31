@@ -3,7 +3,7 @@ import { Poll, PollOption } from '../types';
 import useUserContext from './useUserContext';
 
 /**
- * Custom hook for managing the state and logic of an answer submission form.
+ * Custom hook for managing the state and logic of a poll.
  *
  * @returns voted - the boolean indicating whether the user has voted on the poll.
  * @returns setVoted - the function to update the poll's voted state.
