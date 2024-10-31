@@ -206,7 +206,6 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(500);
-      // Wait yall im struggling with the final test for my updating points PR. I'm so confused why its not passingggg. I think it might be the spy/mock not work
     });
   });
 });
