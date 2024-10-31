@@ -1,6 +1,6 @@
 import express, { Response } from 'express';
 import { AddPointsRequest, AddUserRequest, FakeSOSocket, User } from '../types';
-import { addPointsToUser, saveUser } from '../models/application';
+import { findUser, saveUser, addPointsToUser } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -47,6 +47,34 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
+   * Logs in an existing user. The user is retrieved from the database and checked against the provided password.
+   * @param req - The request object containing the user data.
+   * @param res - The HTTp response object.
+   * @returns - The user object if the login is successful, otherwise an error message.
+   */
+  const loginUser = async (req: AddUserRequest, res: Response): Promise<void> => {
+    const { username, password } = req.body;
+
+    try {
+      const user = await findUser(username);
+
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      if (user.password !== password) {
+        res.status(401).json({ error: 'Invalid password' });
+        return;
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ error: 'Error while logging in' });
+    }
+  };
+
+  /**
    * Adds points to a user to the database.
    * If there is an error, the HTTP response's status is updated.
    *
@@ -76,6 +104,7 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   router.post('/addUser', addUser);
+  router.post('/login', loginUser);
   router.post('/addPoints', addPoints);
 
   return router;

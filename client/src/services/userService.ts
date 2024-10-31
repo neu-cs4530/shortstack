@@ -20,6 +20,29 @@ const addUser = async (u: User): Promise<User> => {
 };
 
 /**
+ * Function to log in a user.
+ *
+ * @param credentials - The user's login credentials.
+ * @throws Error if there is an issue logging in the user.
+ */
+const loginUser = async (credentials: { username: string; password: string }): Promise<User> => {
+  const res = await api.post(`${USER_API_URL}/login`, credentials);
+
+  if (res.status === 200) {
+    return res.data;
+  }
+  if (res.status === 401) {
+    throw new Error('Invalid username or password');
+  } else if (res.status === 404) {
+    throw new Error('User not found');
+  } else {
+    throw new Error('Error while logging in');
+  }
+
+  return res.data;
+};
+
+/**
  * Function to add points to a user.
  *
  * @param username - The username of the user to add points to.
@@ -37,4 +60,4 @@ const addPoints = async (username: string, numPoints: number): Promise<User> => 
   return res.data;
 };
 
-export { addUser, addPoints };
+export { addUser, loginUser, addPoints };

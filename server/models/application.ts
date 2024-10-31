@@ -426,6 +426,19 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
 };
 
 /**
+ * Finds a user by their username.
+ * @param username The username of the user to find.
+ * @returns The user if found, otherwise null.
+ */
+export const findUser = async (username: string): Promise<User | null> => {
+  try {
+    return await UserModel.findOne({ username });
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
  * Adds points to a user in the database.
  *
  * @param {string} username - The username of the user to add points to
