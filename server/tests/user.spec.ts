@@ -5,6 +5,7 @@ import * as util from '../models/application';
 import { User } from '../types';
 
 const saveUserSpy = jest.spyOn(util, 'saveUser');
+const addPointsToUserSpy = jest.spyOn(util, 'addPointsToUser');
 
 const newUser: User = {
   username: 'UserA',
@@ -80,5 +81,58 @@ describe('POST /addUser', () => {
 
     // Asserting the response
     expect(response.status).toBe(500);
+  });
+});
+
+describe('POST /addPoints', () => {
+  afterEach(async () => {
+    await mongoose.connection.close(); // Ensure the connection is properly closed
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+  });
+
+  it('should return the user with points added', async () => {
+    jest.clearAllMocks();
+    const mockReqBody = {
+      username: 'UserA',
+      numPoints: 10,
+    };
+    addPointsToUserSpy.mockResolvedValueOnce({ ...mockNewUser, totalPoints: 10 });
+    // Making the request
+    const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+    // Asserting the response
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      _id: mockNewUser._id?.toString(),
+      ...newUser,
+      totalPoints: 10,
+    });
+  });
+
+  it('should return bad request if missing username', async () => {
+    const mockReqBody = {
+      numPoints: 10,
+    };
+    addPointsToUserSpy.mockResolvedValueOnce(mockNewUser);
+    // Making the request
+    const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+    // Asserting the response
+    expect(response.status).toBe(400);
+  });
+
+  it('should return bad request if missing number of points to add', async () => {
+    const mockReqBody = {
+      username: 'UserA',
+    };
+    addPointsToUserSpy.mockResolvedValueOnce(mockNewUser);
+    // Making the request
+    const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+    // Asserting the response
+    expect(response.status).toBe(400);
   });
 });

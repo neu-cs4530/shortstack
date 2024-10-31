@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ChangeEvent, useState } from 'react';
 import useLoginContext from './useLoginContext';
-import addUser from '../services/userService';
+import { addUser } from '../services/userService';
 
 /**
  * Custom hook to handle login input and submission.

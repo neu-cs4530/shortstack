@@ -403,8 +403,6 @@ export const saveComment = async (comment: Comment): Promise<CommentResponse> =>
 const isMongoError = (error: unknown): error is { code?: number } =>
   typeof error === 'object' && error !== null && 'code' in error;
 
-// TODO: addUser function in new file users.ts
-// testing for saveUser
 /**
  * Saves a new user to the database.
  *
@@ -424,6 +422,33 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
       }
     }
     return { error: 'Error when saving a user' };
+  }
+};
+
+/**
+ * Adds points to a user in the database.
+ *
+ * @param {string} username - The username of the user to add points to
+ * @param {number} numPoints - The number of points to add
+ *
+ * @returns {Promise<UserResponse>} - The updated user, or an error message if the update failed
+ */
+export const addPointsToUser = async (
+  username: string,
+  numPoints: number,
+): Promise<UserResponse> => {
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $inc: { totalPoints: numPoints } },
+      { new: true },
+    );
+    if (!result) {
+      return { error: 'User not found' };
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding points to a user' };
   }
 };
 

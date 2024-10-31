@@ -4,6 +4,7 @@ import { validateHyperlink } from '../tool';
 import addAnswer from '../services/answerService';
 import useUserContext from './useUserContext';
 import { Answer } from '../types';
+import { addPoints } from '../services/userService';
 
 /**
  * Custom hook for managing the state and logic of an answer submission form.
@@ -64,6 +65,8 @@ const useAnswerForm = () => {
     const res = await addAnswer(questionID, answer);
 
     if (res && res._id) {
+      // add points to user
+      addPoints(user.username, 20);
       // navigate to the question that was answered
       navigate(`/question/${questionID}`);
     }
