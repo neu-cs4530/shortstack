@@ -12,6 +12,7 @@ import NewAnswerPage from './main/newAnswer';
 import AnswerPage from './main/answerPage';
 import CommunityArticlePage from './main/communityPage/community/article/communityArticlePage';
 import NotificationPage from './main/notificationPage';
+import ProfilePage from './main/profilePage';
 import CommunityList from './main/communityPage/communityList';
 import CommunityPage from './main/communityPage/community/communityPage';
 
@@ -61,6 +62,7 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/community' element={<CommunityList />} />
             <Route path='/community/:communityID' element={<CommunityPage />} />
             <Route path='/community/article/:articleId' element={<CommunityArticlePage />} />
+            <Route path='/profile' element={<ProfilePage />} />
           </Route>
         }
       </Routes>

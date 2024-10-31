@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaUserCircle } from 'react-icons/fa';
 import useHeader from '../../hooks/useHeader';
 import './index.css';
 
@@ -17,6 +18,10 @@ const Header = () => {
     navigate('/notifications');
   };
 
+  const handleProfile = () => {
+    navigate('/profile');
+  };
+
   return (
     <div id='header' className='header'>
       <div className='headerContents'>
@@ -32,6 +37,9 @@ const Header = () => {
           />
           <button className='notifications_btn' onClick={handleNotifications}>
             Notifications
+          </button>
+          <button className='profile_btn' onClick={handleProfile}>
+            <FaUserCircle size='32px' className='profile_icon' />
           </button>
         </div>
       </div>
