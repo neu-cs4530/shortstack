@@ -210,8 +210,8 @@ export type CommentResponse = Comment | { error: string };
  * - type - The type of the updated item, either 'question' or 'answer'.
  */
 export interface CommentUpdatePayload {
-  result: AnswerResponse | QuestionResponse | CommunityResponse | null;
-  type: 'question' | 'answer' | 'community';
+  result: AnswerResponse | QuestionResponse | null;
+  type: 'question' | 'answer';
 }
 
 /**

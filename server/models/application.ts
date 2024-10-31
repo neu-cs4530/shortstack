@@ -277,15 +277,15 @@ export const filterQuestionsBySearch = (qlist: Question[], search: string): Ques
  * Fetches and populates a question or answer document based on the provided ID and type.
  *
  * @param {string | undefined} id - The ID of the question or answer to fetch.
- * @param {'question' | 'answer' | 'community'} type - Specifies whether to fetch a question or an answer.
+ * @param {'question' | 'answer'} type - Specifies whether to fetch a question or an answer.
  *
- * @returns {Promise<QuestionResponse | AnswerResponse | CommunityResponse>} - Promise that resolves to the
+ * @returns {Promise<QuestionResponse | AnswerResponse>} - Promise that resolves to the
  *          populated question or answer, or an error message if the operation fails
  */
 export const populateDocument = async (
   id: string | undefined,
-  type: 'question' | 'answer' | 'community',
-): Promise<QuestionResponse | AnswerResponse | CommunityResponse> => {
+  type: 'question' | 'answer',
+): Promise<QuestionResponse | AnswerResponse> => {
   try {
     if (!id) {
       throw new Error(`Provided ${type} ID is undefined.`);
@@ -310,13 +310,6 @@ export const populateDocument = async (
       result = await AnswerModel.findOne({ _id: id }).populate([
         { path: 'comments', model: CommentModel },
       ]);
-    } else if (type === 'community') {
-      result = await CommunityModel.findOne({ _id: id }).populate([
-        { path: 'members', model: UserModel },
-        { path: 'questions', model: QuestionModel },
-        { path: 'polls', model: PollModel },
-        { path: 'articles', model: ArticleModel },
-      ]);
     }
     if (!result) {
       throw new Error(`Failed to fetch and populate a ${type}`);
@@ -324,6 +317,29 @@ export const populateDocument = async (
     return result;
   } catch (error) {
     return { error: `Error when fetching and populating a document: ${(error as Error).message}` };
+  }
+};
+
+export const populateCommunity = async (id: string | undefined): Promise<CommunityResponse> => {
+  try {
+    if (!id) {
+      throw new Error(`Provided community ID is undefined.`);
+    }
+
+    let result = null;
+    result = await CommunityModel.findOne({ _id: id }).populate([
+      { path: 'members', model: UserModel },
+      { path: 'questions', model: QuestionModel },
+      { path: 'polls', model: PollModel },
+      { path: 'articles', model: ArticleModel },
+    ]);
+
+    if (!result) {
+      throw new Error(`Failed to fetch and populate the community`);
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when fetching and populating a community: ${(error as Error).message}` };
   }
 };
 

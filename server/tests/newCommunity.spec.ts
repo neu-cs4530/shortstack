@@ -5,7 +5,7 @@ import { app } from '../app';
 import * as util from '../models/application';
 
 const saveCommunitySpy = jest.spyOn(util, 'saveCommunity');
-const popDocSpy = jest.spyOn(util, 'populateDocument');
+const popCommunitySpy = jest.spyOn(util, 'populateCommunity');
 
 describe('POST /add', () => {
   afterEach(async () => {
@@ -37,7 +37,7 @@ describe('POST /add', () => {
     };
     saveCommunitySpy.mockResolvedValueOnce(mockCommunity);
 
-    popDocSpy.mockResolvedValueOnce({
+    popCommunitySpy.mockResolvedValueOnce({
       _id: validCID,
       name: 'A Test Community',
       members: [],
@@ -140,7 +140,7 @@ describe('POST /add', () => {
     };
 
     saveCommunitySpy.mockResolvedValueOnce(mockCommunity);
-    popDocSpy.mockResolvedValueOnce({ error: 'Error when populating document' });
+    popCommunitySpy.mockResolvedValueOnce({ error: 'Error when populating document' });
 
     const response = await supertest(app).post('/community/add').send(mockReqBody);
 

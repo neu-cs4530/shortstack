@@ -1,5 +1,5 @@
 import express, { Response } from 'express';
-import { populateDocument, saveCommunity } from '../models/application';
+import { populateCommunity, saveCommunity } from '../models/application';
 import { AddCommunityRequest, Community } from '../types';
 
 const communityController = () => {
@@ -42,7 +42,7 @@ const communityController = () => {
       }
 
       // Populates the fields of the community that was added, and emits the new object
-      const populatedCommunity = await populateDocument(result._id?.toString(), 'community');
+      const populatedCommunity = await populateCommunity(result._id?.toString());
 
       if (populatedCommunity && 'error' in populatedCommunity) {
         throw new Error(populatedCommunity.error);
