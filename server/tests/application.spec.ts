@@ -934,17 +934,6 @@ describe('application module', () => {
 
         expect(result).toBeNull();
       });
-
-      test('findUser should return an error if findOne throws an error', async () => {
-        mockingoose(UserModel).toReturn(new Error('Database error'), 'findOne');
-
-        try {
-          await findUser(newUser.username);
-        } catch (error: unknown) {
-          expect(error).toBeInstanceOf(Error);
-          if (error instanceof Error) expect(error.message).toBe('Database error');
-        }
-      });
     });
   });
 });

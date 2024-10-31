@@ -28,7 +28,14 @@ const addUser = async (u: User): Promise<User> => {
 const loginUser = async (credentials: { username: string; password: string }): Promise<User> => {
   const res = await api.post(`${USER_API_URL}/login`, credentials);
 
-  if (res.status !== 200) {
+  if (res.status === 200) {
+    return res.data;
+  }
+  if (res.status === 401) {
+    throw new Error('Invalid username or password');
+  } else if (res.status === 404) {
+    throw new Error('User not found');
+  } else {
     throw new Error('Error while logging in');
   }
 
