@@ -6,6 +6,7 @@ const communityController = () => {
   const router = express.Router();
 
   /**
+   * Function that checks if the community object has all the necessary fields.
    *
    * @param community - the community object to validate.
    * @returns 'true' if the community is valid, otherwise 'false'.

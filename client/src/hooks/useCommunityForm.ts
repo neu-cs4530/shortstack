@@ -8,9 +8,9 @@ import { addCommunity } from '../services/communityService';
  * Custom hook for managing the state and logic of an community creation form.
  *
  * @returns name - the current name input for the community.
- * @returns textErr - the error message related to the text input.
  * @returns setName - the function to update the name text input.
  * @returns createCommunity - the function to create the community after submission.
+ * @returns nameErr - the error message related to the name text input.
  */
 const useCommunityForm = () => {
   const { user } = useUserContext();
@@ -40,7 +40,7 @@ const useCommunityForm = () => {
 
   /**
    * Function to create a community
-   * It validates the answer text and posts the answer if it is valid.
+   * It validates the community name's text and posts the community if it is valid.
    */
   const createCommunity = async () => {
     const isValid = validateForm();
