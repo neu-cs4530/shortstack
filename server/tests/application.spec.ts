@@ -19,6 +19,7 @@ import {
   findUser,
   addPointsToUser,
   saveCommunity,
+  populateCommunity,
 } from '../models/application';
 import { Answer, Question, Tag, Comment, User, Community } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
@@ -998,6 +999,27 @@ describe('application module', () => {
         const result = await saveCommunity(newCommunity);
 
         expect(result).toEqual({ error: 'Error when saving a community' });
+      });
+    });
+
+    describe('Populate community', () => {
+      test('populateCommunity should throw an error when given an undefined id', async () => {
+        const result = await populateCommunity(undefined);
+
+        expect(result).toEqual({
+          error:
+            'Error when fetching and populating a community: Provided community ID is undefined.',
+        });
+      });
+
+      test('populateCommunity should throw an error when findOne returns null', async () => {
+        mockingoose(CommunityModel).toReturn(null, 'findOne');
+        const result = await populateCommunity('communityID');
+
+        expect(result).toEqual({
+          error:
+            'Error when fetching and populating a community: Failed to fetch and populate the community',
+        });
       });
     });
   });
