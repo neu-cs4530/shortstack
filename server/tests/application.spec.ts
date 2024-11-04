@@ -18,11 +18,13 @@ import {
   saveUser,
   findUser,
   addPointsToUser,
+  saveCommunity,
 } from '../models/application';
-import { Answer, Question, Tag, Comment, User } from '../types';
+import { Answer, Question, Tag, Comment, User, Community } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
+import CommunityModel from '../models/communities';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -149,6 +151,14 @@ const QUESTIONS: Question[] = [
     comments: [],
   },
 ];
+
+const newCommunity: Community = {
+  name: 'Community Name',
+  members: [],
+  questions: [],
+  polls: [],
+  articles: [],
+};
 
 describe('application module', () => {
   beforeEach(() => {
@@ -966,6 +976,28 @@ describe('application module', () => {
         } else {
           expect(false).toBeTruthy();
         }
+      });
+    });
+  });
+
+  describe('Community model', () => {
+    describe('Save community', () => {
+      test('Save community should return the saved community', async () => {
+        const result = (await saveCommunity(newCommunity)) as Community;
+
+        expect(result._id).toBeDefined();
+        expect(result.name).toEqual(newCommunity.name);
+        expect(result.members).toEqual(newCommunity.members);
+        expect(result.questions).toEqual(newCommunity.questions);
+        expect(result.polls).toEqual(newCommunity.polls);
+        expect(result.articles).toEqual(newCommunity.articles);
+      });
+
+      test('Save community should return an error if create throws an error', async () => {
+        jest.spyOn(CommunityModel, 'create').mockRejectedValueOnce(new Error('error from create'));
+        const result = await saveCommunity(newCommunity);
+
+        expect(result).toEqual({ error: 'Error when saving a community' });
       });
     });
   });

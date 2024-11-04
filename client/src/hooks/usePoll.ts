@@ -11,7 +11,7 @@ import useUserContext from './useUserContext';
  * @returns voteButtonClick - the function to handle a user submitting a vote.
  * @returns onOptionChange - the function to handle a user changing the selected poll option.
  * @returns optionUserVotedFor - the function that handles finding the option the user voted for.
- * @returns findBarChartWidth - the function that calculates an option's bar chart size based on number of votes.
+ * @returns barChartWidth - the function that calculates an option's bar chart size based on number of votes.
  */
 const usePoll = (poll: Poll) => {
   const [voted, setVoted] = useState(false);
@@ -28,7 +28,7 @@ const usePoll = (poll: Poll) => {
    * @param numVoted - the number of votes for a poll option
    * @returns - a string that dictates the style width of the option's bar chart bar.
    */
-  const findBarChartWidth = (numVoted: number): string => {
+  const barChartWidth = (numVoted: number): string => {
     const pollOptionVotes: number[] = poll.options.map(opt => opt.usersVoted.length);
     const mostVotedAmount = pollOptionVotes.sort((a, b) => b - a).at(0);
     if (mostVotedAmount) {
@@ -66,7 +66,7 @@ const usePoll = (poll: Poll) => {
     voteButtonClick,
     onOptionChange,
     optionUserVotedFor,
-    findBarChartWidth,
+    barChartWidth,
   };
 };
 
