@@ -352,10 +352,14 @@ export interface Notification {
 
 /**
  * Interface for the request body when adding a new community.
- * - body - The community being added.
+ * - userID - the unique identifier of the user who created the community
+ * - community - the Communtiy being added
  */
 export interface AddCommunityRequest extends Request {
-  body: Community;
+  body: {
+    userID: string;
+    community: Community;
+  };
 }
 
 /**

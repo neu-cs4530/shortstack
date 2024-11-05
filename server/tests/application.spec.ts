@@ -161,6 +161,15 @@ const newCommunity: Community = {
   articles: [],
 };
 
+const communityWithID: Community = {
+  _id: new ObjectId('65e9b716ff0e892116b2de14'),
+  name: 'Community Name',
+  members: [],
+  questions: [],
+  polls: [],
+  articles: [],
+};
+
 describe('application module', () => {
   beforeEach(() => {
     mockingoose.resetAll();
@@ -1003,6 +1012,19 @@ describe('application module', () => {
     });
 
     describe('Populate community', () => {
+      test('populateCommunity should return the populated community when given a valid ID', async () => {
+        mockingoose(CommunityModel).toReturn(communityWithID, 'findOne');
+        mockingoose(CommunityModel).toReturn(communityWithID, 'populate');
+        const result = (await populateCommunity('validCommunityID')) as Community;
+
+        expect(result._id).toEqual(communityWithID._id);
+        expect(result.name).toEqual(communityWithID.name);
+        expect(result.members).toEqual(communityWithID.members);
+        expect(result.questions).toEqual(communityWithID.questions);
+        expect(result.polls).toEqual(communityWithID.polls);
+        expect(result.articles).toEqual(communityWithID.articles);
+      });
+
       test('populateCommunity should throw an error when given an undefined id', async () => {
         const result = await populateCommunity(undefined);
 
