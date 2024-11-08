@@ -108,8 +108,12 @@ const useNewQuestion = () => {
     };
 
     // TODO: Post the question to the selected community if one is selected
-    await addQuestion(question);
-    navigate('/home');
+
+    const res = await addQuestion(question);
+
+    if (res && res._id) {
+      navigate('/home');
+    }
   };
 
   return {
