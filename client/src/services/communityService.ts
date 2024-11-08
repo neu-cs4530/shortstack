@@ -10,7 +10,7 @@ const COMMUNITY_API_URL = `${process.env.REACT_APP_SERVER_URL}/community`;
  * @throws Error if there is an issue fetching the community details.
  */
 const getCommunityDetails = async (communityId: string): Promise<Community> => {
-  const res = await api.get(`${COMMUNITY_API_URL}/${communityId}`);
+  const res = await api.get(`${COMMUNITY_API_URL}/communities/${communityId}`);
   if (res.status !== 200) {
     throw new Error('Error fetching community details');
   }

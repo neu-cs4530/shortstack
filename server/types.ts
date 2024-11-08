@@ -314,10 +314,10 @@ export interface Article {
 export interface Community {
   _id?: ObjectId;
   name: string;
-  members: User[];
-  questions: Question[];
-  polls: Poll[];
-  articles: Article[];
+  members: User[] | ObjectId[];
+  questions: Question[] | ObjectId[];
+  polls: Poll[] | ObjectId[];
+  articles: Article[] | ObjectId[];
 }
 
 /**

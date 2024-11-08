@@ -16,16 +16,14 @@ const useCommunityList = () => {
       try {
         const allCommunities = await getCommunities();
 
-        // Safely filter based on whether the user is a member of the community
-        const joined = allCommunities.filter(
-          community =>
-            Array.isArray(community.members) &&
-            community.members.some(member => member._id === user?._id),
+        // joined communities
+        const joined = allCommunities.filter(community =>
+          community.members.some(member => member === user._id),
         );
+
+        // available communities (not joined by the user)
         const available = allCommunities.filter(
-          community =>
-            !Array.isArray(community.members) ||
-            !community.members.some(member => member._id === user?._id),
+          community => !community.members.some(member => member === user._id),
         );
 
         setJoinedCommunities(joined);

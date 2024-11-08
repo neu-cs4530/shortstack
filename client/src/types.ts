@@ -183,10 +183,10 @@ export interface Article {
 export interface Community {
   _id?: string;
   name: string;
-  members: User[];
-  questions: Question[];
-  polls: Poll[];
-  articles: Article[];
+  members: string[];
+  questions: Question[]; // Change to string[] if needed? If we want to represent communitry questions as objectId in server
+  polls: Poll[]; // Change to string[] if needed? If we want to represent communitry polls as objectId in server
+  articles: Article[]; // Change to string[] if needed? If we want to represent communitry articles as objectId in server
 }
 
 /**

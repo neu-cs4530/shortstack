@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { validateHyperlink } from '../tool';
 import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
-import { Question } from '../types';
+import { Community, Question } from '../types';
 import useCommunityList from './useCommunityList';
 
 /**
@@ -23,10 +23,10 @@ import useCommunityList from './useCommunityList';
 const useNewQuestion = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const { joinedCommunities } = useCommunityList();
   const [title, setTitle] = useState<string>('');
   const [text, setText] = useState<string>('');
   const [tagNames, setTagNames] = useState<string>('');
+  const { joinedCommunities, availableCommunities } = useCommunityList();
   const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
 
   const [titleErr, setTitleErr] = useState<string>('');
@@ -127,7 +127,8 @@ const useNewQuestion = () => {
     textErr,
     tagErr,
     postQuestion,
-    communities: joinedCommunities,
+    // TODO : Set the communities available to post a question in to joinedCommunities only?
+    communities: [...joinedCommunities, ...availableCommunities],
     selectedCommunity,
     setSelectedCommunity,
   };
