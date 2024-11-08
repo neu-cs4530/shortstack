@@ -18,11 +18,14 @@ import {
   saveUser,
   findUser,
   addPointsToUser,
+  saveCommunity,
+  populateCommunity,
 } from '../models/application';
-import { Answer, Question, Tag, Comment, User } from '../types';
+import { Answer, Question, Tag, Comment, User, Community } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
+import CommunityModel from '../models/communities';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -149,6 +152,23 @@ const QUESTIONS: Question[] = [
     comments: [],
   },
 ];
+
+const newCommunity: Community = {
+  name: 'Community Name',
+  members: [],
+  questions: [],
+  polls: [],
+  articles: [],
+};
+
+const communityWithID: Community = {
+  _id: new ObjectId('65e9b716ff0e892116b2de14'),
+  name: 'Community Name',
+  members: [],
+  questions: [],
+  polls: [],
+  articles: [],
+};
 
 describe('application module', () => {
   beforeEach(() => {
@@ -966,6 +986,62 @@ describe('application module', () => {
         } else {
           expect(false).toBeTruthy();
         }
+      });
+    });
+  });
+
+  describe('Community model', () => {
+    describe('Save community', () => {
+      test('Save community should return the saved community', async () => {
+        const result = (await saveCommunity(newCommunity)) as Community;
+
+        expect(result._id).toBeDefined();
+        expect(result.name).toEqual(newCommunity.name);
+        expect(result.members).toEqual(newCommunity.members);
+        expect(result.questions).toEqual(newCommunity.questions);
+        expect(result.polls).toEqual(newCommunity.polls);
+        expect(result.articles).toEqual(newCommunity.articles);
+      });
+
+      test('Save community should return an error if create throws an error', async () => {
+        jest.spyOn(CommunityModel, 'create').mockRejectedValueOnce(new Error('error from create'));
+        const result = await saveCommunity(newCommunity);
+
+        expect(result).toEqual({ error: 'Error when saving a community' });
+      });
+    });
+
+    describe('Populate community', () => {
+      test('populateCommunity should return the populated community when given a valid ID', async () => {
+        mockingoose(CommunityModel).toReturn(communityWithID, 'findOne');
+        mockingoose(CommunityModel).toReturn(communityWithID, 'populate');
+        const result = (await populateCommunity('validCommunityID')) as Community;
+
+        expect(result._id).toEqual(communityWithID._id);
+        expect(result.name).toEqual(communityWithID.name);
+        expect(result.members).toEqual(communityWithID.members);
+        expect(result.questions).toEqual(communityWithID.questions);
+        expect(result.polls).toEqual(communityWithID.polls);
+        expect(result.articles).toEqual(communityWithID.articles);
+      });
+
+      test('populateCommunity should throw an error when given an undefined id', async () => {
+        const result = await populateCommunity(undefined);
+
+        expect(result).toEqual({
+          error:
+            'Error when fetching and populating a community: Provided community ID is undefined.',
+        });
+      });
+
+      test('populateCommunity should throw an error when findOne returns null', async () => {
+        mockingoose(CommunityModel).toReturn(null, 'findOne');
+        const result = await populateCommunity('communityID');
+
+        expect(result).toEqual({
+          error:
+            'Error when fetching and populating a community: Failed to fetch and populate the community',
+        });
       });
     });
   });

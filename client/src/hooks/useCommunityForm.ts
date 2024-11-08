@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Community } from '../types';
 import { addCommunity } from '../services/communityService';
+import useUserContext from './useUserContext';
 
 /**
  * Custom hook for managing the state and logic of an community creation form.
@@ -14,6 +15,7 @@ import { addCommunity } from '../services/communityService';
 const useCommunityForm = () => {
   const navigate = useNavigate();
 
+  const { user } = useUserContext();
   const [name, setName] = useState<string>('');
   const [nameErr, setNameErr] = useState<string>('');
 
@@ -46,8 +48,11 @@ const useCommunityForm = () => {
     if (!isValid) {
       return;
     }
+    if (!user._id) {
+      return;
+    }
 
-    const community: Community = {
+    const newCommunity: Community = {
       name,
       members: [],
       questions: [],
@@ -55,7 +60,7 @@ const useCommunityForm = () => {
       articles: [],
     };
 
-    const res = await addCommunity(community);
+    const res = await addCommunity(user._id, newCommunity);
 
     if (res && res._id) {
       // navigate to the community that was created
