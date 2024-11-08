@@ -113,7 +113,7 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(404);
-      expect(response.body.error).toBe('User not found');
+      expect(response.text).toBe('User not found');
     });
 
     it('should return 400 if password is incorrect', async () => {
@@ -126,7 +126,7 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(401);
-      expect(response.body.error).toBe('Invalid password');
+      expect(response.text).toBe('Invalid password');
     });
 
     it('should return 500 if error occurs during login', async () => {
@@ -139,7 +139,7 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(500);
-      expect(response.body.error).toBe('Error while logging in');
+      expect(response.text).toBe('Error while logging in');
     });
   });
 
