@@ -1,12 +1,16 @@
 import mongoose from 'mongoose';
 import supertest from 'supertest';
+import { ObjectId } from 'mongodb';
 import { app } from '../app';
 import * as util from '../models/application';
-import { User } from '../types';
+import { Notification, NotificationType, Poll, User } from '../types';
 
 const saveUserSpy = jest.spyOn(util, 'saveUser');
 const findUserSpy = jest.spyOn(util, 'findUser');
 const addPointsToUserSpy = jest.spyOn(util, 'addPointsToUser');
+const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
+const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
+const populateNotificationSpy = jest.spyOn(util, 'populateNotification');
 
 const newUser: User = {
   username: 'UserA',
@@ -29,6 +33,14 @@ const mockNewUser: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+};
+
+const mockPollNotif: Notification = {
+  _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
+  notificationType: NotificationType.PollClosed,
+  sourceType: 'Poll',
+  source: { _id: new ObjectId('672e289cee67e0b36e0ef440') } as Poll,
+  isRead: false,
 };
 
 describe('User API', () => {
@@ -200,6 +212,106 @@ describe('User API', () => {
       addPointsToUserSpy.mockResolvedValueOnce({ error: 'Error when adding points to a user' });
       // Making the request
       const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('POST /notify', () => {
+    afterEach(async () => {
+      await mongoose.connection.close(); // Ensure the connection is properly closed
+    });
+
+    afterAll(async () => {
+      await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+    });
+
+    it('should return the notification that was added', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: mockPollNotif,
+      };
+      saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      addNotificationToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        notifications: [mockPollNotif],
+      });
+      populateNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(response.body._id).toEqual(mockPollNotif._id?.toString());
+    });
+
+    it('should return bad request if missing username', async () => {
+      const mockReqBody = {
+        notification: mockPollNotif,
+      };
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if missing notification to add', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+      };
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 500 if error object returned by `saveNotification`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: mockPollNotif,
+      };
+      saveNotificationSpy.mockResolvedValueOnce({
+        error: 'Error when saving notification',
+      });
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+    });
+
+    it('should return 500 if error object returned by `addNotificationToUser`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: mockPollNotif,
+      };
+      saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      addNotificationToUserSpy.mockResolvedValueOnce({
+        error: 'Error when adding notification to a user',
+      });
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+    });
+
+    it('should return 500 if error object returned by `populateNotification`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: mockPollNotif,
+      };
+      saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      addNotificationToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        notifications: [mockPollNotif],
+      });
+      populateNotificationSpy.mockResolvedValueOnce({ error: 'Error populating notification' });
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
 
       // Asserting the response
       expect(response.status).toBe(500);
