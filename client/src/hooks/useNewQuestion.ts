@@ -4,7 +4,7 @@ import { validateHyperlink } from '../tool';
 import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
 import { Question } from '../types';
-import MOCK_COMMUNITIES from '../components/main/communityPage/mockCommunityData';
+import useCommunityList from './useCommunityList';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -23,7 +23,7 @@ import MOCK_COMMUNITIES from '../components/main/communityPage/mockCommunityData
 const useNewQuestion = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const communities = MOCK_COMMUNITIES; // Initialize communities with mock data
+  const { joinedCommunities } = useCommunityList();
   const [title, setTitle] = useState<string>('');
   const [text, setText] = useState<string>('');
   const [tagNames, setTagNames] = useState<string>('');
@@ -107,13 +107,7 @@ const useNewQuestion = () => {
       comments: [],
     };
 
-    // If a community is selected, add the question to that community in mock data
-    if (selectedCommunity) {
-      const community = MOCK_COMMUNITIES.find(c => c._id === selectedCommunity);
-      community?.questions.push(question);
-    }
-
-    // Still post the question the main questions page
+    // TODO: Post the question to the selected community if one is selected
     await addQuestion(question);
     navigate('/home');
   };
@@ -129,7 +123,7 @@ const useNewQuestion = () => {
     textErr,
     tagErr,
     postQuestion,
-    communities,
+    communities: joinedCommunities,
     selectedCommunity,
     setSelectedCommunity,
   };
