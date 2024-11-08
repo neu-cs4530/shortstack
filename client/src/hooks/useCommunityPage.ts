@@ -29,7 +29,7 @@ const useCommunityPage = () => {
           setArticles(communityData.articles || []);
         }
       } catch (error) {
-        console.error('Error fetching community data:', error);
+        throw new Error('Failed to fetch community data');
       }
     };
     fetchCommunityData();

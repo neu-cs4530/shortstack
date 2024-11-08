@@ -31,7 +31,7 @@ const useCommunityList = () => {
         setJoinedCommunities(joined);
         setAvailableCommunities(available);
       } catch (error) {
-        console.error('Error fetching communities:', error);
+        throw new Error('Failed to fetch communities');
       }
     };
 
