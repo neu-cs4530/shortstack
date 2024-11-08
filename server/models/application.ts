@@ -754,3 +754,16 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     return { error: 'Error when construction tag map' };
   }
 };
+
+/**
+ * Gets all the communities from the database.
+ *
+ * @returns {Promise<Community[] | { error: string }>} - The list of communities, or an error message if the operation fails
+ */
+export const fetchAllCommunities = async (): Promise<Community[] | { error: string }> => {
+  try {
+    return await CommunityModel.find();
+  } catch (error) {
+    return [];
+  }
+};

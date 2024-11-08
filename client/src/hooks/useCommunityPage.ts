@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Question, Poll, Article } from '../types';
-import MOCK_COMMUNITIES from '../components/main/communityPage/mockCommunityData';
+import { getCommunityDetails } from '../services/communityService';
 
 /**
  * Custom hook for managing the community page state, fetching community data, and handling real-time updates.
@@ -19,17 +19,20 @@ const useCommunityPage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
 
   useEffect(() => {
-    // TODO : Fetch the real community data.
-    const communityData = MOCK_COMMUNITIES.find(
-      community => community._id === String(communityID).trim(),
-    );
-
-    if (communityData) {
-      setTitleText(communityData.name);
-      setQuestions(communityData.questions || []);
-      setPolls(communityData.polls || []);
-      setArticles(communityData.articles || []);
-    }
+    const fetchCommunityData = async () => {
+      try {
+        if (communityID) {
+          const communityData = await getCommunityDetails(communityID);
+          setTitleText(communityData.name);
+          setQuestions(communityData.questions || []);
+          setPolls(communityData.polls || []);
+          setArticles(communityData.articles || []);
+        }
+      } catch (error) {
+        console.error('Error fetching community data:', error);
+      }
+    };
+    fetchCommunityData();
   }, [communityID]);
 
   return { titleText, questions, polls, articles };

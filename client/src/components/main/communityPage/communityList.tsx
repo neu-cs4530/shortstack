@@ -1,43 +1,29 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './communityList.css';
-import MOCK_COMMUNITIES from './mockCommunityData';
+import useCommunityList from '../../../hooks/useCommunityList';
 
 /**
  * Represents the community list component. Displays the list of communities.
  */
 const CommunityList = () => {
   const navigate = useNavigate();
+  const { joinedCommunities, availableCommunities } = useCommunityList();
 
   const handleCommunityClick = (communityID: string) => {
     navigate(`/community/${communityID}`);
   };
 
-  // TODO : Implement the create community functionality
   const handleCreateCommunity = () => {
     navigate('/community/create');
   };
 
-  // TODO : Remove when not using mock data
-  const joinedCommunitiesID = ['1'];
-
-  // TODO : Filter the joined and available communities based on the user's username and community [members]
-  const joinedCommunities = MOCK_COMMUNITIES.filter(
-    community => community._id && joinedCommunitiesID.includes(community._id),
-  );
-
-  const availableCommunities = MOCK_COMMUNITIES.filter(
-    community => community._id && !joinedCommunitiesID.includes(community._id),
-  );
-
   return (
     <div className='community-list'>
       <h1>Communities</h1>
-
       <button className='create-button' onClick={handleCreateCommunity}>
         Create Community
       </button>
-
       <h2>Joined Communities</h2>
       {joinedCommunities.length > 0 ? (
         <ul>
@@ -52,7 +38,6 @@ const CommunityList = () => {
       ) : (
         <p>No joined communities.</p>
       )}
-
       <h2>Available Communities</h2>
       {availableCommunities.length > 0 ? (
         <ul>

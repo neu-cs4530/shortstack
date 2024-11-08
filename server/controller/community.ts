@@ -1,5 +1,5 @@
 import express, { Response } from 'express';
-import { populateCommunity, saveCommunity } from '../models/application';
+import { populateCommunity, saveCommunity, fetchAllCommunities } from '../models/application';
 import { AddCommunityRequest, Community } from '../types';
 
 const communityController = () => {
@@ -58,8 +58,29 @@ const communityController = () => {
     }
   };
 
+  /**
+   * Gets all the communities from the database.
+   *
+   * @param req The HTTP request object.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getAllCommunities = async (req: express.Request, res: Response): Promise<void> => {
+    try {
+      const communities = await fetchAllCommunities();
+      if ('error' in communities) {
+        throw new Error(communities.error);
+      }
+      res.status(200).send(communities);
+    } catch (error) {
+      res.status(500).send('Error fetching communities');
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.post('/add', addCommunity);
+  router.get('/communities', getAllCommunities);
 
   return router;
 };

@@ -32,17 +32,17 @@ const addCommunity = async (community: Community): Promise<Community> => {
 };
 
 /**
- * Function to get a list of communities with optional filters.
+ * Function to get the list of communities.
  *
- * @param search - Optional search term to filter communities by name.
  * @throws Error if there is an issue fetching the communities.
  */
-const getCommunities = async (search: string = ''): Promise<Community[]> => {
-  const res = await api.get(`${COMMUNITY_API_URL}/list?search=${search}`);
-  if (res.status !== 200) {
+const getCommunities = async (): Promise<Community[]> => {
+  try {
+    const res = await api.get(`${COMMUNITY_API_URL}/communities`);
+    return res.data;
+  } catch (error) {
     throw new Error('Error fetching communities');
   }
-  return res.data;
 };
 
 export { getCommunityDetails, addCommunity, getCommunities };
