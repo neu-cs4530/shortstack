@@ -15,20 +15,26 @@ const useCommunityList = () => {
     const fetchCommunities = async () => {
       try {
         const allCommunities = await getCommunities();
+        console.log('Fetched communities hook:', allCommunities); // Debugging line
 
-        // joined communities
-        const joined = allCommunities.filter(community =>
-          community.members.some(member => member === user._id),
-        );
+        const joined = [];
+        for (const community of allCommunities) {
+          console.log('Community:', community); // Debugging line
+          console.log('User:', user); // Debugging line
+          console.log('Members:', community.members); // Debugging line
+          if (community.members.some(member => member._id === user?._id)) {
+            joined.push(community);
+          }
+        }
 
-        // available communities (not joined by the user)
         const available = allCommunities.filter(
-          community => !community.members.some(member => member === user._id),
+          community => !community.members.some(member => member._id === user?._id),
         );
 
         setJoinedCommunities(joined);
         setAvailableCommunities(available);
       } catch (error) {
+        console.error('Failed to fetch communities:', error); // Updated error message
         throw new Error('Failed to fetch communities');
       }
     };

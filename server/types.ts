@@ -314,7 +314,7 @@ export interface Article {
 export interface Community {
   _id?: ObjectId;
   name: string;
-  members: User[] | ObjectId[];
+  members: User[];
   questions: Question[] | ObjectId[];
   polls: Poll[] | ObjectId[];
   articles: Article[] | ObjectId[];
