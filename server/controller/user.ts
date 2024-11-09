@@ -32,6 +32,28 @@ const userController = (socket: FakeSOSocket) => {
   }
 
   /**
+   * Checks if the provided notification contains the required fields.
+   *
+   * @param notification The notification object to validate.
+   *
+   * @returns `true` if the notification is valid, otherwise `false`.
+   */
+  function isNotificationValid(notification: Notification): boolean {
+    let isSourceTypeValid;
+    if (notification.sourceType) {
+      isSourceTypeValid = !!notification.source;
+    } else {
+      isSourceTypeValid = !notification.source;
+    }
+
+    return (
+      !!notification.notificationType &&
+      (notification.isRead !== undefined || notification.isRead != null) &&
+      isSourceTypeValid
+    );
+  }
+
+  /**
    * Adds a new user to the database. The add user request and user are validated then saved.
    * If there is an error, the HTTP response's status is updated.
    *
@@ -128,7 +150,11 @@ const userController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const notify = async (req: NewNotificationRequest, res: Response) => {
-    if (!req.body.username || !req.body.notification) {
+    if (
+      !req.body.username ||
+      !req.body.notification ||
+      !isNotificationValid(req.body.notification)
+    ) {
       res.status(400).send('Invalid request');
       return;
     }

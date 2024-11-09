@@ -3,7 +3,7 @@ import supertest from 'supertest';
 import { ObjectId } from 'mongodb';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Notification, NotificationType, Poll, User } from '../types';
+import { Article, Notification, NotificationType, Poll, User } from '../types';
 
 const saveUserSpy = jest.spyOn(util, 'saveUser');
 const findUserSpy = jest.spyOn(util, 'findUser');
@@ -260,6 +260,66 @@ describe('User API', () => {
     it('should return bad request if missing notification to add', async () => {
       const mockReqBody = {
         username: 'UserA',
+      };
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if notification to add missing required isRead', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: {
+          notificationType: NotificationType.PollClosed,
+        }, // missing required isRead
+      };
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if notification to add missing required notificationType', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: {
+          isRead: true,
+        }, // missing required notificationType
+      };
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if notification to add has sourceType, missing source', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: {
+          notificationType: NotificationType.ArticleUpdate,
+          sourceType: 'Question',
+          isRead: true,
+        }, // must have source and sourceType
+      };
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if notification to add has source, missing sourceType', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        notification: {
+          notificationType: NotificationType.ArticleUpdate,
+          source: { _id: new ObjectId('672e289cee67e0b36e0ef440') } as Article,
+          isRead: true,
+        }, // must have source and sourceType
       };
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
