@@ -205,6 +205,9 @@ export enum NotificationType {
  * - notificationType - The type of notification.
  * - sourceType - The type of the source of the notification. Optional field
  * - source - The source of the notification. Optional field
+ *            source and sourceType are optional as some types of notifications do not have an source
+ *            database object. This indicates that the notification is not associated with a particular
+ *            question/poll/article and that 'source' comes from something like the user's reward page.
  * - isRead - Whether the notification has been read or not.
  */
 export interface Notification {
