@@ -20,17 +20,44 @@ import {
   addPointsToUser,
   saveCommunity,
   populateCommunity,
+  populateNotification,
+  saveNotification,
+  addNotificationToUser,
 } from '../models/application';
-import { Answer, Question, Tag, Comment, User, Community } from '../types';
+import {
+  Answer,
+  Question,
+  Tag,
+  Comment,
+  User,
+  NotificationType,
+  Notification,
+  Article,
+  Poll,
+  Community,
+} from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
 import CommunityModel from '../models/communities';
+import NotificationModel from '../models/notifications';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
 
 const newUser: User = {
+  username: 'UserA',
+  password: 'abc123',
+  totalPoints: 0,
+  unlockedFrames: [],
+  unlockedTitles: [],
+  equippedFrame: '',
+  equippedTitle: '',
+  notifications: [],
+};
+
+const userA: User = {
+  _id: new ObjectId('6722970923044fb140958284'),
   username: 'UserA',
   password: 'abc123',
   totalPoints: 0,
@@ -168,6 +195,36 @@ const communityWithID: Community = {
   questions: [],
   polls: [],
   articles: [],
+};
+
+const questionNotif: Notification = {
+  _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
+  notificationType: NotificationType.Answer,
+  sourceType: 'Question',
+  source: QUESTIONS[0],
+  isRead: false,
+};
+
+const pollNotif: Notification = {
+  _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
+  notificationType: NotificationType.PollClosed,
+  sourceType: 'Poll',
+  source: { _id: new ObjectId('672e289cee67e0b36e0ef440') } as Poll,
+  isRead: false,
+};
+
+const articleNotif: Notification = {
+  _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
+  notificationType: NotificationType.NewArticle,
+  sourceType: 'Article',
+  source: { _id: new ObjectId('672e2ba2e4cb291ad8767924') } as Article,
+  isRead: false,
+};
+
+const rewardNotif: Notification = {
+  _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
+  notificationType: NotificationType.NewReward,
+  isRead: false,
 };
 
 describe('application module', () => {
@@ -935,6 +992,7 @@ describe('application module', () => {
         expect(result.equippedTitle).toEqual(newUser.equippedTitle);
       });
     });
+
     describe('findUser', () => {
       it('findUser should return the user if found', async () => {
         const mockUser = { ...newUser, _id: new ObjectId('507f191e810c19729de860eb') };
@@ -1042,6 +1100,171 @@ describe('application module', () => {
           error:
             'Error when fetching and populating a community: Failed to fetch and populate the community',
         });
+      });
+    });
+  });
+
+  describe('Notification model', () => {
+    describe('saveNotification', () => {
+      test('saveNotification should return the saved notification', async () => {
+        const result = (await saveNotification(questionNotif)) as Notification;
+
+        expect(result._id).toBeDefined();
+        expect(result.notificationType).toEqual(questionNotif.notificationType);
+        expect(result.sourceType).toEqual(questionNotif.sourceType);
+        expect(result.isRead).toEqual(questionNotif.isRead);
+      });
+    });
+
+    describe('addNotificationToUser', () => {
+      test('addNotificationToUser should return the updated user', async () => {
+        const updatedUser = { ...userA, notifications: [questionNotif] };
+        jest.spyOn(UserModel, 'findOneAndUpdate').mockResolvedValueOnce(updatedUser);
+
+        const result = (await addNotificationToUser('UserA', questionNotif)) as User;
+
+        expect(result.notifications.length).toEqual(1);
+        expect(result.notifications).toContain(questionNotif);
+      });
+
+      test('addNotificationToUser should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = await addNotificationToUser('UserA', questionNotif);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addNotificationToUser should return an object with error if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await addNotificationToUser('UserA', questionNotif);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addNotificationToUser return an object with error if a required field notificationType is missing ', async () => {
+        const invalidNotification: Partial<Notification> = {
+          isRead: false, // missing notification type
+        };
+
+        const result = await addNotificationToUser('UserA', invalidNotification as Notification);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addNotificationToUser return an object with error if a required field isRead is missing ', async () => {
+        const invalidNotification: Partial<Notification> = {
+          notificationType: NotificationType.AnswerComment, // missing isRead
+        };
+
+        const result = await addNotificationToUser('UserA', invalidNotification as Notification);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+
+    describe('populateNotification', () => {
+      test('populateNotification should return the populated question notification when given a valid ID', async () => {
+        mockingoose(NotificationModel).toReturn(questionNotif, 'findOne');
+        mockingoose(NotificationModel).toReturn(questionNotif, 'populate');
+        const result = (await populateNotification(
+          '672e29e54e42e9c421fc2f7c',
+          'Question',
+        )) as Notification;
+
+        expect(result._id).toEqual(questionNotif._id);
+        expect(result.notificationType).toEqual(questionNotif.notificationType);
+        expect(result.sourceType).toEqual(questionNotif.sourceType);
+        expect(result.isRead).toEqual(questionNotif.isRead);
+      });
+
+      test('populateNotification should return the populated poll notification when given a valid ID', async () => {
+        mockingoose(NotificationModel).toReturn(pollNotif, 'findOne');
+        mockingoose(NotificationModel).toReturn(pollNotif, 'populate');
+        const result = (await populateNotification(
+          '672e29e54e42e9c421fc2f7c',
+          'Poll',
+        )) as Notification;
+
+        expect(result._id).toEqual(pollNotif._id);
+        expect(result.notificationType).toEqual(pollNotif.notificationType);
+        expect(result.sourceType).toEqual(pollNotif.sourceType);
+        expect(result.isRead).toEqual(pollNotif.isRead);
+      });
+
+      test('populateNotification should return the populated article notification when given a valid ID', async () => {
+        mockingoose(NotificationModel).toReturn(articleNotif, 'findOne');
+        mockingoose(NotificationModel).toReturn(articleNotif, 'populate');
+        const result = (await populateNotification(
+          '672e29e54e42e9c421fc2f7c',
+          'Article',
+        )) as Notification;
+
+        expect(result._id).toEqual(articleNotif._id);
+        expect(result.notificationType).toEqual(articleNotif.notificationType);
+        expect(result.sourceType).toEqual(articleNotif.sourceType);
+        expect(result.isRead).toEqual(articleNotif.isRead);
+      });
+
+      test('populateNotification with a valid ID and undefined source type should return the notification', async () => {
+        mockingoose(NotificationModel).toReturn(rewardNotif, 'findOne');
+        const result = (await populateNotification(
+          '672e29e54e42e9c421fc2f7c',
+          undefined,
+        )) as Notification;
+
+        expect(result._id).toEqual(rewardNotif._id);
+        expect(result.notificationType).toEqual(rewardNotif.notificationType);
+        expect(result.isRead).toEqual(rewardNotif.isRead);
+      });
+
+      test('populateNotification should return an error when given an undefined id', async () => {
+        const result = await populateNotification(undefined, 'Question');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('populateCommunity should return an error when findOne returns null', async () => {
+        mockingoose(NotificationModel).toReturn(null, 'findOne');
+        const result = await populateNotification('672e29e54e42e9c421fc2f7c', 'Question');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('populateCommunity should return an error when findOne returns null', async () => {
+        mockingoose(NotificationModel).toReturn(null, 'findOne');
+        const result = await populateNotification('672e29e54e42e9c421fc2f7c', 'Question');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
       });
     });
   });

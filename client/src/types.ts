@@ -147,6 +147,16 @@ export interface CommentUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a vote update socket event.
+ * - username - The user who's being notified.
+ * - notification - The notification response.
+ */
+export interface NotificationUpdatePayload {
+  username: string;
+  notification: NotificationResponse;
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -156,6 +166,7 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
   communityUpdate: (update: Community) => void;
+  notificationUpdate: (notification: NotificationUpdatePayload) => void;
 }
 
 /**
@@ -251,14 +262,24 @@ export enum NotificationType {
 
 /**
  * Interface representing a Notification, which contains:
+ * - _id - The unique identifier for the notification. Optional field
  * - notificationType - The type of notification.
- * - sourceType - The type of the source of the notification.
- * - source - The source of the notification.
+ * - sourceType - The type of the source of the notification. Optional field
+ * - source - The source of the notification. Optional field
+ *            source and sourceType are optional as some types of notifications do not have an source
+ *            database object. This indicates that the notification is not associated with a particular
+ *            question/poll/article and that 'source' comes from something like the user's reward page.
  * - isRead - Whether the notification has been read or not.
  */
 export interface Notification {
+  _id?: string;
   notificationType: NotificationType;
-  sourceType: 'Question' | 'Poll' | 'Article';
-  source: Question | Poll | Article;
+  sourceType?: 'Question' | 'Poll' | 'Article';
+  source?: Question | Poll | Article;
   isRead: boolean;
 }
+
+/**
+ * Type representing the possible responses for a Notification-related operation.
+ */
+export type NotificationResponse = Notification | { error: string };

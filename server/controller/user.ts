@@ -1,6 +1,21 @@
 import express, { Response } from 'express';
-import { AddPointsRequest, AddUserRequest, FakeSOSocket, User } from '../types';
-import { findUser, saveUser, addPointsToUser } from '../models/application';
+import {
+  AddPointsRequest,
+  AddUserRequest,
+  FakeSOSocket,
+  NewNotificationRequest,
+  Notification,
+  NotificationResponse,
+  User,
+} from '../types';
+import {
+  findUser,
+  saveUser,
+  addPointsToUser,
+  saveNotification,
+  addNotificationToUser,
+  populateNotification,
+} from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -14,6 +29,28 @@ const userController = (socket: FakeSOSocket) => {
    */
   function isUserValid(user: User): boolean {
     return !!user.username && !!user.password;
+  }
+
+  /**
+   * Checks if the provided notification contains the required fields.
+   *
+   * @param notification The notification object to validate.
+   *
+   * @returns `true` if the notification is valid, otherwise `false`.
+   */
+  function isNotificationValid(notification: Notification): boolean {
+    let isSourceTypeValid;
+    if (notification.sourceType) {
+      isSourceTypeValid = !!notification.source;
+    } else {
+      isSourceTypeValid = !notification.source;
+    }
+
+    return (
+      !!notification.notificationType &&
+      (notification.isRead !== undefined || notification.isRead != null) &&
+      isSourceTypeValid
+    );
   }
 
   /**
@@ -59,18 +96,18 @@ const userController = (socket: FakeSOSocket) => {
       const user = await findUser(username);
 
       if (!user) {
-        res.status(404).json({ error: 'User not found' });
+        res.status(404).send('User not found');
         return;
       }
 
       if (user.password !== password) {
-        res.status(401).json({ error: 'Invalid password' });
+        res.status(401).send('Invalid password');
         return;
       }
 
       res.status(200).json(user);
     } catch (error) {
-      res.status(500).json({ error: 'Error while logging in' });
+      res.status(500).send('Error while logging in');
     }
   };
 
@@ -103,9 +140,67 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Adds a notification to a user to the database.
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The AddPointsRequest object containing user data and number of points to add.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const notify = async (req: NewNotificationRequest, res: Response) => {
+    if (
+      !req.body.username ||
+      !req.body.notification ||
+      !isNotificationValid(req.body.notification)
+    ) {
+      res.status(400).send('Invalid request');
+      return;
+    }
+
+    const { username } = req.body;
+    const notifInfo: Notification = req.body.notification;
+
+    try {
+      const notifFromDb = await saveNotification(notifInfo);
+
+      if ('error' in notifFromDb) {
+        throw new Error(notifFromDb.error as string);
+      }
+
+      const status = await addNotificationToUser(username, notifFromDb);
+
+      if (status && 'error' in status) {
+        throw new Error(status.error as string);
+      }
+
+      const populatedNotif = await populateNotification(
+        notifFromDb._id?.toString(),
+        notifFromDb.sourceType,
+      );
+
+      if (populatedNotif && 'error' in populatedNotif) {
+        throw new Error(populatedNotif.error as string);
+      }
+
+      // Populates the fields of the notification that was added and emits the new object
+      // TODO: in client notification page, listen on 'notificationUpdate' for displaying notifications
+      // and showing unread notification indicator.
+      socket.emit('notificationUpdate', {
+        username,
+        notification: populatedNotif as NotificationResponse,
+      });
+      res.json(populatedNotif);
+    } catch (error) {
+      res.status(500).send('Error when adding notification to user');
+    }
+  };
+
   router.post('/addUser', addUser);
   router.post('/login', loginUser);
   router.post('/addPoints', addPoints);
+  router.post('/notify', notify);
 
   return router;
 };

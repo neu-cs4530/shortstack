@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { Notification, User } from '../types';
 import api from './config';
 
 const USER_API_URL = `${process.env.REACT_APP_SERVER_URL}/user`;
@@ -60,4 +60,22 @@ const addPoints = async (username: string, numPoints: number): Promise<User> => 
   return res.data;
 };
 
-export { addUser, loginUser, addPoints };
+/**
+ * Function to add a notification to a user.
+ *
+ * @param username - The username of the user to add notification to.
+ * @param notif - The notification to add.
+ * @throws Error if there is an issue adding the notification.
+ */
+const notifyUser = async (username: string, notif: Notification): Promise<User> => {
+  const data = { username, notification: notif };
+  const res = await api.post(`${USER_API_URL}/notify`, data);
+
+  if (res.status !== 200) {
+    throw new Error('Error while adding notification to user');
+  }
+
+  return res.data;
+};
+
+export { addUser, loginUser, addPoints, notifyUser };

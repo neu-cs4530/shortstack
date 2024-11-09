@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Comment, Answer, Question, VoteData } from '../types';
+import { Comment, Answer, Question, VoteData, Notification, NotificationType } from '../types';
 import useUserContext from './useUserContext';
 import addComment from '../services/commentService';
 import { getQuestionById } from '../services/questionService';
+import { notifyUser } from '../services/userService';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -93,6 +94,17 @@ const useAnswerPage = () => {
               { ...prevQuestion, answers: [...prevQuestion.answers, answer] }
             : prevQuestion,
         );
+        if (question) {
+          // notify the person who asked the question
+          // TODO: notify subscribers the the question once subscribing has been implemented.
+          const notif: Notification = {
+            notificationType: NotificationType.Answer,
+            sourceType: 'Question',
+            source: { _id: questionID } as Question,
+            isRead: false,
+          };
+          notifyUser(question?.askedBy, notif);
+        }
       }
     };
 
@@ -171,7 +183,7 @@ const useAnswerPage = () => {
       socket.off('commentUpdate', handleCommentUpdate);
       socket.off('voteUpdate', handleVoteUpdate);
     };
-  }, [questionID, socket]);
+  }, [questionID, question, socket]);
 
   return {
     questionID,
