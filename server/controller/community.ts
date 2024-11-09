@@ -1,8 +1,8 @@
 import express, { Response } from 'express';
 import { populateCommunity, saveCommunity, fetchAllCommunities } from '../models/application';
-import { AddCommunityRequest, Community } from '../types';
+import { AddCommunityRequest, Community, FakeSOSocket } from '../types';
 
-const communityController = () => {
+const communityController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
@@ -49,6 +49,7 @@ const communityController = () => {
       }
 
       res.json(result);
+      // TODO: add socket emit for community update
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving community: ${err.message}`);

@@ -39,7 +39,6 @@ const addCommunity = async (community: Community): Promise<Community> => {
 const getCommunities = async (): Promise<Community[]> => {
   try {
     const res = await api.get(`${COMMUNITY_API_URL}/communities`);
-    console.log('Fetched communities service:', res.data); // Debugging line
     return res.data;
   } catch (error) {
     throw new Error('Error fetching communities');
