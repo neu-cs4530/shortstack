@@ -49,7 +49,7 @@ const communityController = (socket: FakeSOSocket) => {
       }
 
       res.json(result);
-      // TODO: add socket emit for community update
+      socket.emit('communityUpdate', populatedCommunity as Community);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving community: ${err.message}`);
