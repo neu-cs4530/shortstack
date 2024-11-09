@@ -383,13 +383,38 @@ export interface Community {
 
 /**
  * Interface for the request body when adding a new community.
- * - body - The community being added.
+ * - userID - the unique identifier of the user who created the community
+ * - community - the Communtiy being added
  */
 export interface AddCommunityRequest extends Request {
-  body: Community;
+  body: {
+    userID: string;
+    community: Community;
+  };
 }
 
 /**
  * Type representing the possible responses for a Community-related operation.
  */
 export type CommunityResponse = Community | { error: string };
+
+/**
+ * Type representing the possible action options for a challenge's type.
+ */
+export type ChallengeType = 'upvote' | 'answer' | 'question';
+
+/**
+ * Interface representing a Challenge, which contains:
+ * - _id - The unique identifier for the challenge. Optional field
+ * - description - Text that details the challenge's requirements.
+ * - actionAmount: The amount of times that a certain action needs to be performed to complete the challenge.
+ * - challengeType: The type of action that needs to be performed to complete the challenge.
+ * - hoursToComplete: Amount of hours that a challenge needs to be completed within. Optional field
+ */
+export interface Challenge {
+  _id?: ObjectId;
+  description: string;
+  actionAmount: number;
+  challengeType: ChallengeType;
+  hoursToComplete?: Number;
+}

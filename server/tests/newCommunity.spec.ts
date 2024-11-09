@@ -18,11 +18,14 @@ describe('POST /add', () => {
 
   it('should add a new Community', async () => {
     const mockReqBody = {
-      name: 'A Test Community',
-      members: [],
-      questions: [],
-      articles: [],
-      polls: [],
+      userID: 'valid user id',
+      community: {
+        name: 'A Test Community',
+        members: [],
+        questions: [],
+        articles: [],
+        polls: [],
+      },
     };
 
     const validCID = new mongoose.Types.ObjectId();
@@ -59,59 +62,98 @@ describe('POST /add', () => {
     });
   });
 
-  it('should return bad request error if community object has name property missing', async () => {
-    const mockReqBody = {
-      members: [],
-      questions: [],
-      articles: [],
-      polls: [],
-    };
-
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
-
-    expect(response.status).toBe(400);
-    expect(response.text).toBe('Invalid community body');
-  });
-
-  it('should return bad request error if community object has members property missing', async () => {
-    const mockReqBody = {
-      name: 'This is a test community',
-      questions: [],
-      articles: [],
-      polls: [],
-    };
-
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
-
-    expect(response.status).toBe(400);
-  });
-
-  it('should return bad request error if community object has questions property missing', async () => {
-    const mockReqBody = {
-      name: 'This is a test community',
-      members: [],
-      articles: [],
-      polls: [],
-    };
-
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
-
-    expect(response.status).toBe(400);
-  });
-
   it('should return bad request error if request body is missing', async () => {
     const response = await supertest(app).post('/community/add');
 
     expect(response.status).toBe(400);
+    expect(response.text).toBe('Invalid request');
+  });
+
+  it('should return bad request error if request body is missing userID', async () => {
+    const mockReqBody = {
+      community: {
+        name: 'This is a test community',
+        questions: [],
+        articles: [],
+        polls: [],
+      },
+    };
+    const response = await supertest(app).post('/community/add').send(mockReqBody);
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('Invalid request');
+  });
+
+  it('should return bad request error if request body is userID', async () => {
+    const mockReqBody = {
+      userID: 'validUserID',
+    };
+    const response = await supertest(app).post('/community/add').send(mockReqBody);
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('Invalid request');
+  });
+
+  it('should return bad request error if community object has name property missing', async () => {
+    const mockReqBody = {
+      userID: 'valid user id',
+      community: {
+        questions: [],
+        articles: [],
+        polls: [],
+      },
+    };
+
+    const response = await supertest(app).post('/community/add').send(mockReqBody);
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('Invalid community');
+  });
+
+  it('should return bad request error if community object has members property missing', async () => {
+    const mockReqBody = {
+      userID: 'valid user id',
+      community: {
+        name: 'This is a test community',
+        questions: [],
+        articles: [],
+        polls: [],
+      },
+    };
+
+    const response = await supertest(app).post('/community/add').send(mockReqBody);
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('Invalid community');
+  });
+
+  it('should return bad request error if community object has questions property missing', async () => {
+    const mockReqBody = {
+      userID: 'valid user id',
+      community: {
+        name: 'This is a test community',
+        members: [],
+        articles: [],
+        polls: [],
+      },
+    };
+
+    const response = await supertest(app).post('/community/add').send(mockReqBody);
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('Invalid community');
   });
 
   it('should return database error in response if saveCommunity method throws an error', async () => {
     const mockReqBody = {
-      name: 'This is a test community',
-      members: [],
-      questions: [],
-      articles: [],
-      polls: [],
+      userID: 'valid user id',
+      community: {
+        name: 'This is a test community',
+        members: [],
+        questions: [],
+        articles: [],
+        polls: [],
+      },
     };
 
     saveCommunitySpy.mockResolvedValueOnce({ error: 'Error when saving a community' });
@@ -119,15 +161,19 @@ describe('POST /add', () => {
     const response = await supertest(app).post('/community/add').send(mockReqBody);
 
     expect(response.status).toBe(500);
+    expect(response.text).toBe('Error when saving community: Error when saving a community');
   });
 
   it('should return database error in response if `populateDocument` method throws an error', async () => {
     const mockReqBody = {
-      name: 'This is a test community',
-      members: [],
-      questions: [],
-      articles: [],
-      polls: [],
+      userID: 'valid user id',
+      community: {
+        name: 'This is a test community',
+        members: [],
+        questions: [],
+        articles: [],
+        polls: [],
+      },
     };
 
     const mockCommunity = {
@@ -145,5 +191,6 @@ describe('POST /add', () => {
     const response = await supertest(app).post('/community/add').send(mockReqBody);
 
     expect(response.status).toBe(500);
+    expect(response.text).toBe('Error when saving community: Error when populating document');
   });
 });
