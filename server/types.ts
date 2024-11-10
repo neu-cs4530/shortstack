@@ -321,6 +321,7 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: QuestionResponse) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
+  communityUpdate: (community: CommunityResponse) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
 }
 
@@ -379,9 +380,9 @@ export interface Community {
   _id?: ObjectId;
   name: string;
   members: User[];
-  questions: Question[];
-  polls: Poll[];
-  articles: Article[];
+  questions: Question[] | ObjectId[];
+  polls: Poll[] | ObjectId[];
+  articles: Article[] | ObjectId[];
 }
 
 /**

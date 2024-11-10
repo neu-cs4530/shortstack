@@ -4,6 +4,7 @@ import { validateHyperlink } from '../tool';
 import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
 import { Question } from '../types';
+import useCommunityList from './useCommunityList';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -15,6 +16,9 @@ import { Question } from '../types';
  * @returns textErr - Error message for the text field, if any.
  * @returns tagErr - Error message for the tag field, if any.
  * @returns postQuestion - Function to validate the form and submit a new question.
+ * @returns communities - List of communities for dropdown.
+ * @returns selectedCommunity - Currently selected community.
+ * @returns setSelectedCommunity - Setter for selected community.
  */
 const useNewQuestion = () => {
   const navigate = useNavigate();
@@ -22,6 +26,8 @@ const useNewQuestion = () => {
   const [title, setTitle] = useState<string>('');
   const [text, setText] = useState<string>('');
   const [tagNames, setTagNames] = useState<string>('');
+  const { joinedCommunities } = useCommunityList();
+  const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
 
   const [titleErr, setTitleErr] = useState<string>('');
   const [textErr, setTextErr] = useState<string>('');
@@ -86,10 +92,7 @@ const useNewQuestion = () => {
     if (!validateForm()) return;
 
     const tagnames = tagNames.split(' ').filter(tagName => tagName.trim() !== '');
-    const tags = tagnames.map(tagName => ({
-      name: tagName,
-      description: 'user added tag',
-    }));
+    const tags = tagnames.map(tagName => ({ name: tagName, description: 'user added tag' }));
 
     const question: Question = {
       title,
@@ -103,6 +106,8 @@ const useNewQuestion = () => {
       views: [],
       comments: [],
     };
+
+    // TODO: Post the question to the selected community if one is selected
 
     const res = await addQuestion(question);
 
@@ -122,6 +127,9 @@ const useNewQuestion = () => {
     textErr,
     tagErr,
     postQuestion,
+    communities: joinedCommunities,
+    selectedCommunity,
+    setSelectedCommunity,
   };
 };
 
