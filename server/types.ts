@@ -171,6 +171,59 @@ export interface AddPointsRequest extends Request {
 }
 
 /**
+ * Interface for the request body when adding a notification to a user.
+ * - body - The username and the notification to add.
+ *  - username - The unique username of the user.
+ *  - notification - The notification to add.
+ */
+export interface NewNotificationRequest extends Request {
+  body: {
+    username: string,
+    notification: Notification,
+  };
+}
+
+/**
+ * NotificationType enum enumerating all possible types of notifications.
+ */
+export enum NotificationType {
+  Answer = 'Answer',
+  Comment = 'Comment',
+  AnswerComment = 'AnswerComment',
+  Upvote = 'Upvote',
+  NewQuestion = 'NewQuestion',
+  NewPoll = 'NewPoll',
+  PollClosed = 'PollClosed',
+  NewArticle = 'NewArticle',
+  ArticleUpdate = 'ArticleUpdate',
+  NewReward = 'NewReward',
+}
+
+/**
+ * Interface representing a Notification, which contains:
+ * - _id - The unique identifier for the notification. Optional field
+ * - notificationType - The type of notification.
+ * - sourceType - The type of the source of the notification. Optional field
+ * - source - The source of the notification. Optional field
+ *            source and sourceType are optional as some types of notifications do not have an source
+ *            database object. This indicates that the notification is not associated with a particular
+ *            question/poll/article and that 'source' comes from something like the user's reward page.
+ * - isRead - Whether the notification has been read or not.
+ */
+export interface Notification {
+  _id?: ObjectId;
+  notificationType: NotificationType,
+  sourceType?: 'Question' | 'Poll' | 'Article',
+  source?: Question | Poll | Article,
+  isRead: boolean,
+}
+
+/**
+ * Type representing the possible responses for a Notification-related operation.
+ */
+export type NotificationResponse = Notification | { error: string };
+
+/**
  * Interface for the request body when upvoting or downvoting a question.
  * - body - The question ID and the username of the user voting.
  *  - qid - The unique identifier of the question.
@@ -250,6 +303,16 @@ export interface AnswerUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a vote update socket event.
+ * - username - The user who's being notified.
+ * - notification - The notification response.
+ */
+export interface NotificationUpdatePayload {
+  username: string;
+  notification: NotificationResponse;
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -259,6 +322,7 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
   communityUpdate: (community: CommunityResponse) => void;
+  notificationUpdate: (notification: NotificationUpdatePayload) => void;
 }
 
 /**
@@ -322,44 +386,39 @@ export interface Community {
 }
 
 /**
- * NotificationType enum enumerating all possible types of notifications.
- */
-export enum NotificationType {
-  Answer = 'Answer',
-  Comment = 'Comment',
-  AnswerComment = 'AnswerComment',
-  Upvote = 'Upvote',
-  NewQuestion = 'NewQuestion',
-  NewPoll = 'NewPoll',
-  PollClosed = 'PollClosed',
-  NewArticle = 'NewArticle',
-  ArticleUpdate = 'ArticleUpdate',
-  NewReward = 'NewReward',
-}
-
-/**
- * Interface representing a Notification, which contains:
- * - notificationType - The type of notification.
- * - sourceType - The type of the source of the notification.
- * - source - The source of the notification.
- * - isRead - Whether the notification has been read or not.
- */
-export interface Notification {
-  notificationType: NotificationType,
-  sourceType: 'Question' | 'Poll' | 'Article',
-  source: Question | Poll | Article,
-  isRead: boolean,
-}
-
-/**
  * Interface for the request body when adding a new community.
- * - body - The community being added.
+ * - userID - the unique identifier of the user who created the community
+ * - community - the Communtiy being added
  */
 export interface AddCommunityRequest extends Request {
-  body: Community;
+  body: {
+    userID: string;
+    community: Community;
+  };
 }
 
 /**
  * Type representing the possible responses for a Community-related operation.
  */
 export type CommunityResponse = Community | { error: string };
+
+/**
+ * Type representing the possible action options for a challenge's type.
+ */
+export type ChallengeType = 'upvote' | 'answer' | 'question';
+
+/**
+ * Interface representing a Challenge, which contains:
+ * - _id - The unique identifier for the challenge. Optional field
+ * - description - Text that details the challenge's requirements.
+ * - actionAmount: The amount of times that a certain action needs to be performed to complete the challenge.
+ * - challengeType: The type of action that needs to be performed to complete the challenge.
+ * - hoursToComplete: Amount of hours that a challenge needs to be completed within. Optional field
+ */
+export interface Challenge {
+  _id?: ObjectId;
+  description: string;
+  actionAmount: number;
+  challengeType: ChallengeType;
+  hoursToComplete?: Number;
+}

@@ -8,7 +8,7 @@ import './index.css';
  * The component will also visually indicate which option the logged in user voted on.
  */
 const PollResults = ({ poll }: PollProps) => {
-  const { optionUserVotedFor, findBarChartWidth } = usePoll(poll);
+  const { optionUserVotedFor, barChartWidth } = usePoll(poll);
 
   return (
     <div className='poll_results_container'>
@@ -19,7 +19,7 @@ const PollResults = ({ poll }: PollProps) => {
           }
           key={idx}>
           <h5 id='optText'>{opt.text}</h5>
-          <div className='results_bar' style={{ width: findBarChartWidth(opt.usersVoted.length) }}>
+          <div className='results_bar' style={{ width: barChartWidth(opt.usersVoted.length) }}>
             {opt.usersVoted.length}
           </div>
         </div>

@@ -6,6 +6,15 @@ const communityController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
+   * Function that checks if the add community request contains the required fields.
+   * @param req - The request object containing community data.
+   * @returns - true if the request if valid, false otherwise.
+   */
+  function isRequestValid(req: AddCommunityRequest): boolean {
+    return !!req.body.userID && !!req.body.community;
+  }
+
+  /**
    * Function that checks if the community object has all the necessary fields.
    *
    * @param community - the community object to validate.
@@ -30,11 +39,15 @@ const communityController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addCommunity = async (req: AddCommunityRequest, res: Response): Promise<void> => {
-    if (!isCommunityBodyValid(req.body)) {
-      res.status(400).send('Invalid community body');
+    if (!isRequestValid(req)) {
+      res.status(400).send('Invalid request');
       return;
     }
-    const community: Community = req.body;
+    if (!isCommunityBodyValid(req.body.community)) {
+      res.status(400).send('Invalid community');
+      return;
+    }
+    const { community } = req.body;
     try {
       const result = await saveCommunity(community);
       if ('error' in result) {

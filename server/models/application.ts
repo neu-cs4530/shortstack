@@ -7,6 +7,8 @@ import {
   CommentResponse,
   Community,
   CommunityResponse,
+  Notification,
+  NotificationResponse,
   OrderType,
   Question,
   QuestionResponse,
@@ -22,6 +24,7 @@ import UserModel from './users';
 import CommunityModel from './communities';
 import PollModel from './polls';
 import ArticleModel from './articles';
+import NotificationModel from './notifications';
 
 /**
  * Parses tags from a search string.
@@ -320,6 +323,14 @@ export const populateDocument = async (
   }
 };
 
+/**
+ * Fetches and populates a community document based on the provided ID.
+ *
+ * @param {string | undefined} id - The ID of the community to fetch.
+ *
+ * @returns {Promise<CommunityResponse>} - Promise that resolves to the
+ *          populated community, or an error message if the operation fails
+ */
 export const populateCommunity = async (id: string | undefined): Promise<CommunityResponse> => {
   try {
     if (!id) {
@@ -340,6 +351,62 @@ export const populateCommunity = async (id: string | undefined): Promise<Communi
     return result;
   } catch (error) {
     return { error: `Error when fetching and populating a community: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Fetches and populates a notification document based on the provided ID and source type.
+ *
+ * @param {string | undefined} id - The ID of the notification to fetch.
+ * @param {'Question' | 'Poll' | 'Article' | undefined} sourceType - Specifies how to
+ *        populate the notification's source, if defined.
+ *
+ * @returns {Promise<NotificationResponse>} - Promise that resolves to the
+ *          populated notification, or an error message if the operation fails
+ */
+export const populateNotification = async (
+  id: string | undefined,
+  sourceType: 'Question' | 'Poll' | 'Article' | undefined,
+): Promise<NotificationResponse> => {
+  try {
+    if (!id) {
+      throw new Error(`Provided id is undefined.`);
+    }
+    let result = null;
+    if (!sourceType) {
+      // no source object for reward notifications, no need to populate.
+      result = await NotificationModel.findOne({ _id: id });
+    } else if (sourceType === 'Question') {
+      result = await NotificationModel.findOne({ _id: id }).populate([
+        {
+          path: 'source',
+          model: QuestionModel,
+        },
+      ]);
+    } else if (sourceType === 'Poll') {
+      result = await NotificationModel.findOne({ _id: id }).populate([
+        {
+          path: 'source',
+          model: PollModel,
+        },
+      ]);
+    } else if (sourceType === 'Article') {
+      result = await NotificationModel.findOne({ _id: id }).populate([
+        {
+          path: 'source',
+          model: ArticleModel,
+        },
+      ]);
+    }
+
+    if (!result) {
+      throw new Error(`Failed to fetch and populate the notification`);
+    }
+    return result;
+  } catch (error) {
+    return {
+      error: `Error when fetching and populating a notification: ${(error as Error).message}`,
+    };
   }
 };
 
@@ -505,6 +572,54 @@ export const addPointsToUser = async (
     return result;
   } catch (error) {
     return { error: 'Error when adding points to a user' };
+  }
+};
+
+/**
+ * Saves a notification to the database.
+ *
+ * @param {Notification} notification - The notification to save.
+ *
+ * @returns {Promise<NotificationResponse>} - The saved notification, or an error message if the save failed
+ */
+export const saveNotification = async (
+  notification: Notification,
+): Promise<NotificationResponse> => {
+  try {
+    const result = await NotificationModel.create(notification);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a notification' };
+  }
+};
+
+/**
+ * Adds a notification to a user.
+ *
+ * @param {string} username - The username of the user to add the notification to
+ * @param {Notification} notif - The notification to add
+ *
+ * @returns {Promise<UserResponse>} - The updated question or an error message
+ */
+export const addNotificationToUser = async (
+  username: string,
+  notif: Notification,
+): Promise<UserResponse> => {
+  try {
+    if (!notif || !notif.notificationType || notif.isRead === undefined || notif.isRead === null) {
+      throw new Error('Invalid notification');
+    }
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $push: { notifications: { $each: [notif._id], $position: 0 } } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when adding notification to user');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding notification to user' };
   }
 };
 
