@@ -1,5 +1,10 @@
 import express, { Response } from 'express';
-import { populateCommunity, saveCommunity, fetchAllCommunities } from '../models/application';
+import {
+  populateCommunity,
+  saveCommunity,
+  fetchAllCommunities,
+  AddQuestionToCommunityModel,
+} from '../models/application';
 import { AddCommunityRequest, Community, FakeSOSocket } from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
@@ -113,10 +118,46 @@ const communityController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Adds a question to a specific community's question list.
+   *
+   * @param req The HTTP request object containing the community ID and question ID.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const addQuestionToCommunity = async (req: express.Request, res: Response): Promise<void> => {
+    const { communityId } = req.params;
+    const { questionId } = req.body;
+
+    if (!communityId || !questionId) {
+      res.status(400).send('Community ID and Question ID are required');
+      return;
+    }
+
+    try {
+      const updatedCommunity = await AddQuestionToCommunityModel(communityId, questionId);
+
+      if (
+        updatedCommunity &&
+        'error' in updatedCommunity &&
+        updatedCommunity.error === 'Community not found'
+      ) {
+        res.status(404).send('Community not found');
+        return;
+      }
+
+      res.status(200).send(updatedCommunity);
+    } catch (error) {
+      res.status(500).send('Error adding question to community');
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.post('/add', addCommunity);
   router.get('/communities', getAllCommunities);
   router.get('/communities/:communityId', getCommunityById);
+  router.post('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
 
   return router;
 };
