@@ -1,8 +1,8 @@
 import express, { Response } from 'express';
-import { populateCommunity, saveCommunity } from '../models/application';
-import { AddCommunityRequest, Community } from '../types';
+import { populateCommunity, saveCommunity, fetchAllCommunities } from '../models/application';
+import { AddCommunityRequest, Community, FakeSOSocket } from '../types';
 
-const communityController = () => {
+const communityController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
@@ -62,6 +62,7 @@ const communityController = () => {
       }
 
       res.json(result);
+      socket.emit('communityUpdate', populatedCommunity as Community);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving community: ${err.message}`);
@@ -71,8 +72,51 @@ const communityController = () => {
     }
   };
 
+  /**
+   * Gets all the communities from the database.
+   *
+   * @param req The HTTP request object.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getAllCommunities = async (req: express.Request, res: Response): Promise<void> => {
+    try {
+      const communities = await fetchAllCommunities();
+      if ('error' in communities) {
+        throw new Error(communities.error);
+      }
+      res.status(200).send(communities);
+    } catch (error) {
+      res.status(500).send('Error fetching communities');
+    }
+  };
+
+  /**
+   * Fetches a specific community by its ID.
+   *
+   * @param req The HTTP request object containing the community ID as a parameter.
+   * @param res The HTTP response object used to send back the community details.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getCommunityById = async (req: express.Request, res: Response): Promise<void> => {
+    const { communityId } = req.params;
+    try {
+      const community = await populateCommunity(communityId);
+      if (!community || 'error' in community) {
+        throw new Error(community ? community.error : 'Community not found');
+      }
+      res.status(200).json(community);
+    } catch (error) {
+      res.status(500).send('Error fetching community details');
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.post('/add', addCommunity);
+  router.get('/communities', getAllCommunities);
+  router.get('/communities/:communityId', getCommunityById);
 
   return router;
 };
