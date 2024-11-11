@@ -21,6 +21,9 @@ const NewQuestionPage = () => {
     textErr,
     tagErr,
     postQuestion,
+    communities,
+    selectedCommunity,
+    setSelectedCommunity,
   } = useNewQuestion();
 
   return (
@@ -49,6 +52,20 @@ const NewQuestionPage = () => {
         setState={setTagNames}
         err={tagErr}
       />
+      <div className='community-selector'>
+        <label htmlFor='communitySelect'>Post to Community (optional)</label>
+        <select
+          id='communitySelect'
+          value={selectedCommunity || ''}
+          onChange={e => setSelectedCommunity(e.target.value || null)}>
+          <option value=''>-- Select a Community --</option>
+          {communities.map(community => (
+            <option key={community._id} value={community._id}>
+              {community.name}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className='btn_indicator_container'>
         <button
           className='form_postBtn'

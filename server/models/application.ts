@@ -1015,3 +1015,26 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     return { error: 'Error when construction tag map' };
   }
 };
+
+/**
+ * Gets all the communities from the database, fully populated with members, questions, polls, and articles.
+ *
+ * @returns {Promise<Community[] | { error: string }>} - The list of populated communities, or an error message if the operation fails
+ */
+export const fetchAllCommunities = async (): Promise<Community[] | { error: string }> => {
+  try {
+    const communities = await CommunityModel.find();
+    const populatedCommunities = await Promise.all(
+      communities.map(community => populateCommunity(community._id.toString())),
+    );
+
+    // Filter for errors and return only valid communities
+    const validCommunities = populatedCommunities.filter(
+      (community): community is Community => !('error' in community),
+    );
+
+    return validCommunities;
+  } catch (error) {
+    return { error: 'Error when fetching communities' };
+  }
+};

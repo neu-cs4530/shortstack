@@ -321,6 +321,7 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: QuestionResponse) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
+  communityUpdate: (community: CommunityResponse) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
 }
 
@@ -379,9 +380,9 @@ export interface Community {
   _id?: ObjectId;
   name: string;
   members: User[];
-  questions: Question[];
-  polls: Poll[];
-  articles: Article[];
+  questions: Question[] | ObjectId[];
+  polls: Poll[] | ObjectId[];
+  articles: Article[] | ObjectId[];
 }
 
 /**
@@ -413,6 +414,7 @@ export type ChallengeType = 'upvote' | 'answer' | 'question';
  * - actionAmount: The amount of times that a certain action needs to be performed to complete the challenge.
  * - challengeType: The type of action that needs to be performed to complete the challenge.
  * - hoursToComplete: Amount of hours that a challenge needs to be completed within. Optional field
+ * - reward: The reward for completing the challenge.
  */
 export interface Challenge {
   _id?: ObjectId;
@@ -420,4 +422,5 @@ export interface Challenge {
   actionAmount: number;
   challengeType: ChallengeType;
   hoursToComplete?: Number;
+  reward: string;
 }
