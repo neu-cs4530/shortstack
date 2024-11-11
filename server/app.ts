@@ -16,6 +16,7 @@ import commentController from './controller/comment';
 import { FakeSOSocket } from './types';
 import userController from './controller/user';
 import communityController from './controller/community';
+import articleController from './controller/article';
 
 dotenv.config();
 
@@ -76,6 +77,7 @@ app.use('/answer', answerController(socket));
 app.use('/comment', commentController(socket));
 app.use('/user', userController(socket));
 app.use('/community', communityController(socket));
+app.use('/article', articleController(socket));
 
 // Export the app instance
 export { app, server, startServer };
