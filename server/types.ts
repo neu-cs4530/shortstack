@@ -171,14 +171,14 @@ export interface AddPointsRequest extends Request {
 }
 
 /**
- * Interface for the request body when adding a notification to a user.
- * - body - The username and the notification to add.
- *  - username - The unique username of the user.
+ * Interface for the request body when creating a new notification.
+ * - body - The ObjectID and the notification to create.
+ *  - oid - An ObjectID used to determine what user's to add the new notification to.
  *  - notification - The notification to add.
  */
 export interface NewNotificationRequest extends Request {
   body: {
-    username: string,
+    oid: string,
     notification: Notification,
   };
 }
@@ -304,11 +304,11 @@ export interface AnswerUpdatePayload {
 
 /**
  * Interface representing the payload for a vote update socket event.
- * - username - The user who's being notified.
+ * - usernames - The users who're being notified.
  * - notification - The notification response.
  */
 export interface NotificationUpdatePayload {
-  username: string;
+  usernames: string[];
   notification: NotificationResponse;
 }
 

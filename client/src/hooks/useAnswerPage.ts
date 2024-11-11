@@ -1,10 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Comment, Answer, Question, VoteData, Notification, NotificationType } from '../types';
+import { Comment, Answer, Question, VoteData, NotificationType, Notification } from '../types';
 import useUserContext from './useUserContext';
 import addComment from '../services/commentService';
 import { getQuestionById } from '../services/questionService';
-import { notifyUser } from '../services/userService';
+import { notifyUsers } from '../services/userService';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -55,7 +55,33 @@ const useAnswerPage = () => {
         throw new Error('No target ID provided.');
       }
 
+      // add comment to target
       await addComment(targetId, targetType, comment);
+
+      // create and send notification to the author of target
+      let notif: Notification;
+      if (targetType === 'question') {
+        notif = {
+          notificationType: NotificationType.Comment,
+          sourceType: 'Question',
+          source: { _id: targetId } as Question,
+          isRead: false,
+        };
+      } else {
+        // indicate issue with question id.
+        if (!qid) {
+          throw new Error('Unable to notify users.');
+        }
+        notif = {
+          notificationType: NotificationType.AnswerComment,
+          // sourceType is still question as when a user clicks on this notification they will need to be brought
+          // to the question's page since answers are not viewed induvidually.
+          sourceType: 'Question',
+          source: { _id: qid } as Question,
+          isRead: false,
+        };
+      }
+      await notifyUsers(targetId, notif);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error adding comment:', error);
@@ -94,17 +120,6 @@ const useAnswerPage = () => {
               { ...prevQuestion, answers: [...prevQuestion.answers, answer] }
             : prevQuestion,
         );
-        if (question) {
-          // notify the person who asked the question
-          // TODO: notify subscribers the the question once subscribing has been implemented.
-          const notif: Notification = {
-            notificationType: NotificationType.Answer,
-            sourceType: 'Question',
-            source: { _id: questionID } as Question,
-            isRead: false,
-          };
-          notifyUser(question?.askedBy, notif);
-        }
       }
     };
 
