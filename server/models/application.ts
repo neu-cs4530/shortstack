@@ -511,6 +511,36 @@ export const saveCommunity = async (community: Community): Promise<CommunityResp
   }
 };
 
+/**
+ * Adds a user to a community.
+ *
+ * @param {string} userId - The user ID of the user to add.
+ * @param {string} communityId - The ID of the community to add the user to.
+ * @returns {Promise<CommunityResponse | null>} - The community added to, null if the community or user does not exist,
+ *  or an error message if the save failed
+ */
+export const addUserToCommunity = async (
+  userId: string,
+  communityId: string,
+): Promise<CommunityResponse | null> => {
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return null;
+    }
+
+    const result = await CommunityModel.findOneAndUpdate(
+      { _id: new ObjectId(communityId) },
+      { $addToSet: { members: new ObjectId(userId) } },
+      { new: true },
+    );
+
+    return result;
+  } catch (error) {
+    return { error: `Error when adding user to community: ${(error as Error).message}` };
+  }
+};
+
 // type checking utility for type-safe access to error code
 const isMongoError = (error: unknown): error is { code?: number } =>
   typeof error === 'object' && error !== null && 'code' in error;

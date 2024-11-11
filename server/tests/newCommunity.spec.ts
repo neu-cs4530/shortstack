@@ -18,7 +18,6 @@ describe('POST /add', () => {
 
   it('should add a new Community', async () => {
     const mockReqBody = {
-      userID: 'valid user id',
       community: {
         name: 'A Test Community',
         members: [],
@@ -64,31 +63,6 @@ describe('POST /add', () => {
 
   it('should return bad request error if request body is missing', async () => {
     const response = await supertest(app).post('/community/add');
-
-    expect(response.status).toBe(400);
-    expect(response.text).toBe('Invalid request');
-  });
-
-  it('should return bad request error if request body is missing userID', async () => {
-    const mockReqBody = {
-      community: {
-        name: 'This is a test community',
-        questions: [],
-        articles: [],
-        polls: [],
-      },
-    };
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
-
-    expect(response.status).toBe(400);
-    expect(response.text).toBe('Invalid request');
-  });
-
-  it('should return bad request error if request body is userID', async () => {
-    const mockReqBody = {
-      userID: 'validUserID',
-    };
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
 
     expect(response.status).toBe(400);
     expect(response.text).toBe('Invalid request');

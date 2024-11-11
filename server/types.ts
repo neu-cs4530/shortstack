@@ -439,3 +439,18 @@ export interface Challenge {
   hoursToComplete?: Number;
   reward: string;
 }
+
+/**
+ * Interface representing a UserChallenge record, which contains:
+ * - _id - The unique identifier for the UserChallenge. Optional field
+ * - username - The username of the user associated with the UserChallenge
+ * - challenge - The Challenge associated with the UserChallenge
+ * - progress - The progress the user has made towards the challenge, represented as an array
+ *              of timestamps keeping track of when each progress event was made.
+ */
+export interface UserChallenge {
+  _id?: ObjectId;
+  username: string;
+  challenge: Challenge;
+  progress: Date[];
+}

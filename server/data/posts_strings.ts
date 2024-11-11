@@ -92,3 +92,24 @@ export const ART2_BODY =
 export const ART3_TITLE = 'Lorem Ipsum: Dolor Sit Amet Consectetur Adipiscing Elit';
 export const ART3_BODY =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.';
+
+export const CHAL1_DESCRIPTION = 'Answer 1 question';
+export const CHAL1_AMT = 1;
+export const CHAL1_REWARD = 'Rookie Responder';
+
+export const CHAL2_DESCRIPTION = 'Answer 10 questions';
+export const CHAL2_AMT = 10;
+export const CHAL2_REWARD = 'Star Contributor';
+
+export const CHAL3_DESCRIPTION = 'Ask 1 question';
+export const CHAL3_AMT = 1;
+export const CHAL3_REWARD = 'Curious Explorer';
+
+export const CHAL4_DESCRIPTION = 'Ask 5 questions';
+export const CHAL4_AMT = 5;
+export const CHAL4_REWARD = 'Engaged Inquirer';
+
+export const CHAL5_DESCRIPTION = 'Answer 10 questions in a single day';
+export const CHAL5_AMT = 10;
+export const CHAL5_REWARD = 'Unstoppable';
+export const CHAL5_HRS = 24;
