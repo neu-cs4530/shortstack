@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import AnswerModel from './models/answers';
 import QuestionModel from './models/questions';
 import TagModel from './models/tags';
-import { Answer, Comment, Question, Tag } from './types';
+import { Answer, Article, Comment, Community, Notification, NotificationType, Poll, PollOption, Question, Tag, User } from './types';
 import {
   Q1_DESC,
   Q1_TXT,
@@ -44,8 +44,23 @@ import {
   C10_TEXT,
   C11_TEXT,
   C12_TEXT,
+  P1_TITLE,
+  P2_TITLE,
+  P3_TITLE,
+  ART1_TITLE,
+  ART1_BODY,
+  ART2_TITLE,
+  ART2_BODY,
+  ART3_TITLE,
+  ART3_BODY,
 } from './data/posts_strings';
 import CommentModel from './models/comments';
+import UserModel from './models/users';
+import PollModel from './models/polls';
+import PollOptionModel from './models/pollOptions';
+import NotificationModel from './models/notifications';
+import ArticleModel from './models/articles';
+import CommunityModel from './models/communities';
 
 // Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
 const userArgs = process.argv.slice(2);
@@ -59,6 +74,45 @@ mongoose.connect(mongoDB);
 const db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+/**
+ * Creates a new User document in the database.
+ *
+ * @param username
+ * @param password
+ * @param totalPoints
+ * @param unlockedFrames
+ * @param unlockedTitles
+ * @param equippedFrame
+ * @param equippedTitle
+ * @param notifications
+ * @returns A Promise that resolves to the created User document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function userCreate(
+  username: string,
+  password: string,
+  totalPoints: number,
+  unlockedFrames: string[],
+  unlockedTitles: string[],
+  equippedFrame: string,
+  equippedTitle: string,
+  notifications: Notification[],
+): Promise<User> {
+  if (username === '' || password === '')
+    throw new Error('Invalid User Format');
+  const userDetail: User = {
+    username: username,
+    password: password,
+    totalPoints: totalPoints,
+    unlockedFrames: unlockedFrames,
+    unlockedTitles: unlockedTitles,
+    equippedFrame: equippedFrame,
+    equippedTitle: equippedTitle,
+    notifications: notifications,
+  };
+  return await UserModel.create(userDetail);
+}
 
 /**
  * Creates a new Tag document in the database.
@@ -174,6 +228,141 @@ async function questionCreate(
 }
 
 /**
+ * Creates a new PollOption document in the database.
+ *
+ * @param text
+ * @param usersVoted
+ * @returns A Promise that resolves to the created PollOption document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function pollOptionCreate(
+  text: string,
+  usersVoted: string[],
+): Promise<PollOption> {
+  if (text === '')
+    throw new Error('Invalid PollOption Format');
+  const pollOptionDetail: PollOption = {
+    text: text,
+    usersVoted: usersVoted,
+  };
+  return await PollOptionModel.create(pollOptionDetail);
+}
+
+/**
+ * Creates a new Poll document in the database.
+ *
+ * @param title
+ * @param options
+ * @param createdBy
+ * @param pollDateTime
+ * @param pollDueDate
+ * @returns A Promise that resolves to the created Poll document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function pollCreate(
+  title: string,
+  options: PollOption[],
+  createdBy: User,
+  pollDateTime: Date,
+  pollDueDate: Date,
+): Promise<Poll> {
+  if (
+    title === '' ||
+    options.length === 0 ||
+    createdBy == null ||
+    pollDateTime == null ||
+    pollDueDate == null
+  )
+    throw new Error('Invalid Poll Format');
+  const pollDetail: Poll = {
+    title: title,
+    options: options,
+    createdBy: createdBy,
+    pollDateTime: pollDateTime,
+    pollDueDate: pollDueDate,
+  };
+  return await PollModel.create(pollDetail);
+}
+
+/**
+ * Creates a new Article document in the database.
+ *
+ * @param title
+ * @param body
+ * @returns A Promise that resolves to the created Article document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function articleCreate(
+  title: string,
+  body: string,
+): Promise<Article> {
+  if (title === '' || body === '')
+    throw new Error('Invalid Article Format');
+  const articleDetail: Article = {
+    title: title,
+    body: body,
+  };
+  return await ArticleModel.create(articleDetail);
+}
+
+/**
+ * Creates a new Community document in the database.
+ *
+ * @param name
+ * @param members
+ * @param questions
+ * @param polls
+ * @param articles
+ * @returns A Promise that resolves to the created Community document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function communityCreate(
+  name: string,
+  members: User[],
+  questions: Question[],
+  polls: Poll[],
+  articles: Article[],
+): Promise<Community> {
+  if (name === '' || members.length === 0)
+    throw new Error('Invalid Community Format');
+  const communityDetail: Community = {
+    name: name,
+    members: members,
+    questions: questions,
+    polls: polls,
+    articles: articles,
+  };
+  return await CommunityModel.create(communityDetail);
+}
+
+/**
+ * Creates a new Notification document in the database.
+ *
+ * @param notificationType
+ * @param sourceType
+ * @param source
+ * @param isRead
+ * @returns A Promise that resolves to the created Notification document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function notificationCreate(
+  notificationType: NotificationType,
+  isRead: boolean,
+  sourceType?: 'Question' | 'Poll' | 'Article',
+  source?: Question | Poll | Article,
+): Promise<Notification> {
+  if (!notificationType || isRead === undefined || isRead == null)
+    throw new Error('Invalid Notification Format');
+  const notificationDetail: Notification = {
+    notificationType: notificationType,
+    sourceType: sourceType,
+    source: source,
+    isRead: isRead,
+  };
+  return await NotificationModel.create(notificationDetail);
+}
+
+/**
  * Populates the database with predefined data.
  * Logs the status of the operation to the console.
  */
@@ -186,29 +375,29 @@ const populate = async () => {
     const t5 = await tagCreate(T5_NAME, T5_DESC);
     const t6 = await tagCreate(T6_NAME, T6_DESC);
 
-    const c1 = await commentCreate(C1_TEXT, 'sana', new Date('2023-12-12T03:30:00'));
-    const c2 = await commentCreate(C2_TEXT, 'ihba001', new Date('2023-12-01T15:24:19'));
+    const c1 = await commentCreate(C1_TEXT, 'Joji John', new Date('2023-12-12T03:30:00'));
+    const c2 = await commentCreate(C2_TEXT, 'abhi3241', new Date('2023-12-01T15:24:19'));
     const c3 = await commentCreate(C3_TEXT, 'saltyPeter', new Date('2023-12-18T09:24:00'));
     const c4 = await commentCreate(C4_TEXT, 'monkeyABC', new Date('2023-12-20T03:24:42'));
-    const c5 = await commentCreate(C5_TEXT, 'hamkalo', new Date('2023-12-23T08:24:00'));
-    const c6 = await commentCreate(C6_TEXT, 'azad', new Date('2023-12-22T17:19:00'));
-    const c7 = await commentCreate(C7_TEXT, 'hamkalo', new Date('2023-12-22T21:17:53'));
+    const c5 = await commentCreate(C5_TEXT, 'mackson3332', new Date('2023-12-23T08:24:00'));
+    const c6 = await commentCreate(C6_TEXT, 'alia', new Date('2023-12-22T17:19:00'));
+    const c7 = await commentCreate(C7_TEXT, 'saltyPeter', new Date('2023-12-22T21:17:53'));
     const c8 = await commentCreate(C8_TEXT, 'alia', new Date('2023-12-19T18:20:59'));
-    const c9 = await commentCreate(C9_TEXT, 'ihba001', new Date('2022-02-20T03:00:00'));
-    const c10 = await commentCreate(C10_TEXT, 'abhi3241', new Date('2023-02-10T11:24:30'));
+    const c9 = await commentCreate(C9_TEXT, 'abaya', new Date('2022-02-20T03:00:00'));
+    const c10 = await commentCreate(C10_TEXT, 'elephantCDE', new Date('2023-02-10T11:24:30'));
     const c11 = await commentCreate(C11_TEXT, 'Joji John', new Date('2023-03-18T01:02:15'));
     const c12 = await commentCreate(C12_TEXT, 'abaya', new Date('2023-04-10T14:28:01'));
 
-    const a1 = await answerCreate(A1_TXT, 'hamkalo', new Date('2023-11-20T03:24:42'), [c1]);
-    const a2 = await answerCreate(A2_TXT, 'azad', new Date('2023-11-23T08:24:00'), [c2]);
+    const a1 = await answerCreate(A1_TXT, 'elephantCDE', new Date('2023-11-20T03:24:42'), [c1]);
+    const a2 = await answerCreate(A2_TXT, 'abaya', new Date('2023-11-23T08:24:00'), [c2]);
     const a3 = await answerCreate(A3_TXT, 'abaya', new Date('2023-11-18T09:24:00'), [c3]);
     const a4 = await answerCreate(A4_TXT, 'alia', new Date('2023-11-12T03:30:00'), [c4]);
-    const a5 = await answerCreate(A5_TXT, 'sana', new Date('2023-11-01T15:24:19'), [c5]);
+    const a5 = await answerCreate(A5_TXT, 'abhi3241', new Date('2023-11-01T15:24:19'), [c5]);
     const a6 = await answerCreate(A6_TXT, 'abhi3241', new Date('2023-02-19T18:20:59'), [c6]);
     const a7 = await answerCreate(A7_TXT, 'mackson3332', new Date('2023-02-22T17:19:00'), [c7]);
-    const a8 = await answerCreate(A8_TXT, 'ihba001', new Date('2023-03-22T21:17:53'), [c8]);
+    const a8 = await answerCreate(A8_TXT, 'Joji John', new Date('2023-03-22T21:17:53'), [c8]);
 
-    await questionCreate(
+    const Q1 = await questionCreate(
       Q1_DESC,
       Q1_TXT,
       [t1, t2],
@@ -218,7 +407,7 @@ const populate = async () => {
       ['sana', 'abaya', 'alia'],
       [c9],
     );
-    await questionCreate(
+    const Q2 = await questionCreate(
       Q2_DESC,
       Q2_TXT,
       [t3, t4, t2],
@@ -228,7 +417,7 @@ const populate = async () => {
       ['mackson3332'],
       [c10],
     );
-    await questionCreate(
+    const Q3 = await questionCreate(
       Q3_DESC,
       Q3_TXT,
       [t5, t6],
@@ -238,7 +427,7 @@ const populate = async () => {
       ['monkeyABC', 'elephantCDE'],
       [c11],
     );
-    await questionCreate(
+    const Q4 = await questionCreate(
       Q4_DESC,
       Q4_TXT,
       [t3, t4, t5],
@@ -248,6 +437,67 @@ const populate = async () => {
       [],
       [c12],
     );
+
+    const N1 = await notificationCreate(NotificationType.Answer, false, 'Question', Q3);
+    const N2 = await notificationCreate(NotificationType.Comment, false, 'Question', Q2);
+    const N3 = await notificationCreate(NotificationType.AnswerComment, false, 'Question', Q1);
+    const N4 = await notificationCreate(NotificationType.Upvote, false, 'Question', Q3);
+    const N5 = await notificationCreate(NotificationType.NewQuestion, false, 'Question', Q4);
+    const N6 = await notificationCreate(NotificationType.NewReward, false);
+
+    // TODO: add realistic titles and profile frames once format is finalized
+    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [], '', '', [N1, N2]);
+    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [], '', '', [N3, N4, N1, N2]);
+    const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5, N6]);
+    const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', []);
+    const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1]);
+    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4000, [], [], '', '', [N6, N1, N4]);
+    const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2]);
+    const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3]);
+
+    const po1_promise = [
+      pollOptionCreate('Windows', []), 
+      pollOptionCreate('macOS', []), 
+      pollOptionCreate('Linux', []), 
+      pollOptionCreate('Other', []),
+    ];
+    const p1_options = await Promise.all(po1_promise);
+
+    const po2_promise = [
+      pollOptionCreate('Pyton', []), 
+      pollOptionCreate('JavaScript', []), 
+      pollOptionCreate('Java', []), 
+      pollOptionCreate('Rust', []),
+      pollOptionCreate('Go', []),
+      pollOptionCreate('Other', []),
+    ];
+    const p2_options = await Promise.all(po2_promise);
+
+    const po3_promise = [
+      pollOptionCreate('Static Typing (e.g., Java, TypeScript)', []), 
+      pollOptionCreate('Dynamic Typing (e.g., Python, JavaScript)', []),
+    ];
+    const p3_options = await Promise.all(po3_promise);
+
+    const P1 = await pollCreate(P1_TITLE, p1_options, U1, new Date('2024-10-30'), new Date('2024-11-26'));
+    const P2 = await pollCreate(P2_TITLE, p2_options, U2, new Date(), new Date('2024-11-26'));
+    const P3 = await pollCreate(P3_TITLE, p3_options, U3, new Date(), new Date('2024-11-11'));
+
+    const ART1 = await articleCreate(ART1_TITLE, ART1_BODY);
+    const ART2 = await articleCreate(ART2_TITLE, ART2_BODY);
+    const ART3 = await articleCreate(ART3_TITLE, ART3_BODY);
+
+    // community notifications
+    const N7 = await notificationCreate(NotificationType.NewPoll, false, 'Poll', P2);
+    const N8 = await notificationCreate(NotificationType.PollClosed, false, 'Poll', P3);
+    const N9 = await notificationCreate(NotificationType.NewArticle, false, 'Article', ART3);
+    const N10 = await notificationCreate(NotificationType.ArticleUpdate, false, 'Article', ART2);
+
+    const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10]);
+
+    await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9], [Q4], [P1], [ART1, ART2]);
+    await communityCreate('CS Majors', [U4, U5, U6, U7, U9], [Q1, Q2, Q3], [P2, P3], [ART3]);
+    await communityCreate('Northeastern CS4950', [U8, U4], [], [], []);
 
     console.log('Database populated');
   } catch (err) {
