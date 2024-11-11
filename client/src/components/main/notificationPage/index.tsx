@@ -1,4 +1,6 @@
+import useUserContext from '../../../hooks/useUserContext';
 import './index.css';
+import NotificationView from './notification';
 
 /**
  * NotificationPage component that displays a user's notifications.
@@ -6,6 +8,8 @@ import './index.css';
 const NotificationPage = () => {
   // To be implemented in sprint 2
   const handleReadAll = () => {};
+
+  const { user } = useUserContext();
 
   return (
     <div>
@@ -18,6 +22,11 @@ const NotificationPage = () => {
           }}>
           Mark All as Read
         </button>
+      </div>
+      <div className='notification_list'>
+        {user.notifications.map((notification, idx) => (
+          <NotificationView notif={notification} key={idx} />
+        ))}
       </div>
     </div>
   );
