@@ -343,7 +343,7 @@ export const populateCommunity = async (id: string | undefined): Promise<Communi
     result = await CommunityModel.findOne({ _id: id }).populate([
       { path: 'members', model: UserModel },
       { path: 'questions', model: QuestionModel },
-      { path: 'polls', model: PollModel, populate: { path: 'createdBy', model: UserModel } },
+      { path: 'polls', model: PollModel },
       { path: 'articles', model: ArticleModel },
     ]);
 
