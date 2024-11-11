@@ -1,5 +1,3 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import './communityList.css';
 import useCommunityList from '../../../hooks/useCommunityList';
 
@@ -7,16 +5,13 @@ import useCommunityList from '../../../hooks/useCommunityList';
  * Represents the community list component. Displays the list of communities.
  */
 const CommunityList = () => {
-  const navigate = useNavigate();
-  const { joinedCommunities, availableCommunities } = useCommunityList();
-
-  const handleCommunityClick = (communityID: string) => {
-    navigate(`/community/${communityID}`);
-  };
-
-  const handleCreateCommunity = () => {
-    navigate('/community/create');
-  };
+  const {
+    joinedCommunities,
+    availableCommunities,
+    handleCommunityClick,
+    handleCreateCommunity,
+    handleJoinCommunity,
+  } = useCommunityList();
 
   return (
     <div className='community-list'>
@@ -46,7 +41,7 @@ const CommunityList = () => {
               <span className='community-name' onClick={() => handleCommunityClick(community._id!)}>
                 {community.name}
               </span>
-              <button className='join-button' onClick={() => handleCommunityClick(community._id!)}>
+              <button className='join-button' onClick={() => handleJoinCommunity(community._id!)}>
                 Join
               </button>
             </li>
