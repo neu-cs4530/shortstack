@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { validateHyperlink } from '../tool';
 import addAnswer from '../services/answerService';
 import useUserContext from './useUserContext';
-import { Answer } from '../types';
-import { addPoints } from '../services/userService';
+import { Answer, Notification, NotificationType, Question } from '../types';
+import { addPoints, notifyUsers } from '../services/userService';
 
 /**
  * Custom hook for managing the state and logic of an answer submission form.
@@ -67,6 +67,14 @@ const useAnswerForm = () => {
     if (res && res._id) {
       // add points to user
       addPoints(user.username, 20);
+      // send notification to user(s) involved with the question
+      const notif: Notification = {
+        notificationType: NotificationType.Answer,
+        sourceType: 'Question',
+        source: { _id: questionID } as Question,
+        isRead: false,
+      };
+      notifyUsers(questionID, notif);
       // navigate to the question that was answered
       navigate(`/question/${questionID}`);
     }
