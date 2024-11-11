@@ -368,6 +368,21 @@ export interface Article {
 }
 
 /**
+ * Interface for the request parameters when finding an article by its ID.
+ * - articleID - The unique identifier of the article.
+ */
+export interface FindArticleById extends Request {
+  params: {
+    articleID: string;
+  };
+}
+
+/**
+ * Type representing the possible responses for an Article-related operation.
+ */
+export type ArticleResponse = Article | { error: string };
+
+/**
  * Interface representing a Community, which contains:
  * - _id - The unique identifier for the community. Optional field
  * - name - The name of the community.
