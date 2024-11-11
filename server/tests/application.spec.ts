@@ -24,6 +24,7 @@ import {
   saveNotification,
   addNotificationToUser,
   usersToNotify,
+  fetchArticleById,
 } from '../models/application';
 import {
   Answer,
@@ -42,6 +43,7 @@ import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
 import CommunityModel from '../models/communities';
 import NotificationModel from '../models/notifications';
+import ArticleModel from '../models/articles';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -1039,6 +1041,49 @@ describe('application module', () => {
       test('addPointsToUser should return an object with error if findOneAndUpdate returns an error', async () => {
         mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
         const result = await addPointsToUser('UserA', 5);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+  });
+
+  describe('Article model', () => {
+    describe('fetchArticleById', () => {
+      test('fetchArticleById should return an article when called with a valid ID', async () => {
+        const mockArticle: Article = {
+          _id: new ObjectId('65e9b5a995b6c7045a30d824'),
+          title: 'Some Title',
+          body: 'Body text',
+        };
+        mockingoose(ArticleModel).toReturn(mockArticle, 'findOne');
+
+        const result = (await fetchArticleById('65e9b5a995b6c7045a30d824')) as Article;
+
+        expect(result._id?.toString()).toEqual(mockArticle._id?.toString());
+        expect(result.title).toEqual(mockArticle.title);
+        expect(result.body).toEqual(mockArticle.body);
+      });
+
+      test('fetchArticleById should return an error object when findOne returns null', async () => {
+        mockingoose(ArticleModel).toReturn(null, 'findOne');
+
+        const result = await fetchArticleById('65e9b5a995b6c7045a30d824');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('fetchArticleById should return an error object when findOne throws an error', async () => {
+        mockingoose(ArticleModel).toReturn(new Error('error'), 'findOne');
+
+        const result = await fetchArticleById('65e9b5a995b6c7045a30d824');
 
         if (result && 'error' in result) {
           expect(true).toBeTruthy();
