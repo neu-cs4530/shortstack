@@ -7,7 +7,7 @@ import { Schema } from 'mongoose';
  * Each poll includes the following fields:
  * - `title`: The title of the poll.
  * - `options`: An array of references to `PollOption` documents associated with the poll.
- * - `createdBy`: The User that created the poll.
+ * - `createdBy`: The username of the user that created the poll.
  * - `pollDateTime`: The date and time when the poll was posted.
  * - `pollDueDate` : The date and time when the poll stops accepting votes.
  */
@@ -21,8 +21,7 @@ const pollSchema: Schema = new Schema(
       default: [],
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
+      type: String,
     },
     pollDateTime: {
       type: Date,

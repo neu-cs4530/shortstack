@@ -262,14 +262,14 @@ async function pollOptionCreate(
 async function pollCreate(
   title: string,
   options: PollOption[],
-  createdBy: User,
+  createdBy: string,
   pollDateTime: Date,
   pollDueDate: Date,
 ): Promise<Poll> {
   if (
     title === '' ||
     options.length === 0 ||
-    createdBy == null ||
+    createdBy == '' ||
     pollDateTime == null ||
     pollDueDate == null
   )
@@ -479,9 +479,9 @@ const populate = async () => {
     ];
     const p3_options = await Promise.all(po3_promise);
 
-    const P1 = await pollCreate(P1_TITLE, p1_options, U1, new Date('2024-10-30'), new Date('2024-11-26'));
-    const P2 = await pollCreate(P2_TITLE, p2_options, U2, new Date(), new Date('2024-11-26'));
-    const P3 = await pollCreate(P3_TITLE, p3_options, U3, new Date(), new Date('2024-11-11'));
+    const P1 = await pollCreate(P1_TITLE, p1_options, U1.username, new Date('2024-10-30'), new Date('2024-11-26'));
+    const P2 = await pollCreate(P2_TITLE, p2_options, U2.username, new Date(), new Date('2024-11-26'));
+    const P3 = await pollCreate(P3_TITLE, p3_options, U3.username, new Date(), new Date('2024-11-11'));
 
     const ART1 = await articleCreate(ART1_TITLE, ART1_BODY);
     const ART2 = await articleCreate(ART2_TITLE, ART2_BODY);
