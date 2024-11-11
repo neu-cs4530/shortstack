@@ -3,6 +3,7 @@ import { QueryOptions } from 'mongoose';
 import {
   Answer,
   AnswerResponse,
+  ArticleResponse,
   Comment,
   CommentResponse,
   Community,
@@ -1043,6 +1044,25 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     return tmap;
   } catch (error) {
     return { error: 'Error when construction tag map' };
+  }
+};
+
+/**
+ * Fetches an article by its ID.
+ *a
+ * @param {string} articleID - The ID of the article to fetch.
+ *
+ * @returns {Promise<ArticleResponse>} - Promise that resolves to the fetched article, or an error message.
+ */
+export const fetchArticleById = async (articleID: string): Promise<ArticleResponse> => {
+  try {
+    const article = await ArticleModel.findOne({ _id: articleID });
+    if (!article) {
+      throw new Error('Unable to find article');
+    }
+    return article;
+  } catch (error) {
+    return { error: 'Error when fetching an article by ID' };
   }
 };
 
