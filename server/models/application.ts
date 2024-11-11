@@ -10,6 +10,7 @@ import {
   CommunityResponse,
   Notification,
   NotificationResponse,
+  NotificationType,
   OrderType,
   Question,
   QuestionResponse,
@@ -573,6 +574,151 @@ export const addPointsToUser = async (
     return result;
   } catch (error) {
     return { error: 'Error when adding points to a user' };
+  }
+};
+
+// Given answered Question ID, notify question.askedBy and question subscribers
+const usersToNotifyOnNewAnswer = async (qid: string): Promise<string[]> => {
+  const question = await QuestionModel.findOne({ _id: qid });
+  if (!question) {
+    throw new Error('Error retrieving users to notify');
+  }
+  // TODO: return question.subscribers usernames once subscription has been implemented.
+  return [question.askedBy];
+};
+
+// Given Question ID, notify question.askedBy on new Comment or Upvote
+const questionAskerToNotify = async (qid: string): Promise<string[]> => {
+  const question = await QuestionModel.findOne({ _id: qid });
+  if (!question) {
+    throw new Error('Error retrieving users to notify');
+  }
+  return [question.askedBy];
+};
+
+// Given ID of commented-on Answer, notify answer.ansBy
+const userToNotifyOnAnswerComment = async (answerID: string): Promise<string[]> => {
+  const ans = await AnswerModel.findOne({ _id: answerID });
+  if (!ans) {
+    throw new Error('Error retrieving users to notify');
+  }
+  return [ans.ansBy];
+};
+
+// Given Question, Poll, or Article ID, notify members of the community the new post was made in.
+const usersToNotifyOnNewCommunityPost = async (
+  oid: string,
+  type: 'Question' | 'Poll' | 'Article',
+): Promise<string[]> => {
+  let community;
+  if (type === 'Question') {
+    community = await CommunityModel.findOne({ questions: oid }).populate([
+      { path: 'members', model: UserModel },
+    ]);
+  } else if (type === 'Poll') {
+    community = await CommunityModel.findOne({ polls: oid }).populate([
+      { path: 'members', model: UserModel },
+    ]);
+  } else if (type === 'Article') {
+    community = await CommunityModel.findOne({ articles: oid }).populate([
+      { path: 'members', model: UserModel },
+    ]);
+  }
+  if (!community) {
+    throw new Error('Error retrieving users to notify');
+  }
+  const communityUsernames = community.members.map(user => user.username);
+  return communityUsernames;
+};
+
+// Given ID of closed Poll, notify poll.createdBy and all users who voted in the poll.
+const usersToNotifyPollClosed = async (pid: string): Promise<string[]> => {
+  const poll = await PollModel.findOne({ _id: pid }).populate([
+    {
+      path: 'createdBy',
+      model: UserModel,
+    },
+    {
+      path: 'options',
+      model: PollModel,
+    },
+  ]);
+  if (!poll) {
+    throw new Error('Error retrieving users to notify');
+  }
+  const usersVoted = poll.options.map(op => op.usersVoted).flat();
+  return [poll.createdBy.username, ...usersVoted];
+};
+
+// Given ID of User who unlocked new reward, notify user.username.
+const userToNotifyForReward = async (uid: string): Promise<string[]> => {
+  const user = await UserModel.findOne({ _id: uid });
+  if (!user) {
+    throw new Error('Error retrieving user to notify');
+  }
+  return [user.username];
+};
+
+/**
+ * Determines a list of usernames to notify based on the given ObjectID and NotificationType.
+ *
+ * - Answer : Given Question ID, notify question.askedBy and question subscribers.
+ * - Comment : Given Question ID, notify question.askedBy.
+ * - AnswerComment : Given Answer ID, notify answer.ansBy
+ * - Upvote : Given Question ID, notify question.askedBy.
+ * - NewQuestion : Given Question ID, notify members of the community the question was posted in.
+ * - NewPoll : Given Poll ID, notify members of the community the poll was posted in.
+ * - PollClosed : Given Poll ID, notify poll.createdBy and users who voted in the poll.
+ * - NewArticle : Given Article ID, notify members of the community the article was posted in.
+ * - ArticleUpdate : Given Article ID, notify members of the community the article was posted in.
+ * - NewReward : Given User ID, notify the user.
+ *
+ * @param {string} oid - The ObjectID used to retrieve the usernames to notify from the database.
+ * @param {NotificationType} type - The notification type.
+ *
+ * @returns {Promise<string[] | { error: string }>} - The list of usernames, or an error message if the lookup failed
+ */
+export const usersToNotify = async (
+  oid: string,
+  type: NotificationType,
+): Promise<string[] | { error: string }> => {
+  try {
+    switch (type) {
+      case NotificationType.Answer:
+        return await usersToNotifyOnNewAnswer(oid);
+
+      case NotificationType.Comment:
+        return await questionAskerToNotify(oid);
+
+      case NotificationType.AnswerComment:
+        return await userToNotifyOnAnswerComment(oid);
+
+      case NotificationType.Upvote:
+        return await questionAskerToNotify(oid);
+
+      case NotificationType.NewQuestion:
+        return await usersToNotifyOnNewCommunityPost(oid, 'Question');
+
+      case NotificationType.NewPoll:
+        return await usersToNotifyOnNewCommunityPost(oid, 'Poll');
+
+      case NotificationType.PollClosed:
+        return await usersToNotifyPollClosed(oid);
+
+      case NotificationType.NewArticle:
+        return await usersToNotifyOnNewCommunityPost(oid, 'Article');
+
+      case NotificationType.ArticleUpdate:
+        return await usersToNotifyOnNewCommunityPost(oid, 'Article');
+
+      case NotificationType.NewReward:
+        return await userToNotifyForReward(oid);
+
+      default:
+        return [];
+    }
+  } catch (error) {
+    return { error: 'Error retrieving users to notify' };
   }
 };
 

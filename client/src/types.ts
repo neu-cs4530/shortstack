@@ -149,11 +149,11 @@ export interface CommentUpdatePayload {
 
 /**
  * Interface representing the payload for a vote update socket event.
- * - username - The user who's being notified.
+ * - usernames - The users who're being notified.
  * - notification - The notification response.
  */
 export interface NotificationUpdatePayload {
-  username: string;
+  usernames: string[];
   notification: NotificationResponse;
 }
 
