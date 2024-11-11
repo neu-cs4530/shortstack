@@ -17,7 +17,6 @@ const useCommunityForm = () => {
 
   const { user } = useUserContext();
   const [name, setName] = useState<string>('');
-  // TODO: should have an error message for joining community also (on community list page)
   const [createErr, setCreateErr] = useState<string>('');
 
   /**
