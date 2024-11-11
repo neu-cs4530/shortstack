@@ -1,6 +1,8 @@
 .notif_container {
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  align-items: center;
   gap: 16px;
   padding: 8px 16px 8px 16px;
   width: 100%;

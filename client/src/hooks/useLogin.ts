@@ -91,6 +91,7 @@ const useLogin = () => {
         unlockedTitles: [],
         equippedFrame: '',
         equippedTitle: '',
+        notifications: [],
       });
       setUser(newUser);
       navigate('/home');

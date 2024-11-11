@@ -6,7 +6,7 @@ import NotificationView from './notification';
  * NotificationPage component that displays a user's notifications.
  */
 const NotificationPage = () => {
-  // To be implemented in sprint 2
+  // TODO: To be implemented in sprint 2
   const handleReadAll = () => {};
 
   const { user } = useUserContext();

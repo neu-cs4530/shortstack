@@ -24,6 +24,7 @@ const NotificationView = ({ notif }: NotificationProps) => {
    * @returns the string that contains the notification's text.
    */
   const notifSourceText = (notifType: NotificationType): string => {
+    console.log(`Notification type: ${notifType}`);
     let text = '';
     switch (notifType) {
       case 'Answer':
@@ -54,7 +55,7 @@ const NotificationView = ({ notif }: NotificationProps) => {
         text = 'An article in your community has been updated.';
         break;
       default:
-        text = 'Congrats! You have unlocked a new reward!s';
+        text = 'Congrats! You have unlocked a new reward!';
     }
     return text;
   };
