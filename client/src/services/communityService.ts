@@ -54,7 +54,7 @@ const getCommunities = async (): Promise<Community[]> => {
  * @param communityID - The ID of the community.
  */
 const joinCommunity = async (userId: string, communityID: string): Promise<void> => {
-  const res = await api.put(`${COMMUNITY_API_URL}/joinCommuniy/${communityID}/${userId}`);
+  const res = await api.put(`${COMMUNITY_API_URL}/joinCommunity/${communityID}/${userId}`);
 
   if (res.status !== 200) {
     throw new Error(res.data);
