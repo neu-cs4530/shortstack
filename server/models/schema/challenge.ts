@@ -8,6 +8,7 @@ import { Schema } from 'mongoose';
  * - `actionAmount`: The amount of times that a certain action needs to be performed to complete the challenge.
  * - `challengeType`: The type of action that needs to be performed to complete the challenge.
  * - `hoursToComplete`: Amount of hours that a challenge needs to be completed within.
+ * - `reward`: The reward that the user receives upon completing the challenge.
  */
 const challengeSchema: Schema = new Schema(
   {
@@ -25,6 +26,10 @@ const challengeSchema: Schema = new Schema(
     },
     hoursToComplete: {
       type: Number,
+    },
+    reward: {
+      type: String,
+      required: true,
     },
   },
   { collection: 'Challenge' },

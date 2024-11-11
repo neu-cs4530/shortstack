@@ -24,6 +24,7 @@ import {
   saveNotification,
   addNotificationToUser,
   addUserToCommunity,
+  usersToNotify,
 } from '../models/application';
 import {
   Answer,
@@ -1332,6 +1333,84 @@ describe('application module', () => {
           expect(false).toBeTruthy();
         }
       });
+    });
+  });
+
+  describe('usersToNotify', () => {
+    // TODO update first test once subscribing is implemented
+    test('usersToNotify with NotificationType.Answer should return username of question asker', async () => {
+      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Answer);
+
+      expect(result).toEqual(['q_by1']);
+    });
+
+    test('usersToNotify with NotificationType.Comment should return username of question asker', async () => {
+      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Comment);
+
+      expect(result).toEqual(['q_by1']);
+    });
+
+    test('usersToNotify with NotificationType.Upvote should return username of question asker', async () => {
+      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Upvote);
+
+      expect(result).toEqual(['q_by1']);
+    });
+
+    test.each([[NotificationType.Answer], [NotificationType.Comment], [NotificationType.Upvote]])(
+      'usersToNotify with %p should throw an error if question not found',
+      async notifType => {
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+        try {
+          await usersToNotify('65e9b58910afe6e94fc6e6dc', notifType);
+          expect(false).toBeTruthy();
+        } catch (error) {
+          expect(true).toBeTruthy();
+        }
+      },
+    );
+
+    test('usersToNotify with NotificationType.AnswerComment should return username of answerer', async () => {
+      mockingoose(AnswerModel).toReturn(ans1, 'findOne');
+      const result = await usersToNotify(
+        '65e9b58910afe6e94fc6e6dc',
+        NotificationType.AnswerComment,
+      );
+
+      expect(result).toEqual(['ansBy1']);
+    });
+
+    test('usersToNotify with NotificationType.AnswerComment should throw an error if question not found', async () => {
+      mockingoose(AnswerModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.AnswerComment);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
+    });
+
+    test('usersToNotify with NotificationType.NewQuestion should return usernames of community members', async () => {
+      // TODO: finish tests for usersToNotify when implementing community notifications
+    });
+
+    test('usersToNotify with NotificationType.NewReward should return username of user', async () => {
+      mockingoose(UserModel).toReturn(userA, 'findOne');
+      const result = await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
+
+      expect(result).toEqual(['UserA']);
+    });
+
+    test('usersToNotify with NotificationType.NewReward should throw an error if question not found', async () => {
+      mockingoose(UserModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
     });
   });
 });
