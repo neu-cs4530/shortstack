@@ -20,12 +20,11 @@ const getCommunityDetails = async (communityId: string): Promise<Community> => {
 /**
  * Function to add a new community.
  *
- * @param userID - The ID of the user that created the community to add as a member.
  * @param community - The community object to add.
  * @throws Error if there is an issue creating the new community.
  */
-const addCommunity = async (userID: string, community: Community): Promise<Community> => {
-  const data = { userID, community };
+const addCommunity = async (community: Community): Promise<Community> => {
+  const data = { community };
   const res = await api.post(`${COMMUNITY_API_URL}/add`, data);
 
   if (res.status !== 200) {
@@ -48,4 +47,20 @@ const getCommunities = async (): Promise<Community[]> => {
   }
 };
 
-export { getCommunityDetails, addCommunity, getCommunities };
+/**
+ * Function to add a user to a community.
+ *
+ * @param userId - The ID of the user to add to the community.
+ * @param communityID - The ID of the community.
+ */
+const joinCommunity = async (userId: string, communityID: string): Promise<void> => {
+  const res = await api.put(`${COMMUNITY_API_URL}/joinCommuniy/${communityID}/${userId}`);
+
+  if (res.status !== 200) {
+    throw new Error(res.data);
+  }
+
+  return res.data;
+};
+
+export { getCommunityDetails, addCommunity, getCommunities, joinCommunity };

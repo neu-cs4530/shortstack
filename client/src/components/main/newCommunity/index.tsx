@@ -7,7 +7,7 @@ import useCommunityForm from '../../../hooks/useCommunityForm';
  * NewCommunityPage component allows users to create a new community with a name.
  */
 const NewCommunityPage = () => {
-  const { name, setName, createCommunity, nameErr } = useCommunityForm();
+  const { name, setName, createCommunity, createErr } = useCommunityForm();
 
   return (
     <Form>
@@ -17,14 +17,10 @@ const NewCommunityPage = () => {
         id={'formNameInput'}
         val={name}
         setState={setName}
-        err={nameErr}
+        err={createErr}
       />
       <div className='btn_indicator_container'>
-        <button
-          className='form_postBtn'
-          onClick={() => {
-            createCommunity();
-          }}>
+        <button className='form_postBtn' onClick={createCommunity}>
           Create Community
         </button>
         <div className='mandatory_indicator'>* indicates mandatory fields</div>

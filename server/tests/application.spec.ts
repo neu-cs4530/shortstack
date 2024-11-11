@@ -23,6 +23,7 @@ import {
   populateNotification,
   saveNotification,
   addNotificationToUser,
+  addUserToCommunity,
 } from '../models/application';
 import {
   Answer,
@@ -192,6 +193,15 @@ const communityWithID: Community = {
   _id: new ObjectId('65e9b716ff0e892116b2de14'),
   name: 'Community Name',
   members: [],
+  questions: [],
+  polls: [],
+  articles: [],
+};
+
+const communityWithUser: Community = {
+  _id: new ObjectId('65e9b716ff0e892116b2de15'),
+  name: 'Community Name',
+  members: [userA],
   questions: [],
   polls: [],
   articles: [],
@@ -1100,6 +1110,62 @@ describe('application module', () => {
           error:
             'Error when fetching and populating a community: Failed to fetch and populate the community',
         });
+      });
+    });
+
+    describe('addUserToCommunity', () => {
+      test('addUserToCommunity should return null if the given user does not exist', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        );
+
+        expect(result).toBeNull();
+      });
+
+      test('addUserToCommunity should return null if the given community does not exist', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(CommunityModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        );
+
+        expect(result).toBeNull();
+      });
+
+      test('addUserToCommunity should return an error on database error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(CommunityModel).toReturn(new Error('some database error'), 'findOneAndUpdate');
+
+        const result = await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        );
+
+        expect(result).toEqual({
+          error: 'Error when adding user to community: some database error',
+        });
+      });
+
+      test('addUserToCommunity should return the updated community', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(CommunityModel).toReturn(communityWithUser, 'findOneAndUpdate');
+
+        const result = (await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        )) as Community;
+
+        expect(result._id).toEqual(communityWithUser._id);
+        expect(result.name).toEqual(communityWithUser.name);
+        expect(result.members[0]).toEqual(userA._id);
+        expect(result.questions).toEqual(communityWithUser.questions);
+        expect(result.polls).toEqual(communityWithUser.polls);
+        expect(result.articles).toEqual(communityWithUser.articles);
       });
     });
   });

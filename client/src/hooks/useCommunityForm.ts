@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Community } from '../types';
-import { addCommunity } from '../services/communityService';
+import { addCommunity, joinCommunity } from '../services/communityService';
 import useUserContext from './useUserContext';
 
 /**
@@ -17,7 +17,8 @@ const useCommunityForm = () => {
 
   const { user } = useUserContext();
   const [name, setName] = useState<string>('');
-  const [nameErr, setNameErr] = useState<string>('');
+  // TODO: should have an error message for joining community also (on community list page)
+  const [createErr, setCreateErr] = useState<string>('');
 
   /**
    * Function to validate the form before submitting the new community.
@@ -29,10 +30,10 @@ const useCommunityForm = () => {
     if (!name) {
       isValid = false;
     } else if (name.length > 100) {
-      setNameErr('Name cannot be more than 100 characters');
+      setCreateErr('Name cannot be more than 100 characters');
       isValid = false;
     } else {
-      setNameErr('');
+      setCreateErr('');
     }
 
     return isValid;
@@ -60,11 +61,17 @@ const useCommunityForm = () => {
       articles: [],
     };
 
-    const res = await addCommunity(user._id, newCommunity);
+    try {
+      const res = await addCommunity(newCommunity);
 
-    if (res && res._id) {
-      // navigate to the community that was created
-      navigate(`/community/${res._id}`);
+      if (res?._id) {
+        // add the current user to the community they just created
+        await joinCommunity(user._id, res._id);
+        // navigate to the community that was created
+        navigate(`/community/${res._id}`);
+      }
+    } catch (error) {
+      setCreateErr((error as Error).message);
     }
   };
 
@@ -72,7 +79,7 @@ const useCommunityForm = () => {
     name,
     setName,
     createCommunity,
-    nameErr,
+    createErr,
   };
 };
 
