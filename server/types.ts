@@ -305,11 +305,9 @@ export interface AnswerUpdatePayload {
 /**
  * Interface representing the payload for a vote update socket event.
  * - usernames - The users who're being notified.
- * - notification - The notification response.
  */
 export interface NotificationUpdatePayload {
   usernames: string[];
-  notification: NotificationResponse;
 }
 
 /**

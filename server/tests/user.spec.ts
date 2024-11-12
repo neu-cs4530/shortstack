@@ -245,7 +245,38 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(200);
-      expect(response.body._id).toEqual(mockPollNotif._id?.toString());
+      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
+    });
+
+    it('should return the notifications that were added if multiple users to be notified', async () => {
+      const mockPollNotifB = {
+        ...mockPollNotif,
+        _id: new ObjectId('672e29e54e42e9c421fc2f7e'),
+      };
+      const mockReqBody = {
+        oid: '672e289cee67e0b36e0ef440',
+        notification: mockPollNotif,
+      };
+      usersToNotifySpy.mockResolvedValueOnce(['UserA', 'UserB']);
+      saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      saveNotificationSpy.mockResolvedValueOnce(mockPollNotifB);
+      addNotificationToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        notifications: [mockPollNotif],
+      });
+      addNotificationToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        notifications: [mockPollNotifB],
+      });
+      populateNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      populateNotificationSpy.mockResolvedValueOnce(mockPollNotifB);
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
+      expect(response.body[1]._id).toEqual(mockPollNotifB._id?.toString());
     });
 
     it('should return bad request if missing oid', async () => {
