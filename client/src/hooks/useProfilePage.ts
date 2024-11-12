@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getQuestionsByFilter } from '../services/questionService';
-import { Question } from '../types';
+import { getUserChallenges } from '../services/challengeService';
+import { Question, UserChallenge } from '../types';
 import useUserContext from './useUserContext';
 
 /**
@@ -11,6 +12,7 @@ import useUserContext from './useUserContext';
 const useProfilePage = () => {
   const { user } = useUserContext();
   const [userQuestions, setUserQuestions] = useState([] as Question[]);
+  const [userChallenges, setUserChallenges] = useState([] as UserChallenge[]);
 
   useEffect(() => {
     /**
@@ -18,11 +20,20 @@ const useProfilePage = () => {
      */
     const fetchData = async () => {
       try {
-        const res = await getQuestionsByFilter('newest', '', user.username);
-        setUserQuestions(res || null);
+        const questions = await getQuestionsByFilter('newest', '', user.username);
+        setUserQuestions(questions || null);
+        console.log('questions', questions);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching questions with username:', error);
+      }
+      try {
+        const challenges = await getUserChallenges(user.username);
+        setUserChallenges(challenges || null);
+        console.log('challenges', challenges);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error fetching challenges with username:', error);
       }
     };
 
@@ -30,7 +41,7 @@ const useProfilePage = () => {
     fetchData().catch(e => console.log(e));
   }, [user.username]);
 
-  return { user, userQuestions };
+  return { user, userQuestions, userChallenges };
 };
 
 export default useProfilePage;

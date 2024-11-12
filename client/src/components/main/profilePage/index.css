@@ -21,6 +21,28 @@
   align-items: center;
 }
 
+.profile-container {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-picture {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profile-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 125px;
+  height: 125px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 .profile_bar {
   display: flex;
   flex-direction: row;
@@ -53,4 +75,62 @@
 
 .profile_content {
   padding: 32px;
+}
+
+.challenge {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.challenge:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.challenge p {
+  margin: 8px 0;
+}
+
+.progress-bar-container {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+  height: 8px;
+}
+
+.progress-bar {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.status-complete .challenge {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.status-complete p {
+  color: #155724;
+}
+
+.status-in-progress .progress-bar {
+  background-color: #007bff;
+}
+
+.status-complete .progress-bar {
+  background-color: #28a745;
+}
+
+.completed-label {
+  background-color: #28a745;
+  color: white;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  margin-left: 8px;
 }
