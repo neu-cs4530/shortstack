@@ -288,7 +288,7 @@ export type NotificationResponse = Notification | { error: string };
 /**
  * Type representing the possible action options for a challenge's type.
  */
-export type ChallengeType = 'upvote' | 'answer' | 'question';
+export type ChallengeType = 'answer' | 'question';
 
 /**
  * Interface representing a Challenge, which contains:
