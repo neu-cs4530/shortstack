@@ -3,9 +3,16 @@ import {
   populateCommunity,
   saveCommunity,
   fetchAllCommunities,
+  AddQuestionToCommunityModel,
   addUserToCommunity,
 } from '../models/application';
-import { AddCommunityRequest, Community, CommunityResponse, FakeSOSocket } from '../types';
+import {
+  AddCommunityRequest,
+  AddQuestionToCommunityRequest,
+  CommunityResponse,
+  Community,
+  FakeSOSocket,
+} from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -119,6 +126,44 @@ const communityController = (socket: FakeSOSocket) => {
   };
 
   /**
+   * Adds a question to a specific community's question list.
+   *
+   * @param req The AddQuestionToCommunity request object containing the community ID and question ID.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const addQuestionToCommunity = async (
+    req: AddQuestionToCommunityRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { communityId } = req.params;
+    const { questionId } = req.body;
+
+    if (!communityId || !questionId) {
+      res.status(400).send('Community ID and Question ID are required');
+      return;
+    }
+
+    try {
+      const updatedCommunity = await AddQuestionToCommunityModel(communityId, questionId);
+
+      if (
+        updatedCommunity &&
+        'error' in updatedCommunity &&
+        updatedCommunity.error === 'Community not found'
+      ) {
+        res.status(404).send('Community not found');
+        return;
+      }
+
+      res.status(200).send(updatedCommunity);
+    } catch (error) {
+      res.status(500).send('Error adding question to community');
+    }
+  };
+
+  /**
    * Adds a user to the community.
    * @param req The HTTP request object containing the community ID and userID as parameters.
    * @param res The HTTP response object used to send back the status, or an error message
@@ -158,6 +203,7 @@ const communityController = (socket: FakeSOSocket) => {
   router.get('/getCommunity', getAllCommunities);
   router.get('/getCommunityById/:communityId', getCommunityById);
   router.put('/joinCommunity/:communityId/:userId', joinCommunity);
+  router.put('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
 
   return router;
 };

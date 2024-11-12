@@ -1096,6 +1096,37 @@ export const fetchAllCommunities = async (): Promise<Community[] | { error: stri
 };
 
 /**
+ * Adds a question ID to the specified community's question list.
+ *
+ * @param communityId - The ID of the community.
+ * @param questionId - The ID of the question to add.
+ * @returns The updated community document or an error object.
+ */
+export const AddQuestionToCommunityModel = async (communityId: string, questionId: string) => {
+  try {
+    const updatedCommunity = await CommunityModel.findByIdAndUpdate(
+      communityId,
+      { $push: { questions: questionId } },
+      { new: true },
+    );
+
+    if (!updatedCommunity) {
+      return { error: 'Community not found' };
+    }
+
+    const populatedCommunity = await populateCommunity(communityId);
+
+    if (populatedCommunity && 'error' in populatedCommunity) {
+      throw new Error(populatedCommunity.error);
+    }
+
+    return populatedCommunity;
+  } catch (error) {
+    return { error: 'Error adding question to community' };
+  }
+};
+
+/**
  * Saves a new UserChallenge to the database.
  *
  * @param {UserChallenge} userChallenge - The UserChallenge to save.

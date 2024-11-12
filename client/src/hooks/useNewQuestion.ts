@@ -6,6 +6,7 @@ import useUserContext from './useUserContext';
 import { Question } from '../types';
 import useCommunityList from './useCommunityList';
 import incrementChallengeProgress from '../services/challengeService';
+import { addQuestionToCommunity } from '../services/communityService';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -108,8 +109,6 @@ const useNewQuestion = () => {
       comments: [],
     };
 
-    // TODO: Post the question to the selected community if one is selected
-
     const res = await addQuestion(question);
 
     if (res && res._id) {
@@ -119,6 +118,10 @@ const useNewQuestion = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error((error as Error).message);
+      }
+      
+      if (selectedCommunity) {
+        await addQuestionToCommunity(selectedCommunity, res._id);
       }
       navigate('/home');
     }

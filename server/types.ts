@@ -305,11 +305,9 @@ export interface AnswerUpdatePayload {
 /**
  * Interface representing the payload for a vote update socket event.
  * - usernames - The users who're being notified.
- * - notification - The notification response.
  */
 export interface NotificationUpdatePayload {
   usernames: string[];
-  notification: NotificationResponse;
 }
 
 /**
@@ -438,6 +436,20 @@ export interface Challenge {
   challengeType: ChallengeType;
   hoursToComplete?: number;
   reward: string;
+}
+
+/**
+ * Interface extending the request body when adding a question to a community, which contains:
+ * - communityId - The unique identifier of the community.
+ * - questionId - The unique identifier of the question being added to the community.
+ */
+export interface AddQuestionToCommunityRequest extends Request {
+  params: {
+    communityId: string;
+  };
+  body: {
+    questionId: string;
+  };
 }
 
 /**

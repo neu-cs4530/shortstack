@@ -48,6 +48,21 @@ const getCommunities = async (): Promise<Community[]> => {
 };
 
 /**
+ * Function to add a question to a community.
+ *
+ * @param communityId - The ID of the community to add the question to.
+ * @param questionId - The ID of the question to add to the community.
+ * @throws Error if there is an issue adding the question to the community.
+ */
+const addQuestionToCommunity = async (communityId: string, questionId: string) => {
+  const data = { questionId };
+  const res = await api.put(`${COMMUNITY_API_URL}/addQuestionToCommunity/${communityId}`, data);
+  if (res.status !== 200) {
+    throw new Error('Error adding question to community');
+  }
+};
+
+/**
  * Function to add a user to a community.
  *
  * @param userId - The ID of the user to add to the community.
@@ -63,4 +78,4 @@ const joinCommunity = async (userId: string, communityID: string): Promise<void>
   return res.data;
 };
 
-export { getCommunityDetails, addCommunity, getCommunities, joinCommunity };
+export { getCommunityDetails, addCommunity, getCommunities, addQuestionToCommunity, joinCommunity };

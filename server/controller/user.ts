@@ -5,7 +5,6 @@ import {
   FakeSOSocket,
   NewNotificationRequest,
   Notification,
-  NotificationResponse,
   User,
 } from '../types';
 import {
@@ -142,7 +141,7 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Creates a notification and it to users in the database.
+   * Creates notifications and one to each users to be notified in the database.
    * If there is an error, the HTTP response's status is updated.
    *
    * @param req The NewNotificationRequest object containing an ObjectID and the notification to add.
@@ -167,42 +166,41 @@ const userController = (socket: FakeSOSocket) => {
         throw new Error('Error retrieving users to notify');
       }
 
-      // save notification to database
-      const notifFromDb = await saveNotification(notifInfo);
-
-      if ('error' in notifFromDb) {
-        throw new Error(notifFromDb.error as string);
-      }
+      // save a notification to database for each user
+      const notifsPromises = usernames.map(_ => saveNotification(notifInfo));
+      const notifsFromDb = (await Promise.all(notifsPromises)).map(notifResponse => {
+        if ('error' in notifResponse) {
+          throw new Error(notifResponse.error as string);
+        }
+        return notifResponse;
+      });
 
       // add the notification to all users to be notified
-      const promiseNotifiedUsers = usernames.map(username =>
-        addNotificationToUser(username, notifFromDb),
+      const promiseNotifiedUsers = usernames.map((username, i) =>
+        addNotificationToUser(username, notifsFromDb[i]),
       );
-      const notifiedUsers = (await Promise.all(promiseNotifiedUsers)).map(userResponse => {
+      (await Promise.all(promiseNotifiedUsers)).map(userResponse => {
         if (userResponse && 'error' in userResponse) {
           throw new Error(userResponse.error as string);
         }
         return userResponse.username;
       });
 
-      // populate the notification to return
-      const populatedNotif = await populateNotification(
-        notifFromDb._id?.toString(),
-        notifFromDb.sourceType,
+      // populate the notifications to return
+      const promisePopulatedNotifs = notifsFromDb.map(notif =>
+        populateNotification(notif._id?.toString(), notif.sourceType),
       );
 
-      if (populatedNotif && 'error' in populatedNotif) {
-        throw new Error(populatedNotif.error as string);
-      }
-
-      // Populates the fields of the notification that was added and emits the new object
-      // TODO: in client notification page, listen on 'notificationUpdate' for displaying notifications
-      // and showing unread notification indicator.
-      socket.emit('notificationUpdate', {
-        usernames: notifiedUsers,
-        notification: populatedNotif as NotificationResponse,
+      const populatedNotifs = (await Promise.all(promisePopulatedNotifs)).map(notifResponse => {
+        if ('error' in notifResponse) {
+          throw new Error(notifResponse.error as string);
+        }
+        return notifResponse;
       });
-      res.json(populatedNotif);
+
+      // Populates the fields of the notification that was added and emits the usernames who received notifications
+      socket.emit('notificationUpdate', { usernames });
+      res.json(populatedNotifs);
     } catch (error) {
       res.status(500).send('Error when adding notification to user');
     }
