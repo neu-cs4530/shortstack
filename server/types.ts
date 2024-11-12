@@ -304,11 +304,11 @@ export interface AnswerUpdatePayload {
 
 /**
  * Interface representing the payload for a vote update socket event.
- * - usernames - The users who're being notified.
+ * - username - The user who's being notified.
  * - notification - The notification response.
  */
 export interface NotificationUpdatePayload {
-  usernames: string[];
+  username: string;
   notification: NotificationResponse;
 }
 
