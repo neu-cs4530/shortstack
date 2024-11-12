@@ -70,7 +70,7 @@ describe('Community', () => {
       expect(response.text).toBe('Error fetching communities');
     });
   });
-  describe('POST /addQuestionToCommunity/:communityId', () => {
+  describe('PUT /addQuestionToCommunity/:communityId', () => {
     it('should add a question to a community', async () => {
       const mockCommunityId = new mongoose.Types.ObjectId();
       const mockQuestionId = new mongoose.Types.ObjectId();
@@ -87,7 +87,7 @@ describe('Community', () => {
       addQuestionToCommunityModelSpy.mockResolvedValueOnce(mockUpdatedCommunity);
 
       const response = await supertest(app)
-        .post(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
         .send({ questionId: mockQuestionId });
 
       expect(response.status).toBe(200);
@@ -104,7 +104,7 @@ describe('Community', () => {
       const mockCommunityId = new mongoose.Types.ObjectId().toString();
 
       const response = await supertest(app)
-        .post(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
         .send({});
 
       expect(response.status).toBe(400);
@@ -117,7 +117,7 @@ describe('Community', () => {
       addQuestionToCommunityModelSpy.mockResolvedValueOnce({ error: 'Community not found' });
 
       const response = await supertest(app)
-        .post(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
         .send({ questionId: mockQuestionId });
 
       expect(response.status).toBe(404);

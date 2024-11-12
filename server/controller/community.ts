@@ -165,7 +165,7 @@ const communityController = (socket: FakeSOSocket) => {
   router.post('/add', addCommunity);
   router.get('/communities', getAllCommunities);
   router.get('/communities/:communityId', getCommunityById);
-  router.post('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
+  router.put('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
 
   return router;
 };

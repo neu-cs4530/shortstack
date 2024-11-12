@@ -57,7 +57,7 @@ const getCommunities = async (): Promise<Community[]> => {
  */
 const addQuestionToCommunity = async (communityId: string, questionId: string) => {
   const data = { questionId };
-  const res = await api.post(`${COMMUNITY_API_URL}/addQuestionToCommunity/${communityId}`, data);
+  const res = await api.put(`${COMMUNITY_API_URL}/addQuestionToCommunity/${communityId}`, data);
   if (res.status !== 200) {
     throw new Error('Error adding question to community');
   }
