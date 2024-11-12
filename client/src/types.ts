@@ -284,3 +284,41 @@ export interface Notification {
  * Type representing the possible responses for a Notification-related operation.
  */
 export type NotificationResponse = Notification | { error: string };
+
+/**
+ * Type representing the possible action options for a challenge's type.
+ */
+export type ChallengeType = 'upvote' | 'answer' | 'question';
+
+/**
+ * Interface representing a Challenge, which contains:
+ * - _id - The unique identifier for the challenge. Optional field
+ * - description - Text that details the challenge's requirements.
+ * - actionAmount: The amount of times that a certain action needs to be performed to complete the challenge.
+ * - challengeType: The type of action that needs to be performed to complete the challenge.
+ * - hoursToComplete: Amount of hours that a challenge needs to be completed within. Optional field
+ * - reward: The reward for completing the challenge.
+ */
+export interface Challenge {
+  _id?: string;
+  description: string;
+  actionAmount: number;
+  challengeType: ChallengeType;
+  hoursToComplete?: number;
+  reward: string;
+}
+
+/**
+ * Interface representing a UserChallenge record, which contains:
+ * - _id - The unique identifier for the UserChallenge. Optional field
+ * - username - The username of the user associated with the UserChallenge
+ * - challenge - The Challenge associated with the UserChallenge
+ * - progress - The progress the user has made towards the challenge, represented as an array
+ *              of timestamps keeping track of when each progress event was made.
+ */
+export interface UserChallenge {
+  _id?: string;
+  username: string;
+  challenge: Challenge;
+  progress: Date[];
+}

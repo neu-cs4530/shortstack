@@ -5,6 +5,7 @@ import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
 import { Question } from '../types';
 import useCommunityList from './useCommunityList';
+import incrementChallengeProgress from '../services/challengeService';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -112,6 +113,13 @@ const useNewQuestion = () => {
     const res = await addQuestion(question);
 
     if (res && res._id) {
+      // add progress to any question-related challenges
+      try {
+        await incrementChallengeProgress(user.username, 'question');
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error((error as Error).message);
+      }
       navigate('/home');
     }
   };

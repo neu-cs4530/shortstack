@@ -5,6 +5,7 @@ import addAnswer from '../services/answerService';
 import useUserContext from './useUserContext';
 import { Answer, Notification, NotificationType, Question } from '../types';
 import { addPoints, notifyUsers } from '../services/userService';
+import incrementChallengeProgress from '../services/challengeService';
 
 /**
  * Custom hook for managing the state and logic of an answer submission form.
@@ -75,6 +76,13 @@ const useAnswerForm = () => {
         isRead: false,
       };
       notifyUsers(questionID, notif);
+      // add progress to any answer-related challenges
+      try {
+        await incrementChallengeProgress(user.username, 'answer');
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error((error as Error).message);
+      }
       // navigate to the question that was answered
       navigate(`/question/${questionID}`);
     }

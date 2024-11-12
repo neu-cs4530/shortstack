@@ -436,7 +436,7 @@ export interface Challenge {
   description: string;
   actionAmount: number;
   challengeType: ChallengeType;
-  hoursToComplete?: Number;
+  hoursToComplete?: number;
   reward: string;
 }
 
@@ -454,3 +454,21 @@ export interface UserChallenge {
   challenge: Challenge;
   progress: Date[];
 }
+
+/**
+ * Interface for the request parameters when incrementing the progress made to a User's challenges.
+ * 
+ * - userId - The username of the user to increment challenges for
+ * - challengeType - The types of challenges to increment progress for
+ */
+export interface ChallengeProgressRequest extends Request {
+  params: {
+    username: string;
+    challengeType: ChallengeType;
+  }
+}
+
+/**
+ * Type representing the possible responses for a UserChallenge-related operation.
+ */
+export type UserChallengeResponse = UserChallenge | { error: string };
