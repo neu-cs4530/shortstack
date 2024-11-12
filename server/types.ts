@@ -171,14 +171,14 @@ export interface AddPointsRequest extends Request {
 }
 
 /**
- * Interface for the request body when adding a notification to a user.
- * - body - The username and the notification to add.
- *  - username - The unique username of the user.
+ * Interface for the request body when creating a new notification.
+ * - body - The ObjectID and the notification to create.
+ *  - oid - An ObjectID used to determine what user's to add the new notification to.
  *  - notification - The notification to add.
  */
 export interface NewNotificationRequest extends Request {
   body: {
-    username: string,
+    oid: string,
     notification: Notification,
   };
 }
@@ -304,12 +304,10 @@ export interface AnswerUpdatePayload {
 
 /**
  * Interface representing the payload for a vote update socket event.
- * - username - The user who's being notified.
- * - notification - The notification response.
+ * - usernames - The users who're being notified.
  */
 export interface NotificationUpdatePayload {
-  username: string;
-  notification: NotificationResponse;
+  usernames: string[];
 }
 
 /**
@@ -366,6 +364,21 @@ export interface Article {
   title: string;
   body: string;
 }
+
+/**
+ * Interface for the request parameters when finding an article by its ID.
+ * - articleID - The unique identifier of the article.
+ */
+export interface FindArticleById extends Request {
+  params: {
+    articleID: string;
+  };
+}
+
+/**
+ * Type representing the possible responses for an Article-related operation.
+ */
+export type ArticleResponse = Article | { error: string };
 
 /**
  * Interface representing a Community, which contains:
@@ -437,4 +450,19 @@ export interface AddQuestionToCommunityRequest extends Request {
   body: {
     questionId: string;
   };
+}
+
+/**
+ * Interface representing a UserChallenge record, which contains:
+ * - _id - The unique identifier for the UserChallenge. Optional field
+ * - username - The username of the user associated with the UserChallenge
+ * - challenge - The Challenge associated with the UserChallenge
+ * - progress - The progress the user has made towards the challenge, represented as an array
+ *              of timestamps keeping track of when each progress event was made.
+ */
+export interface UserChallenge {
+  _id?: ObjectId;
+  username: string;
+  challenge: Challenge;
+  progress: Date[];
 }

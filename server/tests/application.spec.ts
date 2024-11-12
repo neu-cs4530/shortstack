@@ -23,6 +23,9 @@ import {
   populateNotification,
   saveNotification,
   addNotificationToUser,
+  addUserToCommunity,
+  usersToNotify,
+  fetchArticleById,
 } from '../models/application';
 import {
   Answer,
@@ -41,6 +44,7 @@ import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
 import CommunityModel from '../models/communities';
 import NotificationModel from '../models/notifications';
+import ArticleModel from '../models/articles';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -192,6 +196,15 @@ const communityWithID: Community = {
   _id: new ObjectId('65e9b716ff0e892116b2de14'),
   name: 'Community Name',
   members: [],
+  questions: [],
+  polls: [],
+  articles: [],
+};
+
+const communityWithUser: Community = {
+  _id: new ObjectId('65e9b716ff0e892116b2de15'),
+  name: 'Community Name',
+  members: [userA],
   questions: [],
   polls: [],
   articles: [],
@@ -1048,6 +1061,49 @@ describe('application module', () => {
     });
   });
 
+  describe('Article model', () => {
+    describe('fetchArticleById', () => {
+      test('fetchArticleById should return an article when called with a valid ID', async () => {
+        const mockArticle: Article = {
+          _id: new ObjectId('65e9b5a995b6c7045a30d824'),
+          title: 'Some Title',
+          body: 'Body text',
+        };
+        mockingoose(ArticleModel).toReturn(mockArticle, 'findOne');
+
+        const result = (await fetchArticleById('65e9b5a995b6c7045a30d824')) as Article;
+
+        expect(result._id?.toString()).toEqual(mockArticle._id?.toString());
+        expect(result.title).toEqual(mockArticle.title);
+        expect(result.body).toEqual(mockArticle.body);
+      });
+
+      test('fetchArticleById should return an error object when findOne returns null', async () => {
+        mockingoose(ArticleModel).toReturn(null, 'findOne');
+
+        const result = await fetchArticleById('65e9b5a995b6c7045a30d824');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('fetchArticleById should return an error object when findOne throws an error', async () => {
+        mockingoose(ArticleModel).toReturn(new Error('error'), 'findOne');
+
+        const result = await fetchArticleById('65e9b5a995b6c7045a30d824');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+  });
+
   describe('Community model', () => {
     describe('Save community', () => {
       test('Save community should return the saved community', async () => {
@@ -1100,6 +1156,62 @@ describe('application module', () => {
           error:
             'Error when fetching and populating a community: Failed to fetch and populate the community',
         });
+      });
+    });
+
+    describe('addUserToCommunity', () => {
+      test('addUserToCommunity should return null if the given user does not exist', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        );
+
+        expect(result).toBeNull();
+      });
+
+      test('addUserToCommunity should return null if the given community does not exist', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(CommunityModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        );
+
+        expect(result).toBeNull();
+      });
+
+      test('addUserToCommunity should return an error on database error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(CommunityModel).toReturn(new Error('some database error'), 'findOneAndUpdate');
+
+        const result = await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        );
+
+        expect(result).toEqual({
+          error: 'Error when adding user to community: some database error',
+        });
+      });
+
+      test('addUserToCommunity should return the updated community', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(CommunityModel).toReturn(communityWithUser, 'findOneAndUpdate');
+
+        const result = (await addUserToCommunity(
+          userA._id!.toString(),
+          communityWithUser._id!.toString(),
+        )) as Community;
+
+        expect(result._id).toEqual(communityWithUser._id);
+        expect(result.name).toEqual(communityWithUser.name);
+        expect(result.members[0]).toEqual(userA._id);
+        expect(result.questions).toEqual(communityWithUser.questions);
+        expect(result.polls).toEqual(communityWithUser.polls);
+        expect(result.articles).toEqual(communityWithUser.articles);
       });
     });
   });
@@ -1266,6 +1378,84 @@ describe('application module', () => {
           expect(false).toBeTruthy();
         }
       });
+    });
+  });
+
+  describe('usersToNotify', () => {
+    // TODO update first test once subscribing is implemented
+    test('usersToNotify with NotificationType.Answer should return username of question asker', async () => {
+      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Answer);
+
+      expect(result).toEqual(['q_by1']);
+    });
+
+    test('usersToNotify with NotificationType.Comment should return username of question asker', async () => {
+      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Comment);
+
+      expect(result).toEqual(['q_by1']);
+    });
+
+    test('usersToNotify with NotificationType.Upvote should return username of question asker', async () => {
+      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Upvote);
+
+      expect(result).toEqual(['q_by1']);
+    });
+
+    test.each([[NotificationType.Answer], [NotificationType.Comment], [NotificationType.Upvote]])(
+      'usersToNotify with %p should throw an error if question not found',
+      async notifType => {
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+        try {
+          await usersToNotify('65e9b58910afe6e94fc6e6dc', notifType);
+          expect(false).toBeTruthy();
+        } catch (error) {
+          expect(true).toBeTruthy();
+        }
+      },
+    );
+
+    test('usersToNotify with NotificationType.AnswerComment should return username of answerer', async () => {
+      mockingoose(AnswerModel).toReturn(ans1, 'findOne');
+      const result = await usersToNotify(
+        '65e9b58910afe6e94fc6e6dc',
+        NotificationType.AnswerComment,
+      );
+
+      expect(result).toEqual(['ansBy1']);
+    });
+
+    test('usersToNotify with NotificationType.AnswerComment should throw an error if question not found', async () => {
+      mockingoose(AnswerModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.AnswerComment);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
+    });
+
+    test('usersToNotify with NotificationType.NewQuestion should return usernames of community members', async () => {
+      // TODO: finish tests for usersToNotify when implementing community notifications
+    });
+
+    test('usersToNotify with NotificationType.NewReward should return username of user', async () => {
+      mockingoose(UserModel).toReturn(userA, 'findOne');
+      const result = await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
+
+      expect(result).toEqual(['UserA']);
+    });
+
+    test('usersToNotify with NotificationType.NewReward should throw an error if question not found', async () => {
+      mockingoose(UserModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
     });
   });
 });

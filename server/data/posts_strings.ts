@@ -76,3 +76,40 @@ export const C11_TEXT =
   'I found the discussion on SharedPreferences vs apply() very useful. Great explanation of the differences!';
 export const C12_TEXT =
   "I feel like there's so much more to Android Studio that I'm just scratching the surface of. Thanks for sharing your experience!";
+
+export const P1_TITLE = 'Which operating system do you prefer for development?';
+export const P2_TITLE = 'Preferred Programming Language';
+export const P3_TITLE = 'Do you prefer static typing or dynamic typing in programming languages?';
+
+export const ART1_TITLE = 'The Future of Quantum Computing: What You Need to Know';
+export const ART1_BODY =
+  'Quantum computing is one of the most exciting and controversial areas of technology development. At its core, quantum computing leverages the principles of quantum mechanics to process information in ways that traditional classical computers simply cannot. Unlike classical bits, which can only represent 0 or 1, quantum bits or qubits can represent multiple states simultaneously, thanks to superposition and entanglement. This gives quantum computers the potential to solve certain problems exponentially faster than classical computers.\n\nCurrently, quantum computers are still in their infancy, but they promise to revolutionize fields such as cryptography, optimization, and material science. One of the most well-known potential applications is in the field of cryptography. Quantum computers have the ability to break current encryption methods, leading to the development of new, quantum-resistant encryption standards.\n\nThe race to build practical quantum computers is underway, with companies like IBM, Google, and Intel making significant investments. However, there are still many technical hurdles to overcome, including issues with qubit coherence times and error rates. Despite these challenges, the future of quantum computing holds great promise, with breakthroughs expected in the next decade. As researchers continue to advance quantum algorithms and hardware, we may see quantum computers take on real-world problems that are currently out of reach for classical machines.';
+
+export const ART2_TITLE = 'Why Python is the Go-To Language in 2024';
+export const ART2_BODY =
+  'Python is everywhere in 2024, and for good reason. It’s easy to learn, with a simple, readable syntax that’s perfect for beginners. But don’t let that fool you—Python is also packed with powerful libraries for everything from web development (think Flask and Django) to data science (Pandas, NumPy).\n\nThe best part? You can do almost anything with it—automate tasks, build websites, even create games. Python’s versatility and huge community make it a must-learn language for anyone in tech.\n\nIf you haven’t tried it yet, now’s a great time!';
+
+export const ART3_TITLE = 'Lorem Ipsum: Dolor Sit Amet Consectetur Adipiscing Elit';
+export const ART3_BODY =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.';
+
+export const CHAL1_DESCRIPTION = 'Answer 1 question';
+export const CHAL1_AMT = 1;
+export const CHAL1_REWARD = 'Rookie Responder';
+
+export const CHAL2_DESCRIPTION = 'Answer 10 questions';
+export const CHAL2_AMT = 10;
+export const CHAL2_REWARD = 'Star Contributor';
+
+export const CHAL3_DESCRIPTION = 'Ask 1 question';
+export const CHAL3_AMT = 1;
+export const CHAL3_REWARD = 'Curious Explorer';
+
+export const CHAL4_DESCRIPTION = 'Ask 5 questions';
+export const CHAL4_AMT = 5;
+export const CHAL4_REWARD = 'Engaged Inquirer';
+
+export const CHAL5_DESCRIPTION = 'Answer 10 questions in a single day';
+export const CHAL5_AMT = 10;
+export const CHAL5_REWARD = 'Unstoppable';
+export const CHAL5_HRS = 24;

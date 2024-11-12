@@ -8,6 +8,7 @@ import { Article, Notification, NotificationType, Poll, User } from '../types';
 const saveUserSpy = jest.spyOn(util, 'saveUser');
 const findUserSpy = jest.spyOn(util, 'findUser');
 const addPointsToUserSpy = jest.spyOn(util, 'addPointsToUser');
+const usersToNotifySpy = jest.spyOn(util, 'usersToNotify');
 const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
 const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
 const populateNotificationSpy = jest.spyOn(util, 'populateNotification');
@@ -229,9 +230,10 @@ describe('User API', () => {
 
     it('should return the notification that was added', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: mockPollNotif,
       };
+      usersToNotifySpy.mockResolvedValueOnce(['UserA']);
       saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
       addNotificationToUserSpy.mockResolvedValueOnce({
         ...mockNewUser,
@@ -243,10 +245,41 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(200);
-      expect(response.body._id).toEqual(mockPollNotif._id?.toString());
+      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
     });
 
-    it('should return bad request if missing username', async () => {
+    it('should return the notifications that were added if multiple users to be notified', async () => {
+      const mockPollNotifB = {
+        ...mockPollNotif,
+        _id: new ObjectId('672e29e54e42e9c421fc2f7e'),
+      };
+      const mockReqBody = {
+        oid: '672e289cee67e0b36e0ef440',
+        notification: mockPollNotif,
+      };
+      usersToNotifySpy.mockResolvedValueOnce(['UserA', 'UserB']);
+      saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      saveNotificationSpy.mockResolvedValueOnce(mockPollNotifB);
+      addNotificationToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        notifications: [mockPollNotif],
+      });
+      addNotificationToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        notifications: [mockPollNotifB],
+      });
+      populateNotificationSpy.mockResolvedValueOnce(mockPollNotif);
+      populateNotificationSpy.mockResolvedValueOnce(mockPollNotifB);
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
+      expect(response.body[1]._id).toEqual(mockPollNotifB._id?.toString());
+    });
+
+    it('should return bad request if missing oid', async () => {
       const mockReqBody = {
         notification: mockPollNotif,
       };
@@ -259,7 +292,7 @@ describe('User API', () => {
 
     it('should return bad request if missing notification to add', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
       };
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
@@ -270,7 +303,7 @@ describe('User API', () => {
 
     it('should return bad request if notification to add missing required isRead', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: {
           notificationType: NotificationType.PollClosed,
         }, // missing required isRead
@@ -284,7 +317,7 @@ describe('User API', () => {
 
     it('should return bad request if notification to add missing required notificationType', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: {
           isRead: true,
         }, // missing required notificationType
@@ -298,7 +331,7 @@ describe('User API', () => {
 
     it('should return bad request if notification to add has sourceType, missing source', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: {
           notificationType: NotificationType.ArticleUpdate,
           sourceType: 'Question',
@@ -314,7 +347,7 @@ describe('User API', () => {
 
     it('should return bad request if notification to add has source, missing sourceType', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: {
           notificationType: NotificationType.ArticleUpdate,
           source: { _id: new ObjectId('672e289cee67e0b36e0ef440') } as Article,
@@ -328,11 +361,38 @@ describe('User API', () => {
       expect(response.status).toBe(400);
     });
 
-    it('should return 500 if error object returned by `saveNotification`', async () => {
+    it('should return 500 if empty list returned by `usersToNotify`', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: mockPollNotif,
       };
+      usersToNotifySpy.mockResolvedValueOnce([]);
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+    });
+
+    it('should return 500 if error object returned by `usersToNotify`', async () => {
+      const mockReqBody = {
+        oid: '672e289cee67e0b36e0ef440',
+        notification: mockPollNotif,
+      };
+      usersToNotifySpy.mockResolvedValueOnce({ error: 'Error when finding users' });
+      // Making the request
+      const response = await supertest(app).post('/user/notify').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+    });
+
+    it('should return 500 if error object returned by `saveNotification`', async () => {
+      const mockReqBody = {
+        oid: '672e289cee67e0b36e0ef440',
+        notification: mockPollNotif,
+      };
+      usersToNotifySpy.mockResolvedValueOnce(['UserA']);
       saveNotificationSpy.mockResolvedValueOnce({
         error: 'Error when saving notification',
       });
@@ -345,9 +405,10 @@ describe('User API', () => {
 
     it('should return 500 if error object returned by `addNotificationToUser`', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: mockPollNotif,
       };
+      usersToNotifySpy.mockResolvedValueOnce(['UserA']);
       saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
       addNotificationToUserSpy.mockResolvedValueOnce({
         error: 'Error when adding notification to a user',
@@ -361,9 +422,10 @@ describe('User API', () => {
 
     it('should return 500 if error object returned by `populateNotification`', async () => {
       const mockReqBody = {
-        username: 'UserA',
+        oid: '672e289cee67e0b36e0ef440',
         notification: mockPollNotif,
       };
+      usersToNotifySpy.mockResolvedValueOnce(['UserA']);
       saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
       addNotificationToUserSpy.mockResolvedValueOnce({
         ...mockNewUser,
