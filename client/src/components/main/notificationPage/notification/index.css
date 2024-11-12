@@ -1,0 +1,31 @@
+.notif_container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: left;
+  gap: 32px;
+  padding: 16px 32px 16px 32px;
+  width: 100%;
+  border-radius: 16px;
+  border-style: none;
+}
+
+.notif_container.unread {
+  background-color: #FFC3A0;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  border-left-style: solid;
+  border-left-width: 8px;
+  border-left-color: #ff7a2d;
+}
+
+.notif_text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+h3, p {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
