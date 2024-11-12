@@ -4,6 +4,8 @@ import {
   Answer,
   AnswerResponse,
   ArticleResponse,
+  Challenge,
+  ChallengeType,
   Comment,
   CommentResponse,
   Community,
@@ -16,6 +18,8 @@ import {
   QuestionResponse,
   Tag,
   User,
+  UserChallenge,
+  UserChallengeResponse,
   UserResponse,
 } from '../types';
 import AnswerModel from './answers';
@@ -27,6 +31,8 @@ import CommunityModel from './communities';
 import PollModel from './polls';
 import ArticleModel from './articles';
 import NotificationModel from './notifications';
+import UserChallengeModel from './useChallenge';
+import ChallengeModel from './challenges';
 
 /**
  * Parses tags from a search string.
@@ -1120,5 +1126,144 @@ export const AddQuestionToCommunityModel = async (communityId: string, questionI
     return populatedCommunity;
   } catch (error) {
     return { error: 'Error adding question to community' };
+  }
+};
+
+/**
+ * Saves a new UserChallenge to the database.
+ *
+ * @param {UserChallenge} userChallenge - The UserChallenge to save.
+ * @returns {Promise<UserChallengeResponse>} - The saved UserChallenge or an error if the save failed.
+ */
+export const saveUserChallenge = async (
+  userChallenge: UserChallenge,
+): Promise<UserChallengeResponse> => {
+  try {
+    const result = await UserChallengeModel.create(userChallenge);
+    return result;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Fetches the populated UserChallenges for the user with the given username.
+ *
+ * @param username - The username of the user to fetch UserChallenges of.
+ * @returns - A list of UserChallenges for the user or an error if the operation failed.
+ */
+export const fetchUserChallengesByUsername = async (
+  username: string,
+): Promise<UserChallenge[] | { error: string }> => {
+  try {
+    const userChallenges = await UserChallengeModel.find({ username }).populate({
+      path: 'challenge',
+      model: ChallengeModel,
+    });
+
+    return userChallenges;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Adds progress to all Challenges matching the given type for the given user.
+ *
+ * @param {string} username - The username of the user to add progress to.
+ * @param {ChallengeType} challengeType - The type of challenge to add progress to.
+ * @returns {Promise<UserChallenge[] | { error: string}>} - The list of UserChallenges that were updated
+ *  or an error if the operation failed.
+ */
+export const fetchAndIncrementChallengesByUserAndType = async (
+  username: string,
+  challengeType: ChallengeType,
+): Promise<UserChallenge[] | { error: string }> => {
+  try {
+    const userChallenges = await fetchUserChallengesByUsername(username);
+
+    if ('error' in userChallenges) {
+      throw new Error(userChallenges.error);
+    }
+
+    // Filter out UserChallenge records whose challenge fields don't match the challengeType
+    // and UserChallenge records that are already complete
+    let filteredUserChallenges: UserChallenge[] = userChallenges.filter(
+      uc =>
+        uc.challenge?.challengeType === challengeType &&
+        uc.progress.length < uc.challenge?.actionAmount,
+    );
+
+    // For timed challenges, remove progress entries that have expired
+    const currentTime = new Date();
+    filteredUserChallenges = filteredUserChallenges.map(uc => {
+      if (uc.challenge.hoursToComplete) {
+        const expireDeadline = new Date(
+          currentTime.getTime() - uc.challenge.hoursToComplete * 1000 * 60 * 60,
+        );
+        const updatedUserChallenge: UserChallenge = {
+          _id: uc._id,
+          username: uc.username,
+          challenge: uc.challenge,
+          progress: uc.progress.filter(p => p >= expireDeadline),
+        };
+        return updatedUserChallenge;
+      }
+      return uc;
+    });
+
+    // Initialize UserChallenge records for any Challenges that match the challengeType that don't
+    // have UserChallenge records yet
+    const challenges = (await ChallengeModel.find({ challengeType })) as Challenge[];
+    const challengesToStart = challenges.filter(
+      c => !userChallenges.some(uc => uc.challenge._id?.toString() === c._id?.toString()),
+    );
+    const newUserChallengePromises: Promise<UserChallenge>[] = challengesToStart.map(async c => {
+      const newUserChallenge: UserChallenge = {
+        username,
+        challenge: c,
+        progress: [],
+      };
+      const newUserChallengeResponse = await saveUserChallenge(newUserChallenge);
+      if ('error' in newUserChallengeResponse) {
+        throw new Error(newUserChallengeResponse.error);
+      }
+      return newUserChallengeResponse as UserChallenge;
+    });
+    const newUserChallenges: UserChallenge[] = await Promise.all(newUserChallengePromises);
+
+    // UserChallenges to update = existing UserChallenges + new UserChallenges
+    const userChallengesToUpdate = [...filteredUserChallenges, ...newUserChallenges].map(uc => {
+      const updatedUserChallenge: UserChallenge = {
+        _id: uc._id,
+        username: uc.username,
+        challenge: uc.challenge,
+        progress: [...uc.progress, currentTime],
+      };
+      return updatedUserChallenge;
+    });
+
+    // Add progress to UserChallenges
+    const updatePromises: Promise<UserChallenge>[] = userChallengesToUpdate.map(async uc => {
+      const userChallengeRecord = await UserChallengeModel.findOneAndUpdate(
+        { _id: uc._id },
+        { progress: uc.progress },
+        { new: true },
+      ).populate({
+        path: 'challenge',
+        model: ChallengeModel,
+      });
+
+      if (!userChallengeRecord) {
+        throw new Error('Error while updating UserChallenges');
+      }
+      return userChallengeRecord as UserChallenge;
+    });
+
+    const updatedUserChallenges: UserChallenge[] = await Promise.all(updatePromises);
+
+    return updatedUserChallenges;
+  } catch (error) {
+    return { error: (error as Error).message };
   }
 };

@@ -16,11 +16,13 @@ const userChallengeSchema: Schema = new Schema(
       required: true,
     },
     challenge: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'Challenge' }],
+      type: Schema.Types.ObjectId,
+      ref: 'Challenge',
       required: true,
     },
     progress: {
-      type: { type: [Date], default: [] },
+      type: [Date],
+      default: [],
     },
   },
   { collection: 'UserChallenge' },

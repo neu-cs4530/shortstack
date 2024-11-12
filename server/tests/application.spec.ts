@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ObjectId } from 'mongodb';
 import Tags from '../models/tags';
 import QuestionModel from '../models/questions';
@@ -26,6 +27,9 @@ import {
   addUserToCommunity,
   usersToNotify,
   fetchArticleById,
+  saveUserChallenge,
+  fetchUserChallengesByUsername,
+  fetchAndIncrementChallengesByUserAndType,
 } from '../models/application';
 import {
   Answer,
@@ -38,6 +42,8 @@ import {
   Article,
   Poll,
   Community,
+  UserChallenge,
+  Challenge,
 } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
@@ -45,9 +51,13 @@ import UserModel from '../models/users';
 import CommunityModel from '../models/communities';
 import NotificationModel from '../models/notifications';
 import ArticleModel from '../models/articles';
+import UserChallengeModel from '../models/useChallenge';
+import ChallengeModel from '../models/challenges';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const application = require('../models/application');
 
 const newUser: User = {
   username: 'UserA',
@@ -238,6 +248,66 @@ const rewardNotif: Notification = {
   _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
   notificationType: NotificationType.NewReward,
   isRead: false,
+};
+
+const challenge1: Challenge = {
+  _id: new ObjectId('673d17e54e42e9d121fc2f8d'),
+  description: 'challenge1 description',
+  actionAmount: 3,
+  challengeType: 'question',
+  reward: 'some title 1',
+};
+
+const challenge2: Challenge = {
+  _id: new ObjectId('673d17e54e42e9d121fc2f8e'),
+  description: 'challenge2 description',
+  actionAmount: 10,
+  challengeType: 'question',
+  hoursToComplete: 24,
+  reward: 'some title 2',
+};
+
+const challenge3: Challenge = {
+  _id: new ObjectId('673d17e54e42e9d121fc2f8f'),
+  description: 'challenge3 description',
+  actionAmount: 2,
+  challengeType: 'answer',
+  reward: 'some title 2',
+};
+
+const userChallenge1: UserChallenge = {
+  _id: new ObjectId(),
+  username: userA.username,
+  challenge: challenge1,
+  progress: [],
+};
+
+const userChallenge2: UserChallenge = {
+  _id: new ObjectId(),
+  username: userA.username,
+  challenge: challenge2,
+  progress: [new Date()],
+};
+
+const userChallenge3: UserChallenge = {
+  _id: new ObjectId(),
+  username: userA.username,
+  challenge: challenge3,
+  progress: [],
+};
+
+const expiredUserChallenge: UserChallenge = {
+  _id: new ObjectId(),
+  username: userA.username,
+  challenge: challenge2,
+  progress: [new Date(new Date().getTime() - 1000 * 60 * 60 * 25)], // 25 hours old (expired)
+};
+
+const completedUserChallenge: UserChallenge = {
+  _id: new ObjectId(),
+  username: userA.username,
+  challenge: challenge1,
+  progress: [new Date(), new Date(), new Date()],
 };
 
 describe('application module', () => {
@@ -1456,6 +1526,257 @@ describe('application module', () => {
       } catch (error) {
         expect(true).toBeTruthy();
       }
+    });
+  });
+
+  describe('Challenge model', () => {
+    describe('saveUserChallenge', () => {
+      test('should return the UserChallenge if create is successful', async () => {
+        mockingoose(UserChallengeModel).toReturn(userChallenge1, 'create');
+
+        const result = (await saveUserChallenge(userChallenge1)) as UserChallenge;
+
+        expect(result._id).toEqual(userChallenge1._id);
+        expect(result.challenge).toEqual(challenge1._id);
+        expect(result.username).toEqual(userA.username);
+        expect(result.progress).toEqual([]);
+      });
+
+      test('should return an error if create throws an error', async () => {
+        jest
+          .spyOn(UserChallengeModel, 'create')
+          .mockRejectedValueOnce(new Error('error from create'));
+
+        const result = await saveUserChallenge(userChallenge1);
+
+        if (result && 'error' in result) {
+          expect(result.error).toEqual('error from create');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+
+    describe('fetchUserChallengesByUsername', () => {
+      test('should return the populated UserChallenges when successful', async () => {
+        mockingoose(UserChallengeModel).toReturn([userChallenge1, userChallenge2], 'find');
+        mockingoose(UserChallengeModel).toReturn([userChallenge1, userChallenge2], 'populate');
+
+        const result = await fetchUserChallengesByUsername(userA.username);
+
+        if (result && !('error' in result)) {
+          expect(result[0]._id).toEqual(userChallenge1._id);
+          expect(result[1]._id).toEqual(userChallenge2._id);
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('should return an error if find throws an error', async () => {
+        mockingoose(UserChallengeModel).toReturn(new Error('error'), 'find');
+
+        const result = await fetchUserChallengesByUsername(userA.username);
+
+        if (result && 'error' in result) {
+          expect(result.error).toEqual('error');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+
+    describe('fetchAndIncrementChallengesByUserAndType', () => {
+      test('should return the updated UserChallenges that match the given type', async () => {
+        const currentTime = new Date();
+        jest
+          .spyOn(application, 'fetchUserChallengesByUsername')
+          .mockResolvedValueOnce([userChallenge1, userChallenge2, userChallenge3]);
+
+        // no new challenges to initialize UserChallenges for
+        mockingoose(ChallengeModel).toReturn([], 'find');
+
+        jest
+          .spyOn(UserChallengeModel, 'findOneAndUpdate')
+          .mockImplementationOnce(
+            () =>
+              ({
+                populate: jest.fn().mockResolvedValueOnce({
+                  ...userChallenge1,
+                  progress: [currentTime],
+                  challenge: challenge1,
+                }) as any,
+              }) as any,
+          )
+          .mockImplementationOnce(
+            () =>
+              ({
+                populate: jest.fn().mockResolvedValueOnce({
+                  ...userChallenge2,
+                  progress: [...userChallenge2.progress, currentTime],
+                  challenge: challenge2,
+                }) as any,
+              }) as any,
+          );
+
+        const result = (await fetchAndIncrementChallengesByUserAndType(
+          userA.username,
+          'question',
+        )) as UserChallenge[];
+
+        // userChallenge3 should not be included because it's challenge has type 'answer'
+        expect(result).toHaveLength(2);
+        expect(result[0].username).toBe(userA.username);
+        expect(result[0].challenge._id).toBe(challenge1._id);
+        expect(result[0].progress.length).toBe(1);
+        expect(result[1].username).toBe(userA.username);
+        expect(result[1].challenge._id).toBe(challenge2._id);
+        expect(result[1].progress.length).toBe(2);
+      });
+
+      test('should not update the completed UserChallenges', async () => {
+        jest
+          .spyOn(application, 'fetchUserChallengesByUsername')
+          .mockResolvedValueOnce([completedUserChallenge]);
+
+        // no new challenges to initialize UserChallenges for
+        mockingoose(ChallengeModel).toReturn([], 'find');
+
+        const result = (await fetchAndIncrementChallengesByUserAndType(
+          userA.username,
+          'question',
+        )) as UserChallenge[];
+
+        // Completed challenge should not be included in response
+        expect(result).toHaveLength(0);
+      });
+
+      test('should remove the expired progress entries from the existing UserChallenges', async () => {
+        const currentTime = new Date();
+        jest
+          .spyOn(application, 'fetchUserChallengesByUsername')
+          .mockResolvedValueOnce([expiredUserChallenge]);
+
+        // no new challenges to initialize UserChallenges for
+        mockingoose(ChallengeModel).toReturn([], 'find');
+
+        jest.spyOn(UserChallengeModel, 'findOneAndUpdate').mockImplementationOnce(
+          () =>
+            ({
+              populate: jest.fn().mockResolvedValueOnce({
+                ...expiredUserChallenge,
+                progress: [currentTime],
+                challenge: challenge2,
+              }) as any,
+            }) as any,
+        );
+
+        const result = (await fetchAndIncrementChallengesByUserAndType(
+          userA.username,
+          'question',
+        )) as UserChallenge[];
+
+        expect(result).toHaveLength(1);
+        expect(result[0].progress.length).toBe(1);
+        expect(result[0].progress[0]).toBe(currentTime);
+      });
+
+      test('should initialize new UserChallenges for Challenges that dont yet have associated UserChallenges', async () => {
+        const currentTime = new Date();
+        // No existing UserChallenge records
+        jest.spyOn(application, 'fetchUserChallengesByUsername').mockResolvedValueOnce([]);
+
+        // 2 challenges exist, but don't have associated UserChallenge records
+        mockingoose(ChallengeModel).toReturn([challenge1, challenge2], 'find');
+        jest.spyOn(application, 'saveUserChallenge').mockResolvedValueOnce(userChallenge1);
+        jest.spyOn(application, 'saveUserChallenge').mockResolvedValueOnce({
+          ...userChallenge2,
+          progress: [],
+        });
+        jest
+          .spyOn(UserChallengeModel, 'findOneAndUpdate')
+          .mockImplementationOnce(
+            () =>
+              ({
+                populate: jest.fn().mockResolvedValueOnce({
+                  ...userChallenge1,
+                  progress: [currentTime],
+                  challenge: challenge1,
+                }) as any,
+              }) as any,
+          )
+          .mockImplementationOnce(
+            () =>
+              ({
+                populate: jest.fn().mockResolvedValueOnce({
+                  ...userChallenge2,
+                  progress: [currentTime],
+                  challenge: challenge2,
+                }) as any,
+              }) as any,
+          );
+
+        const result = (await fetchAndIncrementChallengesByUserAndType(
+          userA.username,
+          'question',
+        )) as UserChallenge[];
+
+        expect(result).toHaveLength(2);
+        expect(result[0].challenge._id).toBe(challenge1._id);
+        expect(result[1].challenge._id).toBe(challenge2._id);
+        expect(result[0].progress.length).toBe(1);
+        expect(result[1].progress.length).toBe(1);
+      });
+
+      test('should return an error if fetchUserChallengesByUsername throws an error', async () => {
+        jest
+          .spyOn(application, 'fetchUserChallengesByUsername')
+          .mockResolvedValueOnce({ error: 'error' });
+
+        const result = await fetchAndIncrementChallengesByUserAndType(userA.username, 'question');
+
+        if ('error' in result) {
+          expect(result.error).toBe('error');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('should return an error if saveUserChallenge throws an error', async () => {
+        // No existing UserChallenges
+        jest.spyOn(application, 'fetchUserChallengesByUsername').mockResolvedValueOnce([]);
+
+        // A challenge exists, but doesn't have an associated UserChallenge record (one must be created)
+        mockingoose(ChallengeModel).toReturn([challenge1], 'find');
+
+        jest.spyOn(application, 'saveUserChallenge').mockResolvedValueOnce({ error: 'error' });
+
+        const result = await fetchAndIncrementChallengesByUserAndType(userA.username, 'question');
+
+        if ('error' in result) {
+          expect(result.error).toBe('error');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('should return an error if findOneAndUpdate returns null', async () => {
+        jest
+          .spyOn(application, 'fetchUserChallengesByUsername')
+          .mockResolvedValueOnce([userChallenge1, userChallenge2]);
+
+        // no new challenges to initialize UserChallenges for
+        mockingoose(ChallengeModel).toReturn([], 'find');
+
+        mockingoose(UserChallengeModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await fetchAndIncrementChallengesByUserAndType(userA.username, 'question');
+
+        if ('error' in result) {
+          expect(result.error).toBe('Error while updating UserChallenges');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
     });
   });
 });
