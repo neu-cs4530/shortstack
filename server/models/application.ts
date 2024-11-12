@@ -574,7 +574,21 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
  */
 export const findUser = async (username: string): Promise<User | null> => {
   try {
-    return await UserModel.findOne({ username });
+    const user = await UserModel.findOne({ username }).populate([
+      { path: 'notifications', model: NotificationModel },
+    ]);
+    if (user) {
+      const notifPromises = user.notifications.map(async notif => {
+        const notifResponse = await populateNotification(notif._id?.toString(), notif.sourceType);
+        if ('error' in notifResponse) {
+          throw new Error('Error populating notifications');
+        }
+        return notifResponse;
+      });
+
+      user.notifications = await Promise.all(notifPromises);
+    }
+    return user;
   } catch (error) {
     return null;
   }
