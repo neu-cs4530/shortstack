@@ -50,17 +50,6 @@ const mockPollNotif: Notification = {
   isRead: false,
 };
 
-const newUserWithNotif: User = {
-  username: 'UserA',
-  password: 'abc123',
-  totalPoints: 0,
-  unlockedFrames: [],
-  unlockedTitles: [],
-  equippedFrame: '',
-  equippedTitle: '',
-  notifications: [mockRewardNotif],
-};
-
 const mockNewUserWithNotif: User = {
   _id: new mongoose.Types.ObjectId(),
   username: 'UserA',
