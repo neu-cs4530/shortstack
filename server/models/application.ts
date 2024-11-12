@@ -1165,10 +1165,12 @@ export const fetchAndIncrementChallengesByUserAndType = async (
     filteredUserChallenges = filteredUserChallenges.map(uc => {
       if (uc.challenge.hoursToComplete) {
         const expireDeadline = new Date(
-          currentTime.getMilliseconds() - uc.challenge.hoursToComplete * 1000 * 60 * 60,
+          currentTime.getTime() - uc.challenge.hoursToComplete * 1000 * 60 * 60,
         );
         const updatedUserChallenge: UserChallenge = {
-          ...uc,
+          _id: uc._id,
+          username: uc.username,
+          challenge: uc.challenge,
           progress: uc.progress.filter(p => p >= expireDeadline),
         };
         return updatedUserChallenge;
@@ -1180,7 +1182,7 @@ export const fetchAndIncrementChallengesByUserAndType = async (
     // have UserChallenge records yet
     const challenges = (await ChallengeModel.find({ challengeType })) as Challenge[];
     const challengesToStart = challenges.filter(
-      c => !filteredUserChallenges.some(uc => uc.challenge._id === c._id),
+      c => !userChallenges.some(uc => uc.challenge._id?.toString() === c._id?.toString()),
     );
     const newUserChallengePromises: Promise<UserChallenge>[] = challengesToStart.map(async c => {
       const newUserChallenge: UserChallenge = {
@@ -1197,13 +1199,21 @@ export const fetchAndIncrementChallengesByUserAndType = async (
     const newUserChallenges: UserChallenge[] = await Promise.all(newUserChallengePromises);
 
     // UserChallenges to update = existing UserChallenges + new UserChallenges
-    const userChallengesToUpdate = [...filteredUserChallenges, ...newUserChallenges];
+    const userChallengesToUpdate = [...filteredUserChallenges, ...newUserChallenges].map(uc => {
+      const updatedUserChallenge: UserChallenge = {
+        _id: uc._id,
+        username: uc.username,
+        challenge: uc.challenge,
+        progress: [...uc.progress, currentTime],
+      };
+      return updatedUserChallenge;
+    });
 
     // Add progress to UserChallenges
     const updatePromises: Promise<UserChallenge>[] = userChallengesToUpdate.map(async uc => {
       const userChallengeRecord = await UserChallengeModel.findOneAndUpdate(
         { _id: uc._id },
-        { $push: { progress: currentTime } },
+        { progress: uc.progress },
         { new: true },
       ).populate({
         path: 'challenge',
