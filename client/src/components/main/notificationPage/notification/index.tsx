@@ -1,5 +1,6 @@
 import React from 'react';
 import './index.css';
+import { FaArrowUp, FaCommentDots, FaFileAlt, FaGift, FaPoll } from 'react-icons/fa';
 import { Notification, NotificationType } from '../../../../types';
 
 /**
@@ -24,7 +25,6 @@ const NotificationView = ({ notif }: NotificationProps) => {
    * @returns the string that contains the notification's text.
    */
   const notifSourceText = (notifType: NotificationType): string => {
-    console.log(`Notification type: ${notifType}`);
     let text = '';
     switch (notifType) {
       case 'Answer':
@@ -60,12 +60,43 @@ const NotificationView = ({ notif }: NotificationProps) => {
     return text;
   };
 
+  /**
+   * Function that determines the icon to use to display the notification
+   * @param notifType - The type of notification that needs to be displayed
+   * @returns the react icon that represents the notification
+   */
+  const notifIcon = (notifType: NotificationType): JSX.Element => {
+    let icon: JSX.Element;
+    switch (notifType) {
+      case 'Answer':
+      case 'Comment':
+      case 'AnswerComment':
+      case 'NewQuestion':
+        icon = <FaCommentDots size='40px' />;
+        break;
+      case 'Upvote':
+        icon = <FaArrowUp size='40px' />;
+        break;
+      case 'NewPoll':
+      case 'PollClosed':
+        icon = <FaPoll size='40px' />;
+        break;
+      case 'NewArticle':
+      case 'ArticleUpdate':
+        icon = <FaFileAlt size='40px' />;
+        break;
+      default:
+        icon = <FaGift size='40px' />;
+    }
+    return icon;
+  };
+
   return (
     <button className={notif.isRead ? 'notif_container' : 'notif_container unread'}>
-      <div></div>
-      <div>
-        <h6>{notifSourceText(notif.notificationType)}</h6>
-        {notif.source && notif.sourceType ? <p>{notif.source.title}</p> : ''};
+      <div>{notifIcon(notif.notificationType)}</div>
+      <div className='notif_text'>
+        <h3>{notifSourceText(notif.notificationType)}</h3>
+        {notif.source && notif.sourceType ? <p>Source: {notif.source.title}</p> : ''}
       </div>
     </button>
   );

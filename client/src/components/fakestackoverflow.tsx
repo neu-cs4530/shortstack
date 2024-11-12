@@ -16,6 +16,7 @@ import ProfilePage from './main/profilePage';
 import CommunityList from './main/communityPage/communityList';
 import CommunityPage from './main/communityPage/community/communityPage';
 import NewCommunityPage from './main/newCommunity';
+import useFakeStackOverflow from '../hooks/useFakeStackOverflow';
 
 const ProtectedRoute = ({
   user,
@@ -38,7 +39,7 @@ const ProtectedRoute = ({
  * It manages the state for search terms and the main title.
  */
 const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, setUser } = useFakeStackOverflow(socket);
 
   return (
     <LoginContext.Provider value={{ setUser }}>
