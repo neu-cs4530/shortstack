@@ -424,3 +424,17 @@ export interface Challenge {
   hoursToComplete?: Number;
   reward: string;
 }
+
+/**
+ * Interface extending the request body when adding a question to a community, which contains:
+ * - communityId - The unique identifier of the community.
+ * - questionId - The unique identifier of the question being added to the community.
+ */
+export interface AddQuestionToCommunityRequest extends Request {
+  params: {
+    communityId: string;
+  };
+  body: {
+    questionId: string;
+  };
+}

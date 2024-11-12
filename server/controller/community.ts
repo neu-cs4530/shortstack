@@ -5,7 +5,12 @@ import {
   fetchAllCommunities,
   AddQuestionToCommunityModel,
 } from '../models/application';
-import { AddCommunityRequest, Community, FakeSOSocket } from '../types';
+import {
+  AddCommunityRequest,
+  AddQuestionToCommunityRequest,
+  Community,
+  FakeSOSocket,
+} from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -126,7 +131,10 @@ const communityController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const addQuestionToCommunity = async (req: express.Request, res: Response): Promise<void> => {
+  const addQuestionToCommunity = async (
+    req: AddQuestionToCommunityRequest,
+    res: Response,
+  ): Promise<void> => {
     const { communityId } = req.params;
     const { questionId } = req.body;
 
