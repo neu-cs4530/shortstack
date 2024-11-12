@@ -8,7 +8,7 @@ const fetchAllCommunitiesSpy = jest.spyOn(util, 'fetchAllCommunities');
 const addUserToCommunitySpy = jest.spyOn(util, 'addUserToCommunity');
 const populateCommunitySpy = jest.spyOn(util, 'populateCommunity');
 
-describe('GET /communities', () => {
+describe('GET /getCommunity', () => {
   afterEach(async () => {
     await mongoose.connection.close(); // Ensure the connection is properly closed
   });
@@ -39,7 +39,7 @@ describe('GET /communities', () => {
 
     fetchAllCommunitiesSpy.mockResolvedValueOnce(mockCommunities);
 
-    const response = await supertest(app).get('/community/communities');
+    const response = await supertest(app).get('/community/getCommunity');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual(
@@ -57,7 +57,7 @@ describe('GET /communities', () => {
   it('should return an empty array if no communities are found', async () => {
     fetchAllCommunitiesSpy.mockResolvedValueOnce([]);
 
-    const response = await supertest(app).get('/community/communities');
+    const response = await supertest(app).get('/community/getCommunity');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([]);
@@ -66,7 +66,7 @@ describe('GET /communities', () => {
   it('should handle error when fetching communities', async () => {
     fetchAllCommunitiesSpy.mockResolvedValueOnce({ error: 'Error fetching communities' });
 
-    const response = await supertest(app).get('/community/communities');
+    const response = await supertest(app).get('/community/getCommunity');
 
     expect(response.status).toBe(500);
     expect(response.text).toBe('Error fetching communities');

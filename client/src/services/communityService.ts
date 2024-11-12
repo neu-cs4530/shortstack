@@ -10,7 +10,7 @@ const COMMUNITY_API_URL = `${process.env.REACT_APP_SERVER_URL}/community`;
  * @throws Error if there is an issue fetching the community details.
  */
 const getCommunityDetails = async (communityId: string): Promise<Community> => {
-  const res = await api.get(`${COMMUNITY_API_URL}/communities/${communityId}`);
+  const res = await api.get(`${COMMUNITY_API_URL}/getCommunityById/${communityId}`);
   if (res.status !== 200) {
     throw new Error('Error fetching community details');
   }
@@ -25,7 +25,7 @@ const getCommunityDetails = async (communityId: string): Promise<Community> => {
  */
 const addCommunity = async (community: Community): Promise<Community> => {
   const data = { community };
-  const res = await api.post(`${COMMUNITY_API_URL}/add`, data);
+  const res = await api.post(`${COMMUNITY_API_URL}/addCommunity`, data);
 
   if (res.status !== 200) {
     throw new Error('Error while creating a new community');
@@ -40,7 +40,7 @@ const addCommunity = async (community: Community): Promise<Community> => {
  */
 const getCommunities = async (): Promise<Community[]> => {
   try {
-    const res = await api.get(`${COMMUNITY_API_URL}/communities`);
+    const res = await api.get(`${COMMUNITY_API_URL}/getCommunity`);
     return res.data;
   } catch (error) {
     throw new Error('Error fetching communities');
