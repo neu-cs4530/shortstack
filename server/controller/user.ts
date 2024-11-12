@@ -142,7 +142,7 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Creates a notification and it to users in the database.
+   * Creates notifications and one to each users to be notified in the database.
    * If there is an error, the HTTP response's status is updated.
    *
    * @param req The NewNotificationRequest object containing an ObjectID and the notification to add.
@@ -167,10 +167,8 @@ const userController = (socket: FakeSOSocket) => {
         throw new Error('Error retrieving users to notify');
       }
 
-      const copyOfUsers = [...usernames];
-
       // save a notification to database for each user
-      const notifsPromises = copyOfUsers.map(_ => saveNotification(notifInfo));
+      const notifsPromises = usernames.map(_ => saveNotification(notifInfo));
       const notifsFromDb = (await Promise.all(notifsPromises)).map(notifResponse => {
         if ('error' in notifResponse) {
           throw new Error(notifResponse.error as string);
@@ -182,10 +180,7 @@ const userController = (socket: FakeSOSocket) => {
       const promiseNotifiedUsers = usernames.map((username, i) =>
         addNotificationToUser(username, notifsFromDb[i]),
       );
-      // const promiseNotifiedUsers = usernames.map(username =>
-      //   addNotificationToUser(username, notifFromDb),
-      // );
-      const notifiedUsers = (await Promise.all(promiseNotifiedUsers)).map(userResponse => {
+      (await Promise.all(promiseNotifiedUsers)).map(userResponse => {
         if (userResponse && 'error' in userResponse) {
           throw new Error(userResponse.error as string);
         }
@@ -204,15 +199,8 @@ const userController = (socket: FakeSOSocket) => {
         return notifResponse;
       });
 
-      // Populates the fields of the notification that was added and emits the new object
-      // TODO: in client notification page, listen on 'notificationUpdate' for displaying notifications
-      // and showing unread notification indicator.
-      usernames.map((username, i) =>
-        socket.emit('notificationUpdate', {
-          username,
-          notification: populatedNotifs[i] as NotificationResponse,
-        }),
-      );
+      // Populates the fields of the notification that was added and emits the usernames who received notifications
+      socket.emit('notificationUpdate', { usernames });
       res.json(populatedNotifs);
     } catch (error) {
       res.status(500).send('Error when adding notification to user');
