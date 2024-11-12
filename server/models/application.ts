@@ -341,7 +341,6 @@ export const populateCommunity = async (id: string | undefined): Promise<Communi
 
     let result = null;
     result = await CommunityModel.findOne({ _id: id }).populate([
-      { path: 'members', model: UserModel },
       { path: 'questions', model: QuestionModel },
       { path: 'polls', model: PollModel },
       { path: 'articles', model: ArticleModel },
@@ -531,7 +530,7 @@ export const addUserToCommunity = async (
 
     const result = await CommunityModel.findOneAndUpdate(
       { _id: new ObjectId(communityId) },
-      { $addToSet: { members: new ObjectId(userId) } },
+      { $addToSet: { members: user.username } },
       { new: true },
     );
 
@@ -656,22 +655,16 @@ const usersToNotifyOnNewCommunityPost = async (
 ): Promise<string[]> => {
   let community;
   if (type === 'Question') {
-    community = await CommunityModel.findOne({ questions: oid }).populate([
-      { path: 'members', model: UserModel },
-    ]);
+    community = await CommunityModel.findOne({ questions: oid });
   } else if (type === 'Poll') {
-    community = await CommunityModel.findOne({ polls: oid }).populate([
-      { path: 'members', model: UserModel },
-    ]);
+    community = await CommunityModel.findOne({ polls: oid });
   } else if (type === 'Article') {
-    community = await CommunityModel.findOne({ articles: oid }).populate([
-      { path: 'members', model: UserModel },
-    ]);
+    community = await CommunityModel.findOne({ articles: oid });
   }
   if (!community) {
     throw new Error('Error retrieving users to notify');
   }
-  const communityUsernames = community.members.map(user => user.username);
+  const communityUsernames = community.members;
   return communityUsernames;
 };
 

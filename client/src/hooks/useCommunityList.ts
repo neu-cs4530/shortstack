@@ -19,11 +19,11 @@ const useCommunityList = () => {
         const allCommunities = await getCommunities();
 
         const joined = allCommunities.filter(community =>
-          community.members.some(member => member._id === user?._id),
+          community.members.some(member => member === user?.username),
         );
 
         const available = allCommunities.filter(
-          community => !community.members.some(member => member._id === user?._id),
+          community => !community.members.some(member => member === user?.username),
         );
 
         setJoinedCommunities(joined);
@@ -55,7 +55,7 @@ const useCommunityList = () => {
       // add the community to joined communities if it's missing and the current user is in the updated community
       if (
         !joinedCommunities.some(c => c._id === community._id) &&
-        community.members.some(m => m._id === user._id)
+        community.members.some(m => m === user.username)
       ) {
         const joined = [...joinedCommunities, community];
 
@@ -68,7 +68,7 @@ const useCommunityList = () => {
     return () => {
       socket.off('communityUpdate');
     };
-  }, [socket, availableCommunities, joinedCommunities, user._id]);
+  }, [socket, availableCommunities, joinedCommunities, user.username]);
 
   const handleCommunityClick = (communityID: string) => {
     navigate(`/community/${communityID}`);
