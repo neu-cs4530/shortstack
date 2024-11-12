@@ -36,12 +36,41 @@ const mockNewUser: User = {
   notifications: [],
 };
 
+const mockRewardNotif: Notification = {
+  _id: new mongoose.Types.ObjectId(),
+  notificationType: NotificationType.NewReward,
+  isRead: false,
+};
+
 const mockPollNotif: Notification = {
   _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
   notificationType: NotificationType.PollClosed,
   sourceType: 'Poll',
   source: { _id: new ObjectId('672e289cee67e0b36e0ef440') } as Poll,
   isRead: false,
+};
+
+const newUserWithNotif: User = {
+  username: 'UserA',
+  password: 'abc123',
+  totalPoints: 0,
+  unlockedFrames: [],
+  unlockedTitles: [],
+  equippedFrame: '',
+  equippedTitle: '',
+  notifications: [mockRewardNotif],
+};
+
+const mockNewUserWithNotif: User = {
+  _id: new mongoose.Types.ObjectId(),
+  username: 'UserA',
+  password: 'abc123',
+  totalPoints: 0,
+  unlockedFrames: [],
+  unlockedTitles: [],
+  equippedFrame: '',
+  equippedTitle: '',
+  notifications: [mockRewardNotif],
 };
 
 describe('User API', () => {
@@ -437,6 +466,36 @@ describe('User API', () => {
 
       // Asserting the response
       expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /getUserNotifications/:username', () => {
+    it('should return an array of Notifications when given a valid username', async () => {
+      saveUserSpy.mockResolvedValueOnce(mockNewUserWithNotif);
+      // Adding a user so we have an existing username in the db
+      const addedUser = await supertest(app).post('/user/addUser').send(newUserWithNotif);
+
+      // get the notifications from the user
+      findUserSpy.mockResolvedValueOnce(mockNewUserWithNotif);
+      const response = await supertest(app).get(
+        `/user/getUserNotifications/${mockNewUserWithNotif.username}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body[0]._id).toEqual(mockRewardNotif._id?.toString());
+    });
+
+    it('should return a 500 error when findUser returns null', async () => {
+      findUserSpy.mockResolvedValueOnce(null);
+
+      const response = await supertest(app).get(
+        `/user/getUserNotifications/${mockNewUserWithNotif.username}`,
+      );
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe(
+        'Error when finding notifications for user: Could not find user with the given username',
+      );
     });
   });
 });

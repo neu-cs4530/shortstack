@@ -1,4 +1,4 @@
-import express, { Response } from 'express';
+import express, { Response, Request } from 'express';
 import {
   AddPointsRequest,
   AddUserRequest,
@@ -206,10 +206,40 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Retrieves an array of Notifications by a user's username.
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The FindQuestionByIdRequest object containing the question ID as a parameter.
+   * @param res The HTTP response object used to send back the question details.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getUserNotifications = async (req: Request, res: Response): Promise<void> => {
+    const { username } = req.params;
+
+    try {
+      const user = await findUser(username);
+
+      if (!user) {
+        throw new Error('Could not find user with the given username');
+      }
+
+      res.status(200).json(user.notifications);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when finding notifications for user: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when finding notifications for user`);
+      }
+    }
+  };
+
   router.post('/addUser', addUser);
   router.post('/login', loginUser);
   router.post('/addPoints', addPoints);
   router.post('/notify', notify);
+  router.get('/getUserNotifications/:username', getUserNotifications);
 
   return router;
 };

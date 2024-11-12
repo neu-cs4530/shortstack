@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { User, NotificationResponse, FakeSOSocket } from '../types';
+import { User, FakeSOSocket } from '../types';
+import { getUserNotifications } from '../services/userService';
 
 const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
   const [user, setUser] = useState<User | null>(null);
@@ -9,17 +10,11 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
      * Function to handle notification updates from the socket.
      *
      * @param usernames - The list of usernames the notification is being sent to.
-     * @param notification - The NotificationResponse object.
      */
-    const handleNotificationUpdate = ({
-      usernames,
-      notification,
-    }: {
-      usernames: string[];
-      notification: NotificationResponse;
-    }) => {
-      if (user && !('error' in notification) && usernames.includes(user.username)) {
-        setUser({ ...user, notifications: [notification, ...user.notifications] });
+    const handleNotificationUpdate = async ({ usernames }: { usernames: string[] }) => {
+      if (user && usernames.includes(user.username)) {
+        const updatedNotifs = await getUserNotifications(user.username);
+        setUser({ ...user, notifications: updatedNotifs });
       }
     };
 
