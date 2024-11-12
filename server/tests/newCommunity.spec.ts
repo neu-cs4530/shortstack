@@ -7,7 +7,7 @@ import * as util from '../models/application';
 const saveCommunitySpy = jest.spyOn(util, 'saveCommunity');
 const popCommunitySpy = jest.spyOn(util, 'populateCommunity');
 
-describe('POST /add', () => {
+describe('POST /addCommunity', () => {
   afterEach(async () => {
     await mongoose.connection.close(); // Ensure the connection is properly closed
   });
@@ -48,7 +48,7 @@ describe('POST /add', () => {
       polls: [],
     });
 
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
+    const response = await supertest(app).post('/community/addCommunity').send(mockReqBody);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -62,7 +62,7 @@ describe('POST /add', () => {
   });
 
   it('should return bad request error if request body is missing', async () => {
-    const response = await supertest(app).post('/community/add');
+    const response = await supertest(app).post('/community/addCommunity');
 
     expect(response.status).toBe(400);
     expect(response.text).toBe('Invalid request');
@@ -78,7 +78,7 @@ describe('POST /add', () => {
       },
     };
 
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
+    const response = await supertest(app).post('/community/addCommunity').send(mockReqBody);
 
     expect(response.status).toBe(400);
     expect(response.text).toBe('Invalid community');
@@ -95,7 +95,7 @@ describe('POST /add', () => {
       },
     };
 
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
+    const response = await supertest(app).post('/community/addCommunity').send(mockReqBody);
 
     expect(response.status).toBe(400);
     expect(response.text).toBe('Invalid community');
@@ -112,7 +112,7 @@ describe('POST /add', () => {
       },
     };
 
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
+    const response = await supertest(app).post('/community/addCommunity').send(mockReqBody);
 
     expect(response.status).toBe(400);
     expect(response.text).toBe('Invalid community');
@@ -132,7 +132,7 @@ describe('POST /add', () => {
 
     saveCommunitySpy.mockResolvedValueOnce({ error: 'Error when saving a community' });
 
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
+    const response = await supertest(app).post('/community/addCommunity').send(mockReqBody);
 
     expect(response.status).toBe(500);
     expect(response.text).toBe('Error when saving community: Error when saving a community');
@@ -162,7 +162,7 @@ describe('POST /add', () => {
     saveCommunitySpy.mockResolvedValueOnce(mockCommunity);
     popCommunitySpy.mockResolvedValueOnce({ error: 'Error when populating document' });
 
-    const response = await supertest(app).post('/community/add').send(mockReqBody);
+    const response = await supertest(app).post('/community/addCommunity').send(mockReqBody);
 
     expect(response.status).toBe(500);
     expect(response.text).toBe('Error when saving community: Error when populating document');

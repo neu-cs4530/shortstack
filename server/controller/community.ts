@@ -154,10 +154,9 @@ const communityController = (socket: FakeSOSocket) => {
   };
 
   // add appropriate HTTP verbs and their endpoints to the router
-  // TODO: change URIs to follow style guide (/addCommunity, /getCommunity, /getCommunityById)
-  router.post('/add', addCommunity);
-  router.get('/communities', getAllCommunities);
-  router.get('/communities/:communityId', getCommunityById);
+  router.post('/addCommunity', addCommunity);
+  router.get('/getCommunity', getAllCommunities);
+  router.get('/getCommunityById/:communityId', getCommunityById);
   router.put('/joinCommunity/:communityId/:userId', joinCommunity);
 
   return router;
