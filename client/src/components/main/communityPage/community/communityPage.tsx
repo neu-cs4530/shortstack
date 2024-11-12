@@ -59,7 +59,7 @@ const CommunityPage = () => {
         <ul>
           {polls.map((poll: Poll) => (
             <li key={poll._id} className='poll-item'>
-              {poll.title} - Created by {poll.createdBy.username}
+              {poll.title} - Created by {poll.createdBy}
             </li>
           ))}
         </ul>

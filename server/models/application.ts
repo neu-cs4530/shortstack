@@ -679,10 +679,6 @@ const usersToNotifyOnNewCommunityPost = async (
 const usersToNotifyPollClosed = async (pid: string): Promise<string[]> => {
   const poll = await PollModel.findOne({ _id: pid }).populate([
     {
-      path: 'createdBy',
-      model: UserModel,
-    },
-    {
       path: 'options',
       model: PollModel,
     },
@@ -691,7 +687,7 @@ const usersToNotifyPollClosed = async (pid: string): Promise<string[]> => {
     throw new Error('Error retrieving users to notify');
   }
   const usersVoted = poll.options.map(op => op.usersVoted).flat();
-  return [poll.createdBy.username, ...usersVoted];
+  return [poll.createdBy, ...usersVoted];
 };
 
 // Given ID of User who unlocked new reward, notify user.username.
