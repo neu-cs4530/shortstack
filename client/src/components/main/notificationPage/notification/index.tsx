@@ -15,8 +15,7 @@ interface NotificationProps {
 /**
  * NotificationView component that displays the content of a notification.
  *
- * @param text The content of the answer.
- * @param
+ * @param notif : The notification object to be displayed
  */
 const NotificationView = ({ notif }: NotificationProps) => {
   /**

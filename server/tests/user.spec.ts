@@ -471,11 +471,6 @@ describe('User API', () => {
 
   describe('GET /getUserNotifications/:username', () => {
     it('should return an array of Notifications when given a valid username', async () => {
-      saveUserSpy.mockResolvedValueOnce(mockNewUserWithNotif);
-      // Adding a user so we have an existing username in the db
-      const addedUser = await supertest(app).post('/user/addUser').send(newUserWithNotif);
-
-      // get the notifications from the user
       findUserSpy.mockResolvedValueOnce(mockNewUserWithNotif);
       const response = await supertest(app).get(
         `/user/getUserNotifications/${mockNewUserWithNotif.username}`,

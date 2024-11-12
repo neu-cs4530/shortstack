@@ -91,6 +91,8 @@ const notifyUsers = async (oid: string, notif: Notification): Promise<User> => {
 };
 
 /**
+ * Fetches the user's notifications based on their username.
+ *
  * @param username - the username of the user whose notifications we want to fetch.
  * @returns the promise of an array of Notifications for the given user.
  * @throws Error if there is an issue fetching the notifications with the given username.

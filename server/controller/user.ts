@@ -210,8 +210,8 @@ const userController = (socket: FakeSOSocket) => {
    * Retrieves an array of Notifications by a user's username.
    * If there is an error, the HTTP response's status is updated.
    *
-   * @param req The FindQuestionByIdRequest object containing the question ID as a parameter.
-   * @param res The HTTP response object used to send back the question details.
+   * @param req The Request object containing the username as a parameter.
+   * @param res The HTTP response object used to send back the array of notifications.
    *
    * @returns A Promise that resolves to void.
    */
