@@ -3,6 +3,7 @@ import { QueryOptions } from 'mongoose';
 import {
   Answer,
   AnswerResponse,
+  ArticleResponse,
   Comment,
   CommentResponse,
   Community,
@@ -507,6 +508,36 @@ export const saveCommunity = async (community: Community): Promise<CommunityResp
     return result;
   } catch (error) {
     return { error: 'Error when saving a community' };
+  }
+};
+
+/**
+ * Adds a user to a community.
+ *
+ * @param {string} userId - The user ID of the user to add.
+ * @param {string} communityId - The ID of the community to add the user to.
+ * @returns {Promise<CommunityResponse | null>} - The community added to, null if the community or user does not exist,
+ *  or an error message if the save failed
+ */
+export const addUserToCommunity = async (
+  userId: string,
+  communityId: string,
+): Promise<CommunityResponse | null> => {
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return null;
+    }
+
+    const result = await CommunityModel.findOneAndUpdate(
+      { _id: new ObjectId(communityId) },
+      { $addToSet: { members: new ObjectId(userId) } },
+      { new: true },
+    );
+
+    return result;
+  } catch (error) {
+    return { error: `Error when adding user to community: ${(error as Error).message}` };
   }
 };
 
@@ -1027,6 +1058,25 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     return tmap;
   } catch (error) {
     return { error: 'Error when construction tag map' };
+  }
+};
+
+/**
+ * Fetches an article by its ID.
+ *a
+ * @param {string} articleID - The ID of the article to fetch.
+ *
+ * @returns {Promise<ArticleResponse>} - Promise that resolves to the fetched article, or an error message.
+ */
+export const fetchArticleById = async (articleID: string): Promise<ArticleResponse> => {
+  try {
+    const article = await ArticleModel.findOne({ _id: articleID });
+    if (!article) {
+      throw new Error('Unable to find article');
+    }
+    return article;
+  } catch (error) {
+    return { error: 'Error when fetching an article by ID' };
   }
 };
 

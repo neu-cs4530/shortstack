@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import AnswerModel from './models/answers';
 import QuestionModel from './models/questions';
 import TagModel from './models/tags';
-import { Answer, Article, Comment, Community, Notification, NotificationType, Poll, PollOption, Question, Tag, User } from './types';
+import { Answer, Article, Challenge, ChallengeType, Comment, Community, Notification, NotificationType, Poll, PollOption, Question, Tag, User, UserChallenge } from './types';
 import {
   Q1_DESC,
   Q1_TXT,
@@ -53,6 +53,22 @@ import {
   ART2_BODY,
   ART3_TITLE,
   ART3_BODY,
+  CHAL1_DESCRIPTION,
+  CHAL1_AMT,
+  CHAL1_REWARD,
+  CHAL2_DESCRIPTION,
+  CHAL3_DESCRIPTION,
+  CHAL4_DESCRIPTION,
+  CHAL2_AMT,
+  CHAL2_REWARD,
+  CHAL3_REWARD,
+  CHAL5_DESCRIPTION,
+  CHAL5_AMT,
+  CHAL5_REWARD,
+  CHAL5_HRS,
+  CHAL3_AMT,
+  CHAL4_AMT,
+  CHAL4_REWARD,
 } from './data/posts_strings';
 import CommentModel from './models/comments';
 import UserModel from './models/users';
@@ -61,6 +77,8 @@ import PollOptionModel from './models/pollOptions';
 import NotificationModel from './models/notifications';
 import ArticleModel from './models/articles';
 import CommunityModel from './models/communities';
+import ChallengeModel from './models/challenges';
+import UserChallengeModel from './models/useChallenge';
 
 // Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
 const userArgs = process.argv.slice(2);
@@ -363,6 +381,62 @@ async function notificationCreate(
 }
 
 /**
+ * Creates a new Challenge document in the database.
+ * 
+ * @param description 
+ * @param actionAmount 
+ * @param challengeType 
+ * @param hoursToComplete 
+ * @param reward 
+ * @returns A Promise that resolves to the created Challenge document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function challengeCreate(
+  description: string,
+  actionAmount: number,
+  challengeType: ChallengeType,
+  reward: string,
+  hoursToComplete?: number,
+): Promise<Challenge> {
+  if (!challengeType) {
+    throw new Error('Invalid Challenge Format');
+  }
+  const challengeDetail: Challenge = {
+    description,
+    actionAmount,
+    challengeType,
+    hoursToComplete,
+    reward,
+  };
+  return await ChallengeModel.create(challengeDetail);
+}
+
+/**
+ * Creates a new UserChallenge document in the database.
+ * 
+ * @param username 
+ * @param challenge 
+ * @param progress 
+ * @returns A Promise that resolves to the created UserChallenge document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function userChallengeCreate(
+  username: string,
+  challenge: Challenge,
+  progress: Date[],
+): Promise<UserChallenge> {
+  if (!username || !challenge) {
+    throw new Error('Invalid UserChallenge Format');
+  }
+  const userChallengeDetail: UserChallenge = {
+    username,
+    challenge,
+    progress,
+  };
+  return await UserChallengeModel.create(userChallengeDetail);
+}
+
+/**
  * Populates the database with predefined data.
  * Logs the status of the operation to the console.
  */
@@ -445,9 +519,9 @@ const populate = async () => {
     const N5 = await notificationCreate(NotificationType.NewQuestion, false, 'Question', Q4);
     const N6 = await notificationCreate(NotificationType.NewReward, false);
 
-    // TODO: add realistic titles and profile frames once format is finalized
-    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [], '', '', [N1, N2]);
-    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [], '', '', [N3, N4, N1, N2]);
+    // TODO: add profile frames once filepaths are available
+    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [CHAL1_REWARD, CHAL2_REWARD], '', CHAL1_REWARD, [N1, N2]);
+    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [CHAL1_REWARD, CHAL3_REWARD], '', CHAL3_REWARD, [N3, N4, N1, N2]);
     const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5, N6]);
     const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', []);
     const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1]);
@@ -498,6 +572,31 @@ const populate = async () => {
     await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9], [Q4], [P1], [ART1, ART2]);
     await communityCreate('CS Majors', [U4, U5, U6, U7, U9], [Q1, Q2, Q3], [P2, P3], [ART3]);
     await communityCreate('Northeastern CS4950', [U8, U4], [], [], []);
+
+    // challenges
+    const CHAL1 = await challengeCreate(CHAL1_DESCRIPTION, CHAL1_AMT, 'answer', CHAL1_REWARD);
+    const CHAL2 = await challengeCreate(CHAL2_DESCRIPTION, CHAL2_AMT, 'answer', CHAL2_REWARD);
+    const CHAL3 = await challengeCreate(CHAL3_DESCRIPTION, CHAL3_AMT, 'question', CHAL3_REWARD);
+    const CHAL4 = await challengeCreate(CHAL4_DESCRIPTION, CHAL4_AMT, 'question', CHAL4_REWARD);
+    const CHAL5 = await challengeCreate(CHAL5_DESCRIPTION, CHAL5_AMT, 'answer', CHAL5_REWARD, CHAL5_HRS);
+
+    // user challenge records
+    const currentDate = new Date();
+    const fiveDates = [currentDate, currentDate, currentDate, currentDate, currentDate];
+    const tenDates = [...fiveDates, ...fiveDates];
+    await userChallengeCreate(U1.username, CHAL1, [currentDate]); // completed (1/1)
+    await userChallengeCreate(U1.username, CHAL2, tenDates); // completed (10/10)
+    // CHAL3 in progress for U1 (0/1) (UserChallenge record hasn't been initialized)
+    // CHAL4 in progress for U1 (0/5) (UserChallenge record hasn't been initialized)
+
+    // this challenge is dependent on current date, so progress made will depend on how long ago populate() was called.
+    await userChallengeCreate(U1.username, CHAL5, fiveDates); // in progress (5/10)
+
+    await userChallengeCreate(U2.username, CHAL1, [currentDate]); // completed (1/1)
+    await userChallengeCreate(U2.username, CHAL2, fiveDates); // in progress (5/10)
+    await userChallengeCreate(U2.username, CHAL3, [currentDate]); // completed (1/1)
+    await userChallengeCreate(U2.username, CHAL4, [currentDate]); // in progress (1/5)
+    await userChallengeCreate(U2.username, CHAL5, []); // in progress (0/10)
 
     console.log('Database populated');
   } catch (err) {

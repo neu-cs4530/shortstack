@@ -1,6 +1,11 @@
 import express, { Response } from 'express';
-import { populateCommunity, saveCommunity, fetchAllCommunities } from '../models/application';
-import { AddCommunityRequest, Community, FakeSOSocket } from '../types';
+import {
+  populateCommunity,
+  saveCommunity,
+  fetchAllCommunities,
+  addUserToCommunity,
+} from '../models/application';
+import { AddCommunityRequest, Community, CommunityResponse, FakeSOSocket } from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -11,7 +16,7 @@ const communityController = (socket: FakeSOSocket) => {
    * @returns - true if the request if valid, false otherwise.
    */
   function isRequestValid(req: AddCommunityRequest): boolean {
-    return !!req.body.userID && !!req.body.community;
+    return !!req.body.community;
   }
 
   /**
@@ -113,10 +118,46 @@ const communityController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Adds a user to the community.
+   * @param req The HTTP request object containing the community ID and userID as parameters.
+   * @param res The HTTP response object used to send back the status, or an error message
+   *            if the operation failed.
+   */
+  const joinCommunity = async (req: express.Request, res: Response): Promise<void> => {
+    const { communityId, userId } = req.params;
+
+    try {
+      const communityResponse = await addUserToCommunity(userId, communityId);
+
+      if (!communityResponse) {
+        res.status(404).send('Community or User not found');
+        return;
+      }
+      if ('error' in communityResponse) {
+        throw new Error(communityResponse.error);
+      }
+
+      // populates the joined community
+      const populatedCommunity = await populateCommunity(communityResponse._id?.toString());
+
+      if (populatedCommunity && 'error' in populatedCommunity) {
+        throw new Error(populatedCommunity.error as string);
+      }
+
+      // emits the community with the newly added member
+      socket.emit('communityUpdate', populatedCommunity as CommunityResponse);
+      res.status(200).send();
+    } catch (error) {
+      res.status(500).send((error as Error).message);
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
-  router.post('/add', addCommunity);
-  router.get('/communities', getAllCommunities);
-  router.get('/communities/:communityId', getCommunityById);
+  router.post('/addCommunity', addCommunity);
+  router.get('/getCommunity', getAllCommunities);
+  router.get('/getCommunityById/:communityId', getCommunityById);
+  router.put('/joinCommunity/:communityId/:userId', joinCommunity);
 
   return router;
 };
