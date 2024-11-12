@@ -119,7 +119,7 @@ const useNewQuestion = () => {
         // eslint-disable-next-line no-console
         console.error((error as Error).message);
       }
-      
+
       if (selectedCommunity) {
         await addQuestionToCommunity(selectedCommunity, res._id);
       }
