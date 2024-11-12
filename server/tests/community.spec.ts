@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Community, User } from '../types';
+import { Community } from '../types';
 
 const fetchAllCommunitiesSpy = jest.spyOn(util, 'fetchAllCommunities');
 const addQuestionToCommunityModelSpy = jest.spyOn(util, 'AddQuestionToCommunityModel');
@@ -139,21 +139,10 @@ describe('Community', () => {
         articles: [],
         polls: [],
       };
-      const mockUser: User = {
-        _id: userObjectID,
-        username: 'username',
-        password: 'password',
-        totalPoints: 0,
-        unlockedFrames: [],
-        unlockedTitles: [],
-        equippedFrame: '',
-        equippedTitle: '',
-        notifications: [],
-      };
       const mockPopulatedCommunity: Community = {
         _id: mockCommunity._id,
         name: 'TestCommunity',
-        members: [mockUser],
+        members: ['username'],
         questions: [],
         articles: [],
         polls: [],

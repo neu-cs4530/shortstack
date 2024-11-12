@@ -185,7 +185,7 @@ export interface Article {
  * Interface representing a Community, which contains:
  * - _id - The unique identifier for the community. Optional field
  * - name - The name of the community.
- * - members - An array of users who are members of the community.
+ * - members - An array of usernames of the members in the community.
  * - questions - An array of questions that have been asked in the community.
  * - polls - An array of polls that have been posted in the community.
  * - articles - An array of articles that have been posted in the community.
@@ -193,7 +193,7 @@ export interface Article {
 export interface Community {
   _id?: string;
   name: string;
-  members: User[];
+  members: string[];
   questions: Question[];
   polls: Poll[];
   articles: Article[];
@@ -216,7 +216,7 @@ export interface PollOption {
  * - _id - The unique identifier for the poll. Optional field
  * - title - The title of the poll.
  * - options - An array of poll options written for this poll for users can vote on.
- * - createdBy - The user that created the poll.
+ * - createdBy - The username of the user that created the poll.
  * - pollDateTime - The date and time when the poll was posted.
  * - pollDueDate - The date and time when the poll stops accepting votes.
  */
@@ -224,7 +224,7 @@ export interface Poll {
   _id?: string;
   title: string;
   options: PollOption[];
-  createdBy: User;
+  createdBy: string;
   pollDateTime: Date;
   pollDueDate: Date;
 }
