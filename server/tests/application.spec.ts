@@ -204,7 +204,7 @@ const communityWithID: Community = {
 const communityWithUser: Community = {
   _id: new ObjectId('65e9b716ff0e892116b2de15'),
   name: 'Community Name',
-  members: [userA],
+  members: ['UserA'],
   questions: [],
   polls: [],
   articles: [],
@@ -1208,7 +1208,7 @@ describe('application module', () => {
 
         expect(result._id).toEqual(communityWithUser._id);
         expect(result.name).toEqual(communityWithUser.name);
-        expect(result.members[0]).toEqual(userA._id);
+        expect(result.members[0]).toEqual(userA.username);
         expect(result.questions).toEqual(communityWithUser.questions);
         expect(result.polls).toEqual(communityWithUser.polls);
         expect(result.articles).toEqual(communityWithUser.articles);

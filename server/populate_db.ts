@@ -336,7 +336,7 @@ async function articleCreate(
  */
 async function communityCreate(
   name: string,
-  members: User[],
+  members: string[],
   questions: Question[],
   polls: Poll[],
   articles: Article[],
@@ -569,9 +569,9 @@ const populate = async () => {
 
     const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10]);
 
-    await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9], [Q4], [P1], [ART1, ART2]);
-    await communityCreate('CS Majors', [U4, U5, U6, U7, U9], [Q1, Q2, Q3], [P2, P3], [ART3]);
-    await communityCreate('Northeastern CS4950', [U8, U4], [], [], []);
+    await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2]);
+    await communityCreate('CS Majors', [U4, U5, U6, U7, U9].map(u => u.username), [Q1, Q2, Q3], [P2, P3], [ART3]);
+    await communityCreate('Northeastern CS4950', [U8, U4].map(u => u.username), [], [], []);
 
     // challenges
     const CHAL1 = await challengeCreate(CHAL1_DESCRIPTION, CHAL1_AMT, 'answer', CHAL1_REWARD);

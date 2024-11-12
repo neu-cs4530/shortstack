@@ -384,7 +384,7 @@ export type ArticleResponse = Article | { error: string };
  * Interface representing a Community, which contains:
  * - _id - The unique identifier for the community. Optional field
  * - name - The name of the community.
- * - members - An array of users who are members of the community.
+ * - members - An array of usernames of the members in the community.
  * - questions - An array of questions that have been asked in the community.
  * - polls - An array of polls that have been posted in the community.
  * - articles - An array of articles that have been posted in the community.
@@ -392,7 +392,7 @@ export type ArticleResponse = Article | { error: string };
 export interface Community {
   _id?: ObjectId;
   name: string;
-  members: User[];
+  members: string[];
   questions: Question[] | ObjectId[];
   polls: Poll[] | ObjectId[];
   articles: Article[] | ObjectId[];
