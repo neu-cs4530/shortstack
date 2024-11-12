@@ -126,7 +126,7 @@ const communityController = (socket: FakeSOSocket) => {
   /**
    * Adds a question to a specific community's question list.
    *
-   * @param req The HTTP request object containing the community ID and question ID.
+   * @param req The AddQuestionToCommunity request object containing the community ID and question ID.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
