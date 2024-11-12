@@ -5,7 +5,6 @@ import {
   FakeSOSocket,
   NewNotificationRequest,
   Notification,
-  NotificationResponse,
   User,
 } from '../types';
 import {
