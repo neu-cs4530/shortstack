@@ -439,6 +439,20 @@ export interface Challenge {
 }
 
 /**
+ * Interface extending the request body when adding a question to a community, which contains:
+ * - communityId - The unique identifier of the community.
+ * - questionId - The unique identifier of the question being added to the community.
+ */
+export interface AddQuestionToCommunityRequest extends Request {
+  params: {
+    communityId: string;
+  };
+  body: {
+    questionId: string;
+  };
+}
+
+/**
  * Interface representing a UserChallenge record, which contains:
  * - _id - The unique identifier for the UserChallenge. Optional field
  * - username - The username of the user associated with the UserChallenge
