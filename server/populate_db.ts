@@ -512,44 +512,54 @@ const populate = async () => {
       [c12],
     );
 
-    const N1 = await notificationCreate(NotificationType.Answer, false, 'Question', Q3);
-    const N2 = await notificationCreate(NotificationType.Comment, false, 'Question', Q2);
-    const N3 = await notificationCreate(NotificationType.AnswerComment, false, 'Question', Q1);
-    const N4 = await notificationCreate(NotificationType.Upvote, false, 'Question', Q3);
-    const N5 = await notificationCreate(NotificationType.NewQuestion, false, 'Question', Q4);
-    const N6 = await notificationCreate(NotificationType.NewReward, false);
+    const N1_1 = await notificationCreate(NotificationType.Answer, false, 'Question', Q3);
+    const N1_2 = await notificationCreate(NotificationType.Answer, true, 'Question', Q3);
+    const N1_3 = await notificationCreate(NotificationType.Answer, true, 'Question', Q3);
+    const N1_4 = await notificationCreate(NotificationType.Answer, false, 'Question', Q3);
+    const N2_1 = await notificationCreate(NotificationType.Comment, true, 'Question', Q2);
+    const N2_2 = await notificationCreate(NotificationType.Comment, false, 'Question', Q2);
+    const N2_3 = await notificationCreate(NotificationType.Comment, true, 'Question', Q2);
+    const N3_1 = await notificationCreate(NotificationType.AnswerComment, false, 'Question', Q1);
+    const N3_2 = await notificationCreate(NotificationType.AnswerComment, false, 'Question', Q1);
+    const N4_1 = await notificationCreate(NotificationType.Upvote, true, 'Question', Q3);
+    const N4_2 = await notificationCreate(NotificationType.Upvote, false, 'Question', Q3);
+    const N5_1 = await notificationCreate(NotificationType.NewQuestion, false, 'Question', Q4);
+    const N5_2 = await notificationCreate(NotificationType.NewQuestion, true, 'Question', Q4);
+    const N6_1 = await notificationCreate(NotificationType.NewReward, false);
+    const N6_2 = await notificationCreate(NotificationType.NewReward, false);
+    const N6_3 = await notificationCreate(NotificationType.NewReward, true);
 
     // TODO: add profile frames once filepaths are available
-    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [CHAL1_REWARD, CHAL2_REWARD], '', CHAL1_REWARD, [N1, N2]);
-    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [CHAL1_REWARD, CHAL3_REWARD], '', CHAL3_REWARD, [N3, N4, N1, N2]);
-    const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5, N6]);
+    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [CHAL1_REWARD, CHAL2_REWARD], '', CHAL1_REWARD, [N1_1, N2_1]);
+    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [CHAL1_REWARD, CHAL3_REWARD], '', CHAL3_REWARD, [N3_1, N4_1, N1_2, N2_2]);
+    const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5_1, N6_1]);
     const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', []);
-    const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1]);
-    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4000, [], [], '', '', [N6, N1, N4]);
-    const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2]);
-    const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3]);
+    const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1_3, N5_2]);
+    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4000, [], [], '', '', [N6_2, N1_4, N4_2, N6_3]);
+    const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2_3]);
+    const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3_2]);
 
     const po1_promise = [
-      pollOptionCreate('Windows', []), 
-      pollOptionCreate('macOS', []), 
-      pollOptionCreate('Linux', []), 
+      pollOptionCreate('Windows', [U2.username, U3.username]), 
+      pollOptionCreate('macOS', [U4.username, U5.username, U7.username]), 
+      pollOptionCreate('Linux', [U6.username]), 
       pollOptionCreate('Other', []),
     ];
     const p1_options = await Promise.all(po1_promise);
 
     const po2_promise = [
-      pollOptionCreate('Pyton', []), 
+      pollOptionCreate('Pyton', [U4.username, U5.username]), 
       pollOptionCreate('JavaScript', []), 
       pollOptionCreate('Java', []), 
-      pollOptionCreate('Rust', []),
-      pollOptionCreate('Go', []),
+      pollOptionCreate('Rust', [U6.username]),
+      pollOptionCreate('Go', [U7.username]),
       pollOptionCreate('Other', []),
     ];
     const p2_options = await Promise.all(po2_promise);
 
     const po3_promise = [
-      pollOptionCreate('Static Typing (e.g., Java, TypeScript)', []), 
-      pollOptionCreate('Dynamic Typing (e.g., Python, JavaScript)', []),
+      pollOptionCreate('Static Typing (e.g., Java, TypeScript)', [U1.username, U2.username, U7.username, U8.username]), 
+      pollOptionCreate('Dynamic Typing (e.g., Python, JavaScript)', [U5.username, U6.username]),
     ];
     const p3_options = await Promise.all(po3_promise);
 
@@ -562,10 +572,10 @@ const populate = async () => {
     const ART3 = await articleCreate(ART3_TITLE, ART3_BODY);
 
     // community notifications
-    const N7 = await notificationCreate(NotificationType.NewPoll, false, 'Poll', P2);
+    const N7 = await notificationCreate(NotificationType.NewPoll, true, 'Poll', P2);
     const N8 = await notificationCreate(NotificationType.PollClosed, false, 'Poll', P3);
     const N9 = await notificationCreate(NotificationType.NewArticle, false, 'Article', ART3);
-    const N10 = await notificationCreate(NotificationType.ArticleUpdate, false, 'Article', ART2);
+    const N10 = await notificationCreate(NotificationType.ArticleUpdate, true, 'Article', ART2);
 
     const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10]);
 
