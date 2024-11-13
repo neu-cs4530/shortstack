@@ -1,4 +1,4 @@
-import { Article, Community, CommunityObjectType } from '../types';
+import { Article, Community, CommunityObjectType, Poll } from '../types';
 import api from './config';
 
 const COMMUNITY_API_URL = `${process.env.REACT_APP_SERVER_URL}/community`;
@@ -116,6 +116,22 @@ const addArticleToCommunity = async (communityId: string, article: Article): Pro
   return res.data;
 };
 
+/**
+ * Function to add a poll to a community.
+ *
+ * @param communityId - The ID of the community to add the poll to.
+ * @param poll - The poll to add.
+ * @throws Error if there is an issue adding the poll to the community.
+ */
+const addPollToCommunity = async (communityId: string, poll: Poll): Promise<Poll> => {
+  const data = { poll };
+  const res = await api.post(`${COMMUNITY_API_URL}/addPoll/${communityId}`, data);
+  if (res.status !== 200) {
+    throw new Error('Error when adding poll to community');
+  }
+  return res.data;
+};
+
 export {
   getCommunityDetails,
   addCommunity,
@@ -124,4 +140,5 @@ export {
   joinCommunity,
   getCommunityMembersByObjectId,
   addArticleToCommunity,
+  addPollToCommunity,
 };
