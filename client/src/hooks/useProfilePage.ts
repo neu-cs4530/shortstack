@@ -16,13 +16,12 @@ const useProfilePage = () => {
 
   useEffect(() => {
     /**
-     * Function to fetch the questions asked by this user.
+     * Function to fetch the questions asked by and the UserChallenges of the user.
      */
     const fetchData = async () => {
       try {
         const questions = await getQuestionsByFilter('newest', '', user.username);
         setUserQuestions(questions || null);
-        console.log('questions', questions);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching questions with username:', error);
@@ -30,7 +29,6 @@ const useProfilePage = () => {
       try {
         const challenges = await getUserChallenges(user.username);
         setUserChallenges(challenges || null);
-        console.log('challenges', challenges);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching challenges with username:', error);
