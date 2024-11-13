@@ -12,6 +12,8 @@ const usersToNotifySpy = jest.spyOn(util, 'usersToNotify');
 const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
 const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
 const populateNotificationSpy = jest.spyOn(util, 'populateNotification');
+const updateUserNotifsAsReadSpy = jest.spyOn(util, 'updateUserNotifsAsRead');
+const updateNotifAsReadSpy = jest.spyOn(util, 'updateNotifAsRead');
 
 const newUser: User = {
   username: 'UserA',
@@ -480,6 +482,30 @@ describe('User API', () => {
       expect(response.text).toBe(
         'Error when finding notifications for user: Could not find user with the given username',
       );
+    });
+  });
+
+  describe('PUT /markAllNotifsAsRead/:username', () => {
+    it('should return an array of updated Notifications when given a valid username', async () => {
+      updateUserNotifsAsReadSpy.mockResolvedValueOnce([
+        { ...mockRewardNotif, isRead: true },
+      ] as Notification[]);
+      const response = await supertest(app).put(
+        `/user/markAllNotifsAsRead/${mockNewUserWithNotif.username}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.text).toEqual('All user notifications marked as read');
+    });
+
+    it('should return a 500 error if error object returned by `updateUserNotifsAsRead`', async () => {
+      updateUserNotifsAsReadSpy.mockRejectedValueOnce({ error: 'Error while finding the user' });
+      const response = await supertest(app).put(
+        `/user/markAllNotifsAsRead/${mockNewUserWithNotif.username}`,
+      );
+
+      expect(response.status).toBe(500);
+      expect(response.text).toEqual('Error while marking all notifs of user as read');
     });
   });
 });

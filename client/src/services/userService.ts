@@ -105,4 +105,12 @@ const getUserNotifications = async (username: string): Promise<Notification[]> =
   return res.data;
 };
 
-export { addUser, loginUser, addPoints, notifyUsers, getUserNotifications };
+const markAllNotifsAsRead = async (username: string): Promise<Notification[]> => {
+  const res = await api.put(`${USER_API_URL}/markAllNotifsAsRead/${username}`);
+  if (res.status !== 200) {
+    throw new Error(`Error when marking all notifications for user: ${username}`);
+  }
+  return res.data;
+};
+
+export { addUser, loginUser, addPoints, notifyUsers, getUserNotifications, markAllNotifsAsRead };

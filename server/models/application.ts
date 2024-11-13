@@ -785,7 +785,7 @@ export const saveNotification = async (
  * @param {string} username - The username of the user to add the notification to
  * @param {Notification} notif - The notification to add
  *
- * @returns {Promise<UserResponse>} - The updated question or an error message
+ * @returns {Promise<UserResponse>} - The updated user or an error message
  */
 export const addNotificationToUser = async (
   username: string,
@@ -806,6 +806,64 @@ export const addNotificationToUser = async (
     return result;
   } catch (error) {
     return { error: 'Error when adding notification to user' };
+  }
+};
+
+/**
+ * Update the notification to indicate that it has been read.
+ * @param nid - The id of the notification to update
+ * @returns {Promise<NotificationResponse>} - The updated notification that has been marked as read.
+ */
+export const updateNotifAsRead = async (nid: string | undefined): Promise<NotificationResponse> => {
+  try {
+    if (!nid) {
+      throw new Error('Provided notification id is undefined');
+    }
+    const res = await NotificationModel.findOneAndUpdate(
+      { _id: nid },
+      { $set: { isRead: true } },
+      { new: true },
+    );
+    if (!res) {
+      throw new Error('Error when finding and updating the notification');
+    }
+    return res;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Updates all the notifications of a user to mark them as read.
+ *
+ * @param username - The username of the user whose notifications we want to update.
+ * @returns {Promise<NotificationResponse[]> | {error: string}} - An array of updated notifications that are
+ * marked as read, or the error message.
+ */
+export const updateUserNotifsAsRead = async (
+  username: string,
+): Promise<Notification[] | { error: string }> => {
+  try {
+    // find the user's notifications
+    const user = await findUser(username);
+    if (!user || user === null) {
+      throw new Error('Error while finding the user');
+    }
+
+    // update the notifications to set isRead to true
+    const updatedNotifsPromises = user.notifications.map(async notif => {
+      const notifPromise = await updateNotifAsRead(notif._id?.toString());
+      if ('error' in notifPromise) {
+        throw new Error('Error while updating notification');
+      }
+      return notifPromise;
+    });
+
+    const promisedNotifs = await Promise.all(updatedNotifsPromises);
+
+    return promisedNotifs;
+  } catch (error) {
+    return { error: (error as Error).message };
   }
 };
 
