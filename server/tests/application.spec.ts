@@ -30,11 +30,11 @@ import {
   saveUserChallenge,
   fetchUserChallengesByUsername,
   fetchAndIncrementChallengesByUserAndType,
+  updateNotifAsRead,
+  updateUserNotifsAsRead,
   fetchCommunityMembersByObjectId,
   updateArticleById,
   saveAndAddArticleToCommunity,
-  updateNotifAsRead,
-  updateUserNotifsAsRead,
 } from '../models/application';
 import {
   Answer,
