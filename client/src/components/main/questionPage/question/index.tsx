@@ -67,12 +67,12 @@ const QuestionView = ({ q }: QuestionProps) => {
                 e.stopPropagation();
                 clickTag(tag.name);
               }}>
-              {tag?.name || 'Unnamed Tag'}
+              {tag.name}
             </button>
           ))}
         </div>
       </div>
-      <div className='lastActivity small-profile'>
+      <div className='lastActivity'>
         <div className='question_author'>{q.askedBy}</div>
         <div>&nbsp;</div>
         <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
