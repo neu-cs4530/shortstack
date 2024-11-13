@@ -3,7 +3,8 @@ import { FaUserCircle } from 'react-icons/fa';
 import './index.css';
 import QuestionView from '../questionPage/question';
 import useProfilePage from '../../../hooks/useProfilePage';
-import ChallengeView from '../challengePage/challengeView';
+import ChallengeView from './challengePage/challengeView';
+import RewardsView from './rewardsPage/rewardsView';
 
 const ProfilePage = () => {
   const { user, userQuestions, userChallenges } = useProfilePage();
@@ -24,6 +25,7 @@ const ProfilePage = () => {
             )}
           </div>
           <h3>{user.username}</h3>
+          {user.equippedTitle && <p className='equipped-title'>{user.equippedTitle}</p>}
         </div>
         <div className='profile_bar'>
           <button
@@ -32,9 +34,14 @@ const ProfilePage = () => {
             Activity
           </button>
           <button
+            className={`bar_button ${activeTab === 'challenges' ? 'active' : ''}`}
+            onClick={() => setActiveTab('challenges')}>
+            Challenges
+          </button>
+          <button
             className={`bar_button ${activeTab === 'rewards' ? 'active' : ''}`}
             onClick={() => setActiveTab('rewards')}>
-            Challenges/Rewards
+            Rewards
           </button>
         </div>
       </div>
@@ -47,7 +54,7 @@ const ProfilePage = () => {
             ))}
           </>
         )}
-        {activeTab === 'rewards' && (
+        {activeTab === 'challenges' && (
           <>
             <h2>Challenges:</h2>
             {userChallenges.length > 0 ? (
@@ -56,6 +63,14 @@ const ProfilePage = () => {
               <p>No challenges yet. Start by asking or answering a question!</p>
             )}
           </>
+        )}
+        {activeTab === 'rewards' && (
+          <RewardsView
+            unlockedFrames={user.unlockedFrames}
+            unlockedTitles={user.unlockedTitles}
+            equippedFrame={user.equippedFrame}
+            equippedTitle={user.equippedTitle}
+          />
         )}
       </div>
     </div>
