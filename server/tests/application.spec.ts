@@ -310,6 +310,13 @@ const completedUserChallenge: UserChallenge = {
   progress: [new Date(), new Date(), new Date()],
 };
 
+const almostCompletedUserChallenge: UserChallenge = {
+  _id: new ObjectId(),
+  username: userA.username,
+  challenge: challenge1,
+  progress: [new Date(), new Date()],
+};
+
 describe('application module', () => {
   beforeEach(() => {
     mockingoose.resetAll();
@@ -1588,6 +1595,7 @@ describe('application module', () => {
     describe('fetchAndIncrementChallengesByUserAndType', () => {
       test('should return the updated UserChallenges that match the given type', async () => {
         const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([userChallenge1, userChallenge2, userChallenge3]);
@@ -1634,6 +1642,7 @@ describe('application module', () => {
       });
 
       test('should not update the completed UserChallenges', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([completedUserChallenge]);
@@ -1652,6 +1661,7 @@ describe('application module', () => {
 
       test('should remove the expired progress entries from the existing UserChallenges', async () => {
         const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([expiredUserChallenge]);
@@ -1682,6 +1692,7 @@ describe('application module', () => {
 
       test('should initialize new UserChallenges for Challenges that dont yet have associated UserChallenges', async () => {
         const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         // No existing UserChallenge records
         jest.spyOn(application, 'fetchUserChallengesByUsername').mockResolvedValueOnce([]);
 
@@ -1727,7 +1738,46 @@ describe('application module', () => {
         expect(result[1].progress.length).toBe(1);
       });
 
+      test('should update the users unlocked rewards if a challenge is completed', async () => {
+        const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        jest
+          .spyOn(application, 'fetchUserChallengesByUsername')
+          .mockResolvedValueOnce([almostCompletedUserChallenge]);
+
+        // no new challenges to initialize UserChallenges for
+        mockingoose(ChallengeModel).toReturn([], 'find');
+
+        jest.spyOn(UserChallengeModel, 'findOneAndUpdate').mockImplementationOnce(
+          () =>
+            ({
+              populate: jest.fn().mockResolvedValueOnce({
+                ...almostCompletedUserChallenge,
+                progress: [...almostCompletedUserChallenge.progress, currentTime],
+                challenge: challenge1,
+              }) as any,
+            }) as any,
+        );
+
+        const userRewardsUpdateSpy = jest.spyOn(UserModel, 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementChallengesByUserAndType(
+          userA.username,
+          'question',
+        )) as UserChallenge[];
+
+        expect(result).toHaveLength(1);
+        expect(result[0].username).toBe(userA.username);
+        expect(result[0].challenge._id).toBe(challenge1._id);
+        expect(result[0].progress.length).toBe(3);
+        expect(userRewardsUpdateSpy).toHaveBeenCalledWith(
+          { username: userA.username },
+          { $push: { unlockedTitles: challenge1.reward } },
+        );
+      });
+
       test('should return an error if fetchUserChallengesByUsername throws an error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce({ error: 'error' });
@@ -1742,6 +1792,7 @@ describe('application module', () => {
       });
 
       test('should return an error if saveUserChallenge throws an error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         // No existing UserChallenges
         jest.spyOn(application, 'fetchUserChallengesByUsername').mockResolvedValueOnce([]);
 
@@ -1760,6 +1811,7 @@ describe('application module', () => {
       });
 
       test('should return an error if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([userChallenge1, userChallenge2]);
@@ -1773,6 +1825,18 @@ describe('application module', () => {
 
         if ('error' in result) {
           expect(result.error).toBe('Error while updating UserChallenges');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('should return an error if the user does not exist', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await fetchAndIncrementChallengesByUserAndType(userA.username, 'question');
+
+        if ('error' in result) {
+          expect(result.error).toBe('User not found');
         } else {
           expect(false).toBeTruthy();
         }
