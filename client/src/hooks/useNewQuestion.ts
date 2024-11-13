@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { validateHyperlink } from '../tool';
 import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
-import { Question } from '../types';
+import { Notification, NotificationType, Question } from '../types';
 import useCommunityList from './useCommunityList';
 import { incrementChallengeProgress } from '../services/challengeService';
 import { addQuestionToCommunity } from '../services/communityService';
+import { notifyUsers } from '../services/userService';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -121,7 +122,20 @@ const useNewQuestion = () => {
       }
 
       if (selectedCommunity) {
-        await addQuestionToCommunity(selectedCommunity, res._id);
+        try {
+          await addQuestionToCommunity(selectedCommunity, res._id);
+          // notify members of the community
+          const notif: Notification = {
+            notificationType: NotificationType.NewQuestion,
+            sourceType: 'Question',
+            source: res,
+            isRead: false,
+          };
+          await notifyUsers(res._id, notif);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error((error as Error).message);
+        }
       }
       navigate('/home');
     }
