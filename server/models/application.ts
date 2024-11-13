@@ -35,6 +35,7 @@ import ArticleModel from './articles';
 import NotificationModel from './notifications';
 import UserChallengeModel from './useChallenge';
 import ChallengeModel from './challenges';
+import PollOptionModel from './pollOptions';
 
 /**
  * Parses tags from a search string.
@@ -687,7 +688,7 @@ const usersToNotifyPollClosed = async (pid: string): Promise<string[]> => {
   const poll = await PollModel.findOne({ _id: pid }).populate([
     {
       path: 'options',
-      model: PollModel,
+      model: PollOptionModel,
     },
   ]);
   if (!poll) {
