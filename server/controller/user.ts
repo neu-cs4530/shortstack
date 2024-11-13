@@ -15,6 +15,7 @@ import {
   addNotificationToUser,
   populateNotification,
   usersToNotify,
+  updateUserNotifsAsRead,
 } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
@@ -235,11 +236,39 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Updates all of the isRead statuses of all notifications for a user to be read.
+   *
+   * @param req - The Request object containing the username as a parameter.
+   * @param res - The HTTP Response object used to send back the status showing the updates were successful.
+   */
+  const markAllNotifsAsRead = async (req: Request, res: Response): Promise<void> => {
+    const { username } = req.params;
+
+    try {
+      const updatedNotifs = await updateUserNotifsAsRead(username);
+
+      if ('error' in updatedNotifs) {
+        throw new Error(updatedNotifs.error);
+      }
+
+      socket.emit('notificationUpdate', { usernames: [username] });
+      res.status(200).send('All user notifications marked as read');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error while marking all notifs of user as read: ${err.message}`);
+      } else {
+        res.status(500).send('Error while marking all notifs of user as read');
+      }
+    }
+  };
+
   router.post('/addUser', addUser);
   router.post('/login', loginUser);
   router.post('/addPoints', addPoints);
   router.post('/notify', notify);
   router.get('/getUserNotifications/:username', getUserNotifications);
+  router.put('/markAllNotifsAsRead/:username', markAllNotifsAsRead);
 
   return router;
 };

@@ -30,6 +30,8 @@ import {
   saveUserChallenge,
   fetchUserChallengesByUsername,
   fetchAndIncrementChallengesByUserAndType,
+  updateNotifAsRead,
+  updateUserNotifsAsRead,
   fetchCommunityMembersByObjectId,
   updateArticleById,
   saveAndAddArticleToCommunity,
@@ -252,6 +254,18 @@ const rewardNotif: Notification = {
   _id: new ObjectId('672e29e54e42e9c421fc2f7c'),
   notificationType: NotificationType.NewReward,
   isRead: false,
+};
+
+const userAWithNotifs: User = {
+  _id: new ObjectId('6722970923044fb140958284'),
+  username: 'UserA',
+  password: 'abc123',
+  totalPoints: 0,
+  unlockedFrames: [],
+  unlockedTitles: [],
+  equippedFrame: '',
+  equippedTitle: '',
+  notifications: [rewardNotif, pollNotif],
 };
 
 const challenge1: Challenge = {
@@ -1554,6 +1568,72 @@ describe('application module', () => {
           expect(false).toBeTruthy();
         }
       });
+    });
+    describe('updateNotifAsRead', () => {
+      test('updateNotifAsRead should return an updated notification when given a valid id', async () => {
+        mockingoose(NotificationModel).toReturn(
+          { ...rewardNotif, isRead: true },
+          'findOneAndUpdate',
+        );
+
+        const result = (await updateNotifAsRead(rewardNotif._id?.toString())) as Notification;
+        expect(result._id).toEqual(rewardNotif._id);
+        expect(result.isRead).toBeTruthy();
+      });
+
+      test('updateNotifAsRead should throw an error when given an undefined id', async () => {
+        const result = await updateNotifAsRead(undefined);
+        expect(result).toEqual({ error: 'Provided notification id is undefined' });
+      });
+
+      test('updateNotifAsRead should return an error when findOneAndUpdate returns null', async () => {
+        mockingoose(NotificationModel).toReturn(null, 'findOneAndUpdate');
+        const result = await updateNotifAsRead(rewardNotif._id?.toString());
+
+        expect(result).toEqual({ error: 'Error when finding and updating the notification' });
+      });
+
+      test('updateNotifAsRead should return an error if there is an issue with updating a notification', async () => {
+        mockingoose(NotificationModel).toReturn(new Error('Database error'), 'findOneAndUpdate');
+        const result = await updateNotifAsRead(rewardNotif._id?.toString());
+
+        expect(result).toEqual({ error: 'Database error' });
+      });
+    });
+  });
+
+  describe('updateUserNotifsAsRead', () => {
+    test('updateUsersNotifsAsRead should return an array of updated notifications when given a valid username', async () => {
+      jest.spyOn(application, 'findUser').mockResolvedValueOnce(userAWithNotifs);
+      jest
+        .spyOn(application, 'updateNotifAsRead')
+        .mockResolvedValue({ ...rewardNotif, isRead: true });
+      jest
+        .spyOn(application, 'updateNotifAsRead')
+        .mockResolvedValueOnce({ ...pollNotif, isRead: true });
+
+      const res = (await updateUserNotifsAsRead(userAWithNotifs.username)) as Notification[];
+      expect(res[0]._id).toEqual(rewardNotif._id);
+      expect(res[1]._id).toEqual(pollNotif._id);
+      expect(res[0].isRead).toBeTruthy();
+      expect(res[1].isRead).toBeTruthy();
+    });
+
+    test('updateUserNotifsAsRead should return an error if the user is not found', async () => {
+      jest.spyOn(application, 'findUser').mockResolvedValueOnce(null);
+      const res = await updateUserNotifsAsRead(userA.username);
+
+      expect(res).toEqual({ error: 'Error while finding the user' });
+    });
+
+    test('updateUserNotifsAsRead should return an error if an error occurs while updating a notification', async () => {
+      jest.spyOn(application, 'findUser').mockResolvedValueOnce(userAWithNotifs);
+      jest
+        .spyOn(application, 'updateNotifAsRead')
+        .mockResolvedValueOnce({ error: 'Database Error' });
+
+      const res = await updateUserNotifsAsRead(userA.username);
+      expect(res).toEqual({ error: 'Error while updating notification' });
     });
   });
 

@@ -105,4 +105,18 @@ const getUserNotifications = async (username: string): Promise<Notification[]> =
   return res.data;
 };
 
-export { addUser, loginUser, addPoints, notifyUsers, getUserNotifications };
+/**
+ * Updates all of the user's notifications to be read.
+ * @param username - the username of the user whose notifications we want to update to 'read'.
+ * @returns - The promise of an array of notifications that have been updated.
+ * @throws Error if there is an issue updating the notifications with the given username.
+ */
+const markAllNotifsAsRead = async (username: string): Promise<Notification[]> => {
+  const res = await api.put(`${USER_API_URL}/markAllNotifsAsRead/${username}`);
+  if (res.status !== 200) {
+    throw new Error(`Error when marking all notifications for user: ${username}`);
+  }
+  return res.data;
+};
+
+export { addUser, loginUser, addPoints, notifyUsers, getUserNotifications, markAllNotifsAsRead };
