@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
 import { Question } from '../../../../types';
+import ProfilePicture from '../../profilePicture/profilePicture';
 
 /**
  * Interface representing the props for the Question component.
@@ -65,15 +66,18 @@ const QuestionView = ({ q }: QuestionProps) => {
               className='question_tag_button'
               onClick={e => {
                 e.stopPropagation();
-                clickTag(tag.name);
+                if (tag && tag.name) {
+                  clickTag(tag.name);
+                }
               }}>
-              {tag.name}
+              {tag?.name || 'Unnamed Tag'}
             </button>
           ))}
         </div>
       </div>
-      <div className='lastActivity'>
-        <div className='question_author'>{q.askedBy}</div>
+      <div className='lastActivity small-profile'>
+        {/* TODO : get user info somewhere and then change the equippedFrame field to the users equipped frame */}
+        <ProfilePicture user={{ username: q.askedBy, equippedFrame: q.askedBy }} />
         <div>&nbsp;</div>
         <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
       </div>

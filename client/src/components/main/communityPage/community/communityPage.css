@@ -18,7 +18,7 @@ ul {
 .article-item {
   color: #007bff;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
   margin-bottom: 10px;
 }
 
@@ -31,4 +31,65 @@ ul {
   font-size: 1em;
   color: #333;
   margin-bottom: 10px;
+}
+
+.question {
+  display: flex;
+  flex-direction: row;
+  border-top: #000000 1px dashed;
+  padding: 10px 0;
+}
+
+.postStats {
+  color: #bbbbbb;
+  text-align: center;
+  width: 10%;
+  font-size: 0.9em;
+}
+
+.question_mid {
+  width: 60%;
+  padding-left: 10px;
+}
+
+.postTitle {
+  color: cornflowerblue;
+  font-weight: bold;
+  font-size: 1.1em;
+  cursor: pointer;
+}
+
+.question_tags {
+  margin-top: 5px;
+}
+
+.question_tag_button {
+  color: #ffffff;
+  background: gray;
+  border: none;
+  border-radius: 8px;
+  margin-left: 5px;
+  padding: 5px 10px;
+  font-size: 0.9em;
+}
+
+.question_tag_button:first-child {
+  margin-left: 0;
+}
+
+.lastActivity {
+  width: 30%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.question_author {
+  color: red;
+  margin-right: 5px;
+}
+
+.question_meta {
+  color: #bbbbbb;
 }
