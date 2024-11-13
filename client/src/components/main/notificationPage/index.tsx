@@ -15,7 +15,12 @@ const NotificationPage = () => {
   const handleReadAll = async () => {
     // res should be the array of notifications with their status updated.
     if (user) {
-      await markAllNotifsAsRead(user.username);
+      try {
+        await markAllNotifsAsRead(user.username);
+      } catch (error: unknown) {
+        // eslint-disable-next-line no-console
+        console.error('Error while updating all notifications as read');
+      }
     }
   };
 
