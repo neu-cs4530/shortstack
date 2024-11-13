@@ -1250,7 +1250,7 @@ const distributeRewardsIfChallengeComplete = async (
     if (uc.progress.length === uc.challenge.actionAmount) {
       await UserModel.findOneAndUpdate(
         { username: uc.username },
-        { 
+        {
           $push: { unlockedTitles: uc.challenge.reward },
           $set: { equippedTitle: uc.challenge.reward }, // TODO: remove once selecting titles/frames is implemented
         },

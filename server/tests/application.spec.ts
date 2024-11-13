@@ -1917,7 +1917,10 @@ describe('application module', () => {
         expect(result[0].progress.length).toBe(3);
         expect(userRewardsUpdateSpy).toHaveBeenCalledWith(
           { username: userA.username },
-          { $push: { unlockedTitles: challenge1.reward }, $set: { equippedTitle: challenge1.reward } },
+          {
+            $push: { unlockedTitles: challenge1.reward },
+            $set: { equippedTitle: challenge1.reward },
+          },
         );
       });
 
