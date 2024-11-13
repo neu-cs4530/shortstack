@@ -6,12 +6,13 @@
 .subscribe-button {
   padding: 0.5rem;
   margin-right: 0.5rem;
-  border: 1px solid black;
+  border: 1px solid #ccc;
   border-radius: 0.125rem;
-  background-color: #ff7a2d;
+  background-color: #f0f0f0;
   cursor: pointer;
 }
 
 .subscribe-button-subscribed {
-  background-color: #FFC3A0;
+  background-color: #ff7a2d;
+  color: white;
 }

@@ -41,7 +41,7 @@ const SubscribeComponent = ({ question }: SubscribeComponentProps) => {
       <button
         className={`subscribe-button ${subscribed ? 'subscribe-button-subscribed' : ''}`}
         onClick={() => handleSubscribe()}>
-        {subscribed ? 'Unsubscribe' : 'Subscribe'}
+        Subscribe{subscribed ? 'd' : ''}
       </button>
     </div>
   );
