@@ -7,10 +7,15 @@ import useUserContext from './useUserContext';
 /**
  * Custom hook for managing the community page state, fetching community data, and handling real-time updates.
  *
+ * @returns communityId - The ID of the community
  * @returns titleText - The title of the community page
  * @returns questions - List of questions in the community
  * @returns polls - List of polls in the community
  * @returns articles - List of articles in the community
+ * @returns canEdit - Whether the user can edit the community (if they are in the community)
+ * @returns isCreatingArticle - Is the user creating an article
+ * @returns toggleCreateArticleForm - Function to toggle between the article creation form and the community page
+ * @returns setArticles - Function to set the articles array
  */
 const useCommunityPage = () => {
   const { user, socket } = useUserContext();

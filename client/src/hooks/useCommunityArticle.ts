@@ -10,7 +10,9 @@ import { getArticleById } from '../services/articleService';
  *
  * @returns article - The article
  * @returns isEditing - State value representing if the user is editing the article
+ * @returns canEdit - Represents if the user can edit the article.
  * @returns toggleEditMode - Function to toggle the edit mode
+ * @returns setArticle - Function to set the article.
  */
 const useCommunityArticle = () => {
   const artID = useParams<{ articleID: string }>().articleID;

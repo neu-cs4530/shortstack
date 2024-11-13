@@ -4,8 +4,12 @@ import { Article } from '../../../../../types';
 
 /**
  * Component for the input form for an article.
- * @param title - The initial title of the article
- * @param body - The initial body of the article
+ * @param title - The initial title of the article. Optional field
+ * @param body - The initial body of the article. Optional field
+ * @param communityId - The ID of the community this article is a part of. Optional field
+ * @param articleId - The ID of the article (if it's being edited). Optional field
+ * @param toggleEditMode - Callback function to switch from edit mode to viewing mode.
+ * @param submitCallback - Callback function to be called when the form is submitted.
  */
 const CommunityArticleForm = ({
   title,

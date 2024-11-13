@@ -5,10 +5,16 @@ import { Article } from '../types';
 
 /**
  * Custom hook for managing the state of an article form.
+ * @param communityId - The ID of the community this article will be a part of if the user is creating a new article. Optional field
+ * @param title - The initial title of the article if the user is editing. Optional field
+ * @param body - The initial body of the article if the user is editing. Optional field
+ * @param articleId - The ID of the article if the user is editing. Optional field
+ * @param submitCallback - Callback function to be called when the article is submitted.
  * @returns articleTitleInput - The current input for the article title
  * @returns articleBodyInput - The current input for the article body
  * @returns handleArticleTitleInputChange - Function to handle title input change
  * @returns handleArticleBodyInputChange - Function to handle body input change
+ * @returns handleArticleSubmit - Function to handle submitting the article
  */
 const useArticleForm = ({
   communityId,
