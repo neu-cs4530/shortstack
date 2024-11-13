@@ -179,6 +179,7 @@ export interface ServerToClientEvents {
   commentUpdate: (update: CommentUpdatePayload) => void;
   communityUpdate: (update: Community) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
+  articleUpdate: (article: Article) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
 }
 
@@ -211,6 +212,11 @@ export interface Community {
   polls: Poll[];
   articles: Article[];
 }
+
+/**
+ * Type representing all types of objects that can be owned by a community.
+ */
+export type CommunityObjectType = 'Question' | 'Poll' | 'Article';
 
 /**
  * Interface representing a PollOption, which contains:

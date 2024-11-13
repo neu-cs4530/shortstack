@@ -5,7 +5,7 @@ import addAnswer from '../services/answerService';
 import useUserContext from './useUserContext';
 import { Answer, Notification, NotificationType, Question } from '../types';
 import { addPoints, notifyUsers } from '../services/userService';
-import incrementChallengeProgress from '../services/challengeService';
+import { incrementChallengeProgress } from '../services/challengeService';
 
 /**
  * Custom hook for managing the state and logic of an answer submission form.

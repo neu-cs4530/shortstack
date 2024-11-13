@@ -1,13 +1,25 @@
 import { useNavigate } from 'react-router-dom';
+import { PiNotePencil } from 'react-icons/pi';
 import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
 import useCommunityPage from '../../../../hooks/useCommunityPage';
+import CommunityArticleForm from './article/communityArticleForm';
 
 /**
  * Represents the community page component. Displays the questions, articles, and polls of a community.
  */
 const CommunityPage = () => {
-  const { titleText, questions, polls, articles } = useCommunityPage();
+  const {
+    communityID,
+    titleText,
+    questions,
+    polls,
+    articles,
+    canEdit,
+    isCreatingArticle,
+    toggleCreateArticleForm,
+    setArticles,
+  } = useCommunityPage();
   const navigate = useNavigate();
 
   const handleQuestionClick = (questionID: string) => {
@@ -18,7 +30,18 @@ const CommunityPage = () => {
     navigate(`/community/article/${articleID}`);
   };
 
-  return (
+  return isCreatingArticle ? (
+    <div className='article-form-container'>
+      <CommunityArticleForm
+        communityId={communityID}
+        toggleEditMode={toggleCreateArticleForm}
+        submitCallback={(newArticle: Article) => {
+          setArticles([...articles, newArticle]);
+          toggleCreateArticleForm();
+        }}
+      />
+    </div>
+  ) : (
     <div className='community-page'>
       <h1>{titleText}</h1>
 
@@ -38,7 +61,14 @@ const CommunityPage = () => {
         <p>No questions found.</p>
       )}
 
-      <h2>Community Articles</h2>
+      <div className='header-container'>
+        <h2 style={{ marginBottom: '0' }}>Community Articles</h2>
+        {canEdit && (
+          <button className='new-article-button' onClick={toggleCreateArticleForm}>
+            {<PiNotePencil style={{ marginRight: '5px' }} />}New Article
+          </button>
+        )}
+      </div>
       {articles.length > 0 ? (
         <ul>
           {articles.map((article: Article) => (

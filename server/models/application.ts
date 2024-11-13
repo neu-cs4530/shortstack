@@ -3,12 +3,14 @@ import { QueryOptions } from 'mongoose';
 import {
   Answer,
   AnswerResponse,
+  Article,
   ArticleResponse,
   Challenge,
   ChallengeType,
   Comment,
   CommentResponse,
   Community,
+  CommunityObjectType,
   CommunityResponse,
   Notification,
   NotificationResponse,
@@ -653,10 +655,16 @@ const userToNotifyOnAnswerComment = async (answerID: string): Promise<string[]> 
   return [ans.ansBy];
 };
 
-// Given Question, Poll, or Article ID, notify members of the community the new post was made in.
-const usersToNotifyOnNewCommunityPost = async (
+/**
+ * Given a CommunityObjectType, get all members of the community object is in.
+ * @param oid - The ID of the community object
+ * @param type - The type of the object
+ * @returns A list of the usernames of the members of the community
+ * @throws An error if no community has the given object.
+ */
+export const fetchCommunityMembersByObjectId = async (
   oid: string,
-  type: 'Question' | 'Poll' | 'Article',
+  type: CommunityObjectType,
 ): Promise<string[]> => {
   let community;
   if (type === 'Question') {
@@ -667,7 +675,7 @@ const usersToNotifyOnNewCommunityPost = async (
     community = await CommunityModel.findOne({ articles: oid });
   }
   if (!community) {
-    throw new Error('Error retrieving users to notify');
+    throw new Error('Error retrieving users in community');
   }
   const communityUsernames = community.members;
   return communityUsernames;
@@ -735,19 +743,19 @@ export const usersToNotify = async (
         return await questionAskerToNotify(oid);
 
       case NotificationType.NewQuestion:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Question');
+        return await fetchCommunityMembersByObjectId(oid, 'Question');
 
       case NotificationType.NewPoll:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Poll');
+        return await fetchCommunityMembersByObjectId(oid, 'Poll');
 
       case NotificationType.PollClosed:
         return await usersToNotifyPollClosed(oid);
 
       case NotificationType.NewArticle:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Article');
+        return await fetchCommunityMembersByObjectId(oid, 'Article');
 
       case NotificationType.ArticleUpdate:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Article');
+        return await fetchCommunityMembersByObjectId(oid, 'Article');
 
       case NotificationType.NewReward:
         return await userToNotifyForReward(oid);
@@ -784,7 +792,7 @@ export const saveNotification = async (
  * @param {string} username - The username of the user to add the notification to
  * @param {Notification} notif - The notification to add
  *
- * @returns {Promise<UserResponse>} - The updated question or an error message
+ * @returns {Promise<UserResponse>} - The updated user or an error message
  */
 export const addNotificationToUser = async (
   username: string,
@@ -805,6 +813,64 @@ export const addNotificationToUser = async (
     return result;
   } catch (error) {
     return { error: 'Error when adding notification to user' };
+  }
+};
+
+/**
+ * Update the notification to indicate that it has been read.
+ * @param nid - The id of the notification to update
+ * @returns {Promise<NotificationResponse>} - The updated notification that has been marked as read.
+ */
+export const updateNotifAsRead = async (nid: string | undefined): Promise<NotificationResponse> => {
+  try {
+    if (!nid) {
+      throw new Error('Provided notification id is undefined');
+    }
+    const res = await NotificationModel.findOneAndUpdate(
+      { _id: nid },
+      { $set: { isRead: true } },
+      { new: true },
+    );
+    if (!res) {
+      throw new Error('Error when finding and updating the notification');
+    }
+    return res;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Updates all the notifications of a user to mark them as read.
+ *
+ * @param username - The username of the user whose notifications we want to update.
+ * @returns {Promise<NotificationResponse[]> | {error: string}} - An array of updated notifications that are
+ * marked as read, or the error message.
+ */
+export const updateUserNotifsAsRead = async (
+  username: string,
+): Promise<Notification[] | { error: string }> => {
+  try {
+    // find the user's notifications
+    const user = await findUser(username);
+    if (!user || user === null) {
+      throw new Error('Error while finding the user');
+    }
+
+    // update the notifications to set isRead to true
+    const updatedNotifsPromises = user.notifications.map(async notif => {
+      const notifPromise = await updateNotifAsRead(notif._id?.toString());
+      if ('error' in notifPromise) {
+        throw new Error('Error while updating notification');
+      }
+      return notifPromise;
+    });
+
+    const promisedNotifs = await Promise.all(updatedNotifsPromises);
+
+    return promisedNotifs;
+  } catch (error) {
+    return { error: (error as Error).message };
   }
 };
 
@@ -1109,6 +1175,36 @@ export const fetchArticleById = async (articleID: string): Promise<ArticleRespon
 };
 
 /**
+ * Updates the article with the given ID.
+ *
+ * @param articleID - The ID of the article to update
+ * @param article - The article body to replace it with.
+ * @returns - The newly updated article.
+ */
+export const updateArticleById = async (
+  articleID: string,
+  article: Article,
+): Promise<ArticleResponse> => {
+  try {
+    const newArticle: Article = {
+      ...article,
+      _id: new ObjectId(articleID),
+    };
+    const updatedArticle = await ArticleModel.findOneAndReplace({ _id: articleID }, newArticle, {
+      new: true,
+    });
+
+    if (!updatedArticle) {
+      throw new Error('Article not found');
+    }
+
+    return updatedArticle;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
  * Gets all the communities from the database, fully populated with members, questions, polls, and articles.
  *
  * @returns {Promise<Community[] | { error: string }>} - The list of populated communities, or an error message if the operation fails
@@ -1163,6 +1259,35 @@ export const AddQuestionToCommunityModel = async (communityId: string, questionI
 };
 
 /**
+ * Saves an article then adds it to the community with the community ID.
+ * @param communityId - The ID of the community to add the article to.
+ * @param article - The article to save.
+ * @returns - The populated community, or an error message if the operation failed.
+ */
+export const saveAndAddArticleToCommunity = async (
+  communityId: string,
+  article: Article,
+): Promise<ArticleResponse> => {
+  try {
+    const savedArticle = await ArticleModel.create(article);
+
+    const updatedCommunity = await CommunityModel.findOneAndUpdate(
+      { _id: communityId },
+      { $push: { articles: savedArticle._id } },
+      { new: true },
+    );
+
+    if (!updatedCommunity) {
+      throw new Error('Community not found');
+    }
+
+    return savedArticle;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
  * Saves a new UserChallenge to the database.
  *
  * @param {UserChallenge} userChallenge - The UserChallenge to save.
@@ -1201,7 +1326,35 @@ export const fetchUserChallengesByUsername = async (
 };
 
 /**
+ * Function to check if challenges are complete and distribute the necessary rewards to the user
+ *
+ * @param userChallenges - The list of user challenges to check for completion
+ */
+const distributeRewardsIfChallengeComplete = async (
+  userChallenges: UserChallenge[],
+): Promise<void> => {
+  if (userChallenges.length === 0) {
+    return;
+  }
+
+  const promises = userChallenges.map(async uc => {
+    if (uc.progress.length === uc.challenge.actionAmount) {
+      await UserModel.findOneAndUpdate(
+        { username: uc.username },
+        {
+          $push: { unlockedTitles: uc.challenge.reward },
+          $set: { equippedTitle: uc.challenge.reward }, // TODO: remove once selecting titles/frames is implemented
+        },
+      );
+    }
+  });
+
+  await Promise.all(promises);
+};
+
+/**
  * Adds progress to all Challenges matching the given type for the given user.
+ * Adds the reward of the challenge to the user if the challenge is completed.
  *
  * @param {string} username - The username of the user to add progress to.
  * @param {ChallengeType} challengeType - The type of challenge to add progress to.
@@ -1213,6 +1366,13 @@ export const fetchAndIncrementChallengesByUserAndType = async (
   challengeType: ChallengeType,
 ): Promise<UserChallenge[] | { error: string }> => {
   try {
+    // don't need to populate, just verifying user exists
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     const userChallenges = await fetchUserChallengesByUsername(username);
 
     if ('error' in userChallenges) {
@@ -1271,10 +1431,13 @@ export const fetchAndIncrementChallengesByUserAndType = async (
         _id: uc._id,
         username: uc.username,
         challenge: uc.challenge,
-        progress: [...uc.progress, currentTime],
+        progress: [...uc.progress, currentTime], // add progress entry to progress array
       };
       return updatedUserChallenge;
     });
+
+    // check for completion and distribute rewards
+    await distributeRewardsIfChallengeComplete(userChallengesToUpdate);
 
     // Add progress to UserChallenges
     const updatePromises: Promise<UserChallenge>[] = userChallengesToUpdate.map(async uc => {

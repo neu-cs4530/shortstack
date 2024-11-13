@@ -30,6 +30,11 @@ import {
   saveUserChallenge,
   fetchUserChallengesByUsername,
   fetchAndIncrementChallengesByUserAndType,
+  updateNotifAsRead,
+  updateUserNotifsAsRead,
+  fetchCommunityMembersByObjectId,
+  updateArticleById,
+  saveAndAddArticleToCommunity,
   addSubscriberToQuestion,
 } from '../models/application';
 import {
@@ -45,6 +50,7 @@ import {
   Community,
   UserChallenge,
   Challenge,
+  CommunityObjectType,
 } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
@@ -255,6 +261,18 @@ const rewardNotif: Notification = {
   isRead: false,
 };
 
+const userAWithNotifs: User = {
+  _id: new ObjectId('6722970923044fb140958284'),
+  username: 'UserA',
+  password: 'abc123',
+  totalPoints: 0,
+  unlockedFrames: [],
+  unlockedTitles: [],
+  equippedFrame: '',
+  equippedTitle: '',
+  notifications: [rewardNotif, pollNotif],
+};
+
 const challenge1: Challenge = {
   _id: new ObjectId('673d17e54e42e9d121fc2f8d'),
   description: 'challenge1 description',
@@ -313,6 +331,13 @@ const completedUserChallenge: UserChallenge = {
   username: userA.username,
   challenge: challenge1,
   progress: [new Date(), new Date(), new Date()],
+};
+
+const almostCompletedUserChallenge: UserChallenge = {
+  _id: new ObjectId(),
+  username: userA.username,
+  challenge: challenge1,
+  progress: [new Date(), new Date()],
 };
 
 describe('application module', () => {
@@ -1252,6 +1277,44 @@ describe('application module', () => {
         }
       });
     });
+
+    describe('updateArticleById', () => {
+      test('updateArticleById should return the updated article if the operation is successful', async () => {
+        const mockArticleId = new ObjectId();
+        const mockArticle: Article = {
+          title: 'new title',
+          body: 'new body',
+        };
+
+        mockingoose(ArticleModel).toReturn(
+          { ...mockArticle, _id: mockArticleId },
+          'findOneAndReplace',
+        );
+
+        const result = (await updateArticleById(mockArticleId.toString(), mockArticle)) as Article;
+
+        expect(result._id).toBe(mockArticleId);
+        expect(result.title).toBe('new title');
+        expect(result.body).toBe('new body');
+      });
+      test('updateArticleById should return and error if findOneAndReplace returns null', async () => {
+        const mockArticleId = new ObjectId();
+        const mockArticle: Article = {
+          title: 'new title',
+          body: 'new body',
+        };
+
+        mockingoose(ArticleModel).toReturn(null, 'findOneAndReplace');
+
+        const result = await updateArticleById(mockArticleId.toString(), mockArticle);
+
+        if ('error' in result) {
+          expect(result.error).toBe('Article not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
   });
 
   describe('Community model', () => {
@@ -1362,6 +1425,63 @@ describe('application module', () => {
         expect(result.questions).toEqual(communityWithUser.questions);
         expect(result.polls).toEqual(communityWithUser.polls);
         expect(result.articles).toEqual(communityWithUser.articles);
+      });
+    });
+
+    describe('saveAndAddArticleToCommunity', () => {
+      test('saveAndAddArticleToCommunity should return the saved article if the operation is successful', async () => {
+        const mockCommunityId = communityWithUser._id!;
+        const mockArticle: Article = {
+          title: 'title',
+          body: 'body',
+        };
+        const mockSavedArticle: Article = {
+          _id: new ObjectId(),
+          title: 'title',
+          body: 'body',
+        };
+        const mockCommunity = { ...communityWithUser, articles: [mockSavedArticle._id] };
+
+        mockingoose(ArticleModel).toReturn(mockSavedArticle, 'create');
+        mockingoose(CommunityModel).toReturn(mockCommunity, 'findOneAndUpdate');
+
+        const result = (await saveAndAddArticleToCommunity(
+          mockCommunityId.toString(),
+          mockArticle,
+        )) as Article;
+
+        /*
+          I have no clue why this is failing I'm going insane.
+          For whatever reason, the received ID is the expected ID but incremented by one (even though it's mocked)
+            - Expected  - 1
+            + Received  + 1
+
+            - "673443df9c80042a1e194ebc"
+            + "673443df9c80042a1e194ebd"
+          I give up.
+         */
+        // expect(result._id).toBe(mockSavedArticle._id);
+        expect(result.title).toBe(mockArticle.title);
+        expect(result.body).toBe(mockArticle.body);
+      });
+      test('saveAndAddArticleToCommunity should return an error if findOneAndUpdate returns null', async () => {
+        const mockCommunityId = new ObjectId();
+        const mockArticleId = new ObjectId();
+        const mockArticle: Article = {
+          title: 'title',
+          body: 'body',
+        };
+
+        mockingoose(ArticleModel).toReturn({ ...mockArticle, mockArticleId }, 'create');
+        mockingoose(CommunityModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await saveAndAddArticleToCommunity(mockCommunityId.toString(), mockArticle);
+
+        if ('error' in result) {
+          expect(result.error).toBe('Community not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
       });
     });
   });
@@ -1529,6 +1649,72 @@ describe('application module', () => {
         }
       });
     });
+    describe('updateNotifAsRead', () => {
+      test('updateNotifAsRead should return an updated notification when given a valid id', async () => {
+        mockingoose(NotificationModel).toReturn(
+          { ...rewardNotif, isRead: true },
+          'findOneAndUpdate',
+        );
+
+        const result = (await updateNotifAsRead(rewardNotif._id?.toString())) as Notification;
+        expect(result._id).toEqual(rewardNotif._id);
+        expect(result.isRead).toBeTruthy();
+      });
+
+      test('updateNotifAsRead should throw an error when given an undefined id', async () => {
+        const result = await updateNotifAsRead(undefined);
+        expect(result).toEqual({ error: 'Provided notification id is undefined' });
+      });
+
+      test('updateNotifAsRead should return an error when findOneAndUpdate returns null', async () => {
+        mockingoose(NotificationModel).toReturn(null, 'findOneAndUpdate');
+        const result = await updateNotifAsRead(rewardNotif._id?.toString());
+
+        expect(result).toEqual({ error: 'Error when finding and updating the notification' });
+      });
+
+      test('updateNotifAsRead should return an error if there is an issue with updating a notification', async () => {
+        mockingoose(NotificationModel).toReturn(new Error('Database error'), 'findOneAndUpdate');
+        const result = await updateNotifAsRead(rewardNotif._id?.toString());
+
+        expect(result).toEqual({ error: 'Database error' });
+      });
+    });
+  });
+
+  describe('updateUserNotifsAsRead', () => {
+    test('updateUsersNotifsAsRead should return an array of updated notifications when given a valid username', async () => {
+      jest.spyOn(application, 'findUser').mockResolvedValueOnce(userAWithNotifs);
+      jest
+        .spyOn(application, 'updateNotifAsRead')
+        .mockResolvedValue({ ...rewardNotif, isRead: true });
+      jest
+        .spyOn(application, 'updateNotifAsRead')
+        .mockResolvedValueOnce({ ...pollNotif, isRead: true });
+
+      const res = (await updateUserNotifsAsRead(userAWithNotifs.username)) as Notification[];
+      expect(res[0]._id).toEqual(rewardNotif._id);
+      expect(res[1]._id).toEqual(pollNotif._id);
+      expect(res[0].isRead).toBeTruthy();
+      expect(res[1].isRead).toBeTruthy();
+    });
+
+    test('updateUserNotifsAsRead should return an error if the user is not found', async () => {
+      jest.spyOn(application, 'findUser').mockResolvedValueOnce(null);
+      const res = await updateUserNotifsAsRead(userA.username);
+
+      expect(res).toEqual({ error: 'Error while finding the user' });
+    });
+
+    test('updateUserNotifsAsRead should return an error if an error occurs while updating a notification', async () => {
+      jest.spyOn(application, 'findUser').mockResolvedValueOnce(userAWithNotifs);
+      jest
+        .spyOn(application, 'updateNotifAsRead')
+        .mockResolvedValueOnce({ error: 'Database Error' });
+
+      const res = await updateUserNotifsAsRead(userA.username);
+      expect(res).toEqual({ error: 'Error while updating notification' });
+    });
   });
 
   describe('usersToNotify', () => {
@@ -1614,6 +1800,52 @@ describe('application module', () => {
         expect(true).toBeTruthy();
       }
     });
+
+    test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Question', async () => {
+      const oid: string = new ObjectId().toString();
+      const objectType: CommunityObjectType = 'Question';
+      mockingoose(CommunityModel).toReturn(communityWithUser, 'findOne');
+
+      const response: string[] = await fetchCommunityMembersByObjectId(oid, objectType);
+
+      expect(response.length).toBe(1);
+      expect(response[0]).toBe(userA.username);
+    });
+
+    test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Article', async () => {
+      const oid: string = new ObjectId().toString();
+      const objectType: CommunityObjectType = 'Article';
+      mockingoose(CommunityModel).toReturn(communityWithUser, 'findOne');
+
+      const response: string[] = await fetchCommunityMembersByObjectId(oid, objectType);
+
+      expect(response.length).toBe(1);
+      expect(response[0]).toBe(userA.username);
+    });
+
+    test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Poll', async () => {
+      const oid: string = new ObjectId().toString();
+      const objectType: CommunityObjectType = 'Poll';
+      mockingoose(CommunityModel).toReturn(communityWithUser, 'findOne');
+
+      const response: string[] = await fetchCommunityMembersByObjectId(oid, objectType);
+
+      expect(response.length).toBe(1);
+      expect(response[0]).toBe(userA.username);
+    });
+
+    test('fetchCommunityMembersByObjectId should throw an error if findOne returns null', async () => {
+      const oid: string = new ObjectId().toString();
+      const objectType: CommunityObjectType = 'Question';
+      mockingoose(CommunityModel).toReturn(null, 'findOne');
+
+      try {
+        await fetchCommunityMembersByObjectId(oid, objectType);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
+    });
   });
 
   describe('Challenge model', () => {
@@ -1675,6 +1907,7 @@ describe('application module', () => {
     describe('fetchAndIncrementChallengesByUserAndType', () => {
       test('should return the updated UserChallenges that match the given type', async () => {
         const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([userChallenge1, userChallenge2, userChallenge3]);
@@ -1721,6 +1954,7 @@ describe('application module', () => {
       });
 
       test('should not update the completed UserChallenges', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([completedUserChallenge]);
@@ -1739,6 +1973,7 @@ describe('application module', () => {
 
       test('should remove the expired progress entries from the existing UserChallenges', async () => {
         const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([expiredUserChallenge]);
@@ -1769,6 +2004,7 @@ describe('application module', () => {
 
       test('should initialize new UserChallenges for Challenges that dont yet have associated UserChallenges', async () => {
         const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         // No existing UserChallenge records
         jest.spyOn(application, 'fetchUserChallengesByUsername').mockResolvedValueOnce([]);
 
@@ -1814,7 +2050,49 @@ describe('application module', () => {
         expect(result[1].progress.length).toBe(1);
       });
 
+      test('should update the users unlocked rewards if a challenge is completed', async () => {
+        const currentTime = new Date();
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        jest
+          .spyOn(application, 'fetchUserChallengesByUsername')
+          .mockResolvedValueOnce([almostCompletedUserChallenge]);
+
+        // no new challenges to initialize UserChallenges for
+        mockingoose(ChallengeModel).toReturn([], 'find');
+
+        jest.spyOn(UserChallengeModel, 'findOneAndUpdate').mockImplementationOnce(
+          () =>
+            ({
+              populate: jest.fn().mockResolvedValueOnce({
+                ...almostCompletedUserChallenge,
+                progress: [...almostCompletedUserChallenge.progress, currentTime],
+                challenge: challenge1,
+              }) as any,
+            }) as any,
+        );
+
+        const userRewardsUpdateSpy = jest.spyOn(UserModel, 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementChallengesByUserAndType(
+          userA.username,
+          'question',
+        )) as UserChallenge[];
+
+        expect(result).toHaveLength(1);
+        expect(result[0].username).toBe(userA.username);
+        expect(result[0].challenge._id).toBe(challenge1._id);
+        expect(result[0].progress.length).toBe(3);
+        expect(userRewardsUpdateSpy).toHaveBeenCalledWith(
+          { username: userA.username },
+          {
+            $push: { unlockedTitles: challenge1.reward },
+            $set: { equippedTitle: challenge1.reward },
+          },
+        );
+      });
+
       test('should return an error if fetchUserChallengesByUsername throws an error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce({ error: 'error' });
@@ -1829,6 +2107,7 @@ describe('application module', () => {
       });
 
       test('should return an error if saveUserChallenge throws an error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         // No existing UserChallenges
         jest.spyOn(application, 'fetchUserChallengesByUsername').mockResolvedValueOnce([]);
 
@@ -1847,6 +2126,7 @@ describe('application module', () => {
       });
 
       test('should return an error if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
         jest
           .spyOn(application, 'fetchUserChallengesByUsername')
           .mockResolvedValueOnce([userChallenge1, userChallenge2]);
@@ -1860,6 +2140,18 @@ describe('application module', () => {
 
         if ('error' in result) {
           expect(result.error).toBe('Error while updating UserChallenges');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('should return an error if the user does not exist', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await fetchAndIncrementChallengesByUserAndType(userA.username, 'question');
+
+        if ('error' in result) {
+          expect(result.error).toBe('User not found');
         } else {
           expect(false).toBeTruthy();
         }

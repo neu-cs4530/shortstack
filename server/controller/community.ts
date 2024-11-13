@@ -5,6 +5,8 @@ import {
   fetchAllCommunities,
   AddQuestionToCommunityModel,
   addUserToCommunity,
+  fetchCommunityMembersByObjectId,
+  saveAndAddArticleToCommunity,
 } from '../models/application';
 import {
   AddCommunityRequest,
@@ -12,6 +14,9 @@ import {
   CommunityResponse,
   Community,
   FakeSOSocket,
+  GetCommunityMembersByObjectIdRequest,
+  CreateArticleRequest,
+  Article,
 } from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
@@ -40,6 +45,13 @@ const communityController = (socket: FakeSOSocket) => {
     community.questions !== undefined &&
     community.polls !== undefined &&
     community.articles !== undefined;
+
+  /**
+   * Function that checks if the article object has all the necessary fields.
+   * @param article - The article to validate.
+   * @returns true if the article is valid, otherwise false
+   */
+  const isValidArticle = (article: Article): boolean => !!article.title && !!article.body;
 
   /**
    * Adds a new community to the database. The community is first validated and then saved.
@@ -198,12 +210,64 @@ const communityController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Gets the usernames of the members of the community that owns the object.
+   * @param req The HTTP request object containing the object ID and object type as parameters.
+   * @param res The HTTP response object used to send back the status, or an error message
+   *            if the operation failed.
+   */
+  const getCommunityMembersByObjectId = async (
+    req: GetCommunityMembersByObjectIdRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { oid, objectType } = req.params;
+
+    try {
+      const usernames = await fetchCommunityMembersByObjectId(oid, objectType);
+
+      res.json(usernames);
+    } catch (error) {
+      res.status(500).send((error as Error).message);
+    }
+  };
+
+  /**
+   * Adds an article to the community and saves the article.
+   * @param req The HTTP request object containing the object ID and object type as parameters.
+   * @param res The HTTP response object used to send back the status, or an error message
+   *            if the operation failed.
+   */
+  const addArticleToCommunity = async (req: CreateArticleRequest, res: Response): Promise<void> => {
+    const { communityId } = req.params;
+    const { article } = req.body;
+
+    if (!isValidArticle(article)) {
+      res.status(400).send('Invalid request body');
+      return;
+    }
+
+    try {
+      const savedArticle = await saveAndAddArticleToCommunity(communityId, article);
+
+      if (savedArticle && 'error' in savedArticle) {
+        throw new Error(savedArticle.error);
+      }
+
+      socket.emit('articleUpdate', savedArticle);
+      res.json(savedArticle);
+    } catch (error) {
+      res.status(500).send((error as Error).message);
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.post('/addCommunity', addCommunity);
   router.get('/getCommunity', getAllCommunities);
   router.get('/getCommunityById/:communityId', getCommunityById);
   router.put('/joinCommunity/:communityId/:userId', joinCommunity);
   router.put('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
+  router.get('/getMembers/:oid/:objectType', getCommunityMembersByObjectId);
+  router.post('/addArticle/:communityId', addArticleToCommunity);
 
   return router;
 };

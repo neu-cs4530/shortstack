@@ -5,7 +5,7 @@ import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
 import { Question } from '../types';
 import useCommunityList from './useCommunityList';
-import incrementChallengeProgress from '../services/challengeService';
+import { incrementChallengeProgress } from '../services/challengeService';
 import { addQuestionToCommunity } from '../services/communityService';
 
 /**
