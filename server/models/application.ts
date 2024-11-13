@@ -632,8 +632,7 @@ const usersToNotifyOnNewAnswer = async (qid: string): Promise<string[]> => {
   if (!question) {
     throw new Error('Error retrieving users to notify');
   }
-  // TODO: return question.subscribers usernames once subscription has been implemented.
-  return [question.askedBy];
+  return [question.askedBy, ...question.subscribers];
 };
 
 // Given Question ID, notify question.askedBy on new Comment or Upvote
@@ -951,6 +950,40 @@ export const addVoteToQuestion = async (
           ? 'Error when adding upvote to question'
           : 'Error when adding downvote to question',
     };
+  }
+};
+
+/**
+ * Adds a username to a question's subscribers.
+ *
+ * @param qid The ID of the question to add a vote to.
+ * @param username The username of the user who subscribed.
+ *
+ * @returns Promise<QuestionResponse> - The updated question or an error message
+ */
+export const addSubscriberToQuestion = async (
+  qid: string,
+  username: string,
+): Promise<QuestionResponse> => {
+  try {
+    const question = await QuestionModel.findOne({ _id: qid });
+
+    if (!question) {
+      return { error: 'Question not found' };
+    }
+
+    const operation = question.subscribers.includes(username)
+      ? { $pull: { subscribers: username } }
+      : { $push: { subscribers: username } };
+
+    const result = await QuestionModel.findOneAndUpdate({ _id: qid }, operation, { new: true });
+
+    if (!result) {
+      return { error: 'Error when subscribing to question' };
+    }
+    return result;
+  } catch (err) {
+    return { error: 'Error when subscribing to question' };
   }
 };
 

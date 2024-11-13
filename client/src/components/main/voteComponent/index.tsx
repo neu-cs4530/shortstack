@@ -3,6 +3,7 @@ import './index.css';
 import useUserContext from '../../../hooks/useUserContext';
 import { Question } from '../../../types';
 import useVoteStatus from '../../../hooks/useVoteStatus';
+import SubscribeComponent from '../subscribeComponent';
 
 /**
  * Interface represents the props for the VoteComponent.
@@ -43,6 +44,7 @@ const VoteComponent = ({ question }: VoteComponentProps) => {
 
   return (
     <div className='vote-container'>
+      <SubscribeComponent question={question} />
       <button
         className={`vote-button ${voted === 1 ? 'vote-button-upvoted' : ''}`}
         onClick={() => handleVote('upvote')}>

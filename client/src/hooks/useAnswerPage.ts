@@ -187,16 +187,36 @@ const useAnswerPage = () => {
       }
     };
 
+    /**
+     * Function to handle vote updates for a question.
+     *
+     * @param voteData - The updated vote data for a question
+     */
+    const handleSubscriberUpdate = (subscriberData: { qid: string; subscribers: string[] }) => {
+      if (subscriberData.qid === questionID) {
+        setQuestion(prevQuestion =>
+          prevQuestion
+            ? {
+                ...prevQuestion,
+                subscribers: [...subscriberData.subscribers],
+              }
+            : prevQuestion,
+        );
+      }
+    };
+
     socket.on('answerUpdate', handleAnswerUpdate);
     socket.on('viewsUpdate', handleViewsUpdate);
     socket.on('commentUpdate', handleCommentUpdate);
     socket.on('voteUpdate', handleVoteUpdate);
+    socket.on('subscriberUpdate', handleSubscriberUpdate);
 
     return () => {
       socket.off('answerUpdate', handleAnswerUpdate);
       socket.off('viewsUpdate', handleViewsUpdate);
       socket.off('commentUpdate', handleCommentUpdate);
       socket.off('voteUpdate', handleVoteUpdate);
+      socket.off('subscriberUpdate', handleSubscriberUpdate);
     };
   }, [questionID, question, socket]);
 

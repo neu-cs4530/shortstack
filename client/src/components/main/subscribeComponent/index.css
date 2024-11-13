@@ -1,0 +1,17 @@
+.subscribe-container {
+  display: flex;
+  align-items: center;
+}
+
+.subscribe-button {
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+  border: 1px solid black;
+  border-radius: 0.125rem;
+  background-color: #ff7a2d;
+  cursor: pointer;
+}
+
+.subscribe-button-subscribed {
+  background-color: #FFC3A0;
+}

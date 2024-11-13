@@ -30,6 +30,7 @@ import {
   saveUserChallenge,
   fetchUserChallengesByUsername,
   fetchAndIncrementChallengesByUserAndType,
+  addSubscriberToQuestion,
 } from '../models/application';
 import {
   Answer,
@@ -152,6 +153,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new ObjectId('65e9b5a995b6c7045a30d823'),
@@ -165,6 +167,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new ObjectId('65e9b9b44c052f0a08ecade0'),
@@ -178,6 +181,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new ObjectId('65e9b716ff0e892116b2de09'),
@@ -191,6 +195,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
 ];
 
@@ -588,6 +593,7 @@ describe('application module', () => {
           upVotes: [],
           downVotes: [],
           comments: [],
+          subscribers: [],
         };
 
         const result = (await saveQuestion(mockQn)) as Question;
@@ -761,6 +767,80 @@ describe('application module', () => {
         const result = await addVoteToQuestion('someQuestionId', 'testUser', 'downvote');
 
         expect(result).toEqual({ error: 'Error when adding downvote to question' });
+      });
+    });
+
+    describe('addSubscriberToQuestion', () => {
+      test('addSubscriberToQuestion should add username as a subscriber to a question', async () => {
+        const mockQuestion = { ...QUESTIONS[0] };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        mockingoose(QuestionModel).toReturn(
+          { ...mockQuestion, subscribers: ['testUser'] },
+          'findOneAndUpdate',
+        );
+
+        const result = (await addSubscriberToQuestion('someQuestionId', 'testUser')) as Question;
+
+        expect(result._id).toBeDefined();
+        expect(result.title).toEqual(mockQuestion.title);
+        expect(result.text).toEqual(mockQuestion.text);
+        expect(result.tags.length).toEqual(mockQuestion.tags.length);
+        expect(result.askedBy).toEqual(mockQuestion.askedBy);
+        expect(result.askDateTime).toEqual(mockQuestion.askDateTime);
+        expect(result.views).toEqual(mockQuestion.views);
+        expect(result.answers.length).toEqual(mockQuestion.answers.length);
+        expect(result.subscribers).toEqual(['testUser']);
+      });
+
+      test('addSubscriberToQuestion should return an error object if the question to subscribe to not found', async () => {
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addSubscriberToQuestion should return an error object if findOneAndUpdate returns null', async () => {
+        mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+        mockingoose(QuestionModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addSubscriberToQuestion should return an error object if a database error occurs while finding question', async () => {
+        mockingoose(QuestionModel).toReturn(new Error('Database error'), 'findOne');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addSubscriberToQuestion should return an error object if a database error occurs while updating question', async () => {
+        mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+        mockingoose(QuestionModel).toReturn(new Error('Database error'), 'findOneAndUpdate');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
       });
     });
   });
@@ -1452,12 +1532,19 @@ describe('application module', () => {
   });
 
   describe('usersToNotify', () => {
-    // TODO update first test once subscribing is implemented
     test('usersToNotify with NotificationType.Answer should return username of question asker', async () => {
-      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
-      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Answer);
+      const mockQuestion = { ...QUESTIONS[0], subscribers: ['userA', 'userB', 'userC'] };
+      mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+      const result = (await usersToNotify(
+        '65e9b58910afe6e94fc6e6dc',
+        NotificationType.Answer,
+      )) as string[];
 
-      expect(result).toEqual(['q_by1']);
+      expect(result.length).toEqual(4);
+      expect(result.includes('q_by1')).toBeTruthy();
+      expect(result.includes('userA')).toBeTruthy();
+      expect(result.includes('userB')).toBeTruthy();
+      expect(result.includes('userC')).toBeTruthy();
     });
 
     test('usersToNotify with NotificationType.Comment should return username of question asker', async () => {
