@@ -521,6 +521,17 @@ export interface ChallengeProgressRequest extends Request {
 }
 
 /**
+ * Interface for the request parameters when fetching a user's challenges.
+ * 
+ * - username - The username of the user to fetch challenges for.
+ */
+export interface UserChallengeRequest extends Request {
+  params: {
+    username: string;
+  }
+}
+
+/**
  * Type representing the possible responses for a UserChallenge-related operation.
  */
 export type UserChallengeResponse = UserChallenge | { error: string };

@@ -22,7 +22,7 @@ ul {
 .article-item {
   color: #007bff;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
   margin-bottom: 10px;
   display: block;
   width: max-content;
