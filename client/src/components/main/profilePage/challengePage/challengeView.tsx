@@ -1,6 +1,6 @@
 import React from 'react';
 import './challengeView.css';
-import { UserChallenge } from '../../../types';
+import { UserChallenge } from '../../../../types';
 
 /**
  * Interface representing the props for the Challenge component.
