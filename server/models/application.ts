@@ -1235,7 +1235,35 @@ export const fetchUserChallengesByUsername = async (
 };
 
 /**
+ * Function to check if challenges are complete and distribute the necessary rewards to the user
+ *
+ * @param userChallenges - The list of user challenges to check for completion
+ */
+const distributeRewardsIfChallengeComplete = async (
+  userChallenges: UserChallenge[],
+): Promise<void> => {
+  if (userChallenges.length === 0) {
+    return;
+  }
+
+  const promises = userChallenges.map(async uc => {
+    if (uc.progress.length === uc.challenge.actionAmount) {
+      await UserModel.findOneAndUpdate(
+        { username: uc.username },
+        {
+          $push: { unlockedTitles: uc.challenge.reward },
+          $set: { equippedTitle: uc.challenge.reward }, // TODO: remove once selecting titles/frames is implemented
+        },
+      );
+    }
+  });
+
+  await Promise.all(promises);
+};
+
+/**
  * Adds progress to all Challenges matching the given type for the given user.
+ * Adds the reward of the challenge to the user if the challenge is completed.
  *
  * @param {string} username - The username of the user to add progress to.
  * @param {ChallengeType} challengeType - The type of challenge to add progress to.
@@ -1247,6 +1275,13 @@ export const fetchAndIncrementChallengesByUserAndType = async (
   challengeType: ChallengeType,
 ): Promise<UserChallenge[] | { error: string }> => {
   try {
+    // don't need to populate, just verifying user exists
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     const userChallenges = await fetchUserChallengesByUsername(username);
 
     if ('error' in userChallenges) {
@@ -1305,10 +1340,13 @@ export const fetchAndIncrementChallengesByUserAndType = async (
         _id: uc._id,
         username: uc.username,
         challenge: uc.challenge,
-        progress: [...uc.progress, currentTime],
+        progress: [...uc.progress, currentTime], // add progress entry to progress array
       };
       return updatedUserChallenge;
     });
+
+    // check for completion and distribute rewards
+    await distributeRewardsIfChallengeComplete(userChallengesToUpdate);
 
     // Add progress to UserChallenges
     const updatePromises: Promise<UserChallenge>[] = userChallengesToUpdate.map(async uc => {
