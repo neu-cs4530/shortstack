@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
 import useCommunityPage from '../../../../hooks/useCommunityPage';
+import QuestionView from '../../questionPage/question';
 
 /**
  * Represents the community page component. Displays the questions, articles, and polls of a community.
@@ -9,10 +10,6 @@ import useCommunityPage from '../../../../hooks/useCommunityPage';
 const CommunityPage = () => {
   const { titleText, questions, polls, articles } = useCommunityPage();
   const navigate = useNavigate();
-
-  const handleQuestionClick = (questionID: string) => {
-    navigate(`/question/${questionID}`);
-  };
 
   const handleArticleClick = (articleID: string) => {
     navigate(`/community/article/${articleID}`);
@@ -26,11 +23,8 @@ const CommunityPage = () => {
       {questions.length > 0 ? (
         <ul>
           {questions.map((question: Question) => (
-            <li
-              key={question._id}
-              className='question-item'
-              onClick={() => handleQuestionClick(question._id!)}>
-              {question.title} - Asked by {question.askedBy}
+            <li key={question._id} className='question-item'>
+              <QuestionView q={question} />
             </li>
           ))}
         </ul>
