@@ -61,6 +61,12 @@
   .equip_button:hover {
     background-color: #0056b3;
   }
+
+  .equip_button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+  }
   
   .title_item {
     padding: 0.5rem;

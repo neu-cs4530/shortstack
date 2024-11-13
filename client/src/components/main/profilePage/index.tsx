@@ -25,6 +25,7 @@ const ProfilePage = () => {
             )}
           </div>
           <h3>{user.username}</h3>
+          {user.equippedTitle && <p className='equipped-title'>{user.equippedTitle}</p>}
         </div>
         <div className='profile_bar'>
           <button
@@ -64,7 +65,12 @@ const ProfilePage = () => {
           </>
         )}
         {activeTab === 'rewards' && (
-          <RewardsView unlockedFrames={user.unlockedFrames} unlockedTitles={user.unlockedTitles} />
+          <RewardsView
+            unlockedFrames={user.unlockedFrames}
+            unlockedTitles={user.unlockedTitles}
+            equippedFrame={user.equippedFrame}
+            equippedTitle={user.equippedTitle}
+          />
         )}
       </div>
     </div>

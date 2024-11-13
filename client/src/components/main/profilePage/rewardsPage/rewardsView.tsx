@@ -7,6 +7,8 @@ import './rewardsView.css';
 interface RewardsViewProps {
   unlockedFrames: string[];
   unlockedTitles: string[];
+  equippedFrame: string;
+  equippedTitle: string;
 }
 
 /**
@@ -15,7 +17,12 @@ interface RewardsViewProps {
  * @param unlockedFrames - The frames unlocked by the user.
  * @param unlockedTitles - The titles unlocked by the user.
  */
-const RewardsView = ({ unlockedFrames, unlockedTitles }: RewardsViewProps) => {
+const RewardsView = ({
+  unlockedFrames,
+  unlockedTitles,
+  equippedFrame,
+  equippedTitle,
+}: RewardsViewProps) => {
   const handleEquip = (item: string, type: 'frame' | 'title') => {
     // TODO : Add functionality to equip the item.
   };
@@ -30,8 +37,11 @@ const RewardsView = ({ unlockedFrames, unlockedTitles }: RewardsViewProps) => {
             {unlockedFrames.map((frame, idx) => (
               <li key={idx} className='reward_item'>
                 <img src={`/frames/${frame}`} alt={`${frame} frame`} className='frame_image' />
-                <button className='equip_button' onClick={() => handleEquip(frame, 'frame')}>
-                  Equip
+                <button
+                  className='equip_button'
+                  onClick={() => handleEquip(frame, 'frame')}
+                  disabled={frame === equippedFrame}>
+                  {frame === equippedFrame ? 'Equipped' : 'Equip'}
                 </button>
               </li>
             ))}
@@ -47,8 +57,11 @@ const RewardsView = ({ unlockedFrames, unlockedTitles }: RewardsViewProps) => {
             {unlockedTitles.map((title, idx) => (
               <li key={idx} className='title_item'>
                 <span className='title_name'>{title}</span>
-                <button className='equip_button' onClick={() => handleEquip(title, 'title')}>
-                  Equip
+                <button
+                  className='equip_button'
+                  onClick={() => handleEquip(title, 'title')}
+                  disabled={title === equippedTitle}>
+                  {title === equippedTitle ? 'Equipped' : 'Equip'}
                 </button>
               </li>
             ))}
