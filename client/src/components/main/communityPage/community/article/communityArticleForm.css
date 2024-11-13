@@ -1,0 +1,44 @@
+.article-form {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+
+.title-input, .body-input {
+  height: 30px;
+  font-size: larger;
+  padding: 10px;
+  margin: 20px 0;
+  width: 100%;
+}
+
+.body-input {
+  margin-top: 0;
+  font-size: medium;
+  resize: none;
+  height: 80%;
+}
+
+.cancel-button, .save-button {
+  padding: 5px 10px;
+  display: inline;
+  align-items: center;
+  border-radius: 3px;
+  border: 1px solid black;
+}
+
+.cancel-button {
+  margin-right: 8px;
+  background-color: lightsalmon;
+}
+
+.save-button {
+  background-color: aquamarine;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}

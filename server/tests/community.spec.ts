@@ -2,12 +2,14 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Community } from '../types';
+import { Article, Community, CommunityObjectType } from '../types';
 
 const fetchAllCommunitiesSpy = jest.spyOn(util, 'fetchAllCommunities');
 const addQuestionToCommunityModelSpy = jest.spyOn(util, 'AddQuestionToCommunityModel');
 const addUserToCommunitySpy = jest.spyOn(util, 'addUserToCommunity');
 const populateCommunitySpy = jest.spyOn(util, 'populateCommunity');
+const fetchCommunityMembersByObjectIdSpy = jest.spyOn(util, 'fetchCommunityMembersByObjectId');
+const saveAndAddArticleToCommunitySpy = jest.spyOn(util, 'saveAndAddArticleToCommunity');
 
 describe('Community', () => {
   afterEach(async () => {
@@ -213,6 +215,98 @@ describe('Community', () => {
 
       expect(response.status).toBe(500);
       expect(response.text).toBe('Some error occurred during populateCommunity.');
+    });
+  });
+
+  describe('GET /getMembers', () => {
+    it('should return a list of usernames if fetchCommunityMembersByObjectId is successful', async () => {
+      const oid: string = new mongoose.Types.ObjectId().toString();
+      const objectType: CommunityObjectType = 'Question';
+
+      fetchCommunityMembersByObjectIdSpy.mockResolvedValueOnce([
+        'user1',
+        'user2',
+        'user3',
+        'user4',
+      ]);
+
+      const response = await supertest(app).get(`/community/getMembers/${oid}/${objectType}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.length).toBe(4);
+    });
+
+    it('should return a 500 status if fetchCommunityMembersByObjectId throws an error', async () => {
+      const oid: string = new mongoose.Types.ObjectId().toString();
+      const objectType: CommunityObjectType = 'Question';
+
+      fetchCommunityMembersByObjectIdSpy.mockRejectedValueOnce(new Error('error'));
+
+      const response = await supertest(app).get(`/community/getMembers/${oid}/${objectType}`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('error');
+    });
+  });
+
+  describe('POST /addArticle/:communityId', () => {
+    it('should return the saved article if the operation is successful', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId();
+      const mockArticleBody = {
+        article: {
+          title: 'Title',
+          body: 'Body',
+        },
+      };
+      const expectedArticle: Article = {
+        _id: new mongoose.Types.ObjectId(),
+        title: 'Title',
+        body: 'Body',
+      };
+
+      saveAndAddArticleToCommunitySpy.mockResolvedValueOnce(expectedArticle);
+
+      const response = await supertest(app)
+        .post(`/community/addArticle/${mockCommunityId.toString()}`)
+        .send(mockArticleBody);
+
+      expect(response.status).toBe(200);
+      expect(response.body._id).toEqual(expectedArticle._id?.toString());
+      expect(response.body.title).toEqual(expectedArticle.title);
+      expect(response.body.body).toEqual(expectedArticle.body);
+    });
+    it('should return a 400 status if the article is invalid', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId();
+      const mockArticleBody = {
+        article: {
+          title: 'Title',
+        },
+      };
+
+      const response = await supertest(app)
+        .post(`/community/addArticle/${mockCommunityId.toString()}`)
+        .send(mockArticleBody);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toBe('Invalid request body');
+    });
+    it('should return a 500 status if saveAndAddArticleToCommunity returns an error', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId();
+      const mockArticleBody = {
+        article: {
+          title: 'Title',
+          body: 'Body',
+        },
+      };
+
+      saveAndAddArticleToCommunitySpy.mockResolvedValueOnce({ error: 'error' });
+
+      const response = await supertest(app)
+        .post(`/community/addArticle/${mockCommunityId.toString()}`)
+        .send(mockArticleBody);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('error');
     });
   });
 });
