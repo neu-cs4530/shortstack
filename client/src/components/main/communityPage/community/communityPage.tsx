@@ -11,6 +11,10 @@ const CommunityPage = () => {
   const { titleText, questions, polls, articles } = useCommunityPage();
   const navigate = useNavigate();
 
+  const handleQuestionClick = (questionID: string) => {
+    navigate(`/question/${questionID}`);
+  };
+
   const handleArticleClick = (articleID: string) => {
     navigate(`/community/article/${articleID}`);
   };
@@ -23,8 +27,11 @@ const CommunityPage = () => {
       {questions.length > 0 ? (
         <ul>
           {questions.map((question: Question) => (
-            <li key={question._id} className='question-item'>
-              <QuestionView q={question} />
+            <li
+              key={question._id}
+              className='question-item'
+              onClick={() => handleQuestionClick(question._id!)}>
+              {question.title} - Asked by {question.askedBy}
             </li>
           ))}
         </ul>
