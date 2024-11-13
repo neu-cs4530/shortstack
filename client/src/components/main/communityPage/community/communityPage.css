@@ -9,6 +9,10 @@
   color: #333;
 }
 
+.community-page {
+  padding: 25px;
+}
+
 ul {
   list-style-type: none;
   padding: 0;
@@ -18,8 +22,10 @@ ul {
 .article-item {
   color: #007bff;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
   margin-bottom: 10px;
+  display: block;
+  width: max-content;
 }
 
 .question-item:hover,
@@ -31,4 +37,22 @@ ul {
   font-size: 1em;
   color: #333;
   margin-bottom: 10px;
+}
+
+.new-article-button {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  height: 30px;
+}
+
+.header-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.article-form-container {
+  width: 60%;
+  margin: 24px auto;
 }

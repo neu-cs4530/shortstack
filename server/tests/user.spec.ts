@@ -13,7 +13,6 @@ const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
 const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
 const populateNotificationSpy = jest.spyOn(util, 'populateNotification');
 const updateUserNotifsAsReadSpy = jest.spyOn(util, 'updateUserNotifsAsRead');
-const updateNotifAsReadSpy = jest.spyOn(util, 'updateNotifAsRead');
 
 const newUser: User = {
   username: 'UserA',
