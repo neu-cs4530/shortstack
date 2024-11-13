@@ -16,6 +16,8 @@ import {
   NotificationResponse,
   NotificationType,
   OrderType,
+  Poll,
+  PollResponse,
   Question,
   QuestionResponse,
   Tag,
@@ -1249,6 +1251,35 @@ export const saveAndAddArticleToCommunity = async (
     }
 
     return savedArticle;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Saves a poll then adds it to the community with the community ID.
+ * @param communityId - The ID of the community to add the poll to.
+ * @param poll - The poll to save.
+ * @returns - The populated community, or an error message if the operation failed.
+ */
+export const saveAndAddPollToCommunity = async (
+  communityId: string,
+  poll: Poll,
+): Promise<PollResponse> => {
+  try {
+    const savedPoll = await PollModel.create(poll);
+
+    const updatedCommunity = await CommunityModel.findOneAndUpdate(
+      { _id: communityId },
+      { $push: { polls: savedPoll._id } },
+      { new: true },
+    );
+
+    if (!updatedCommunity) {
+      throw new Error('Community not found');
+    }
+
+    return savedPoll;
   } catch (error) {
     return { error: (error as Error).message };
   }
