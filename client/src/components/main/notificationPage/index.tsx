@@ -17,7 +17,7 @@ const NotificationPage = () => {
     if (user) {
       try {
         await markAllNotifsAsRead(user.username);
-      } catch (error: unknown) {
+      } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error while updating all notifications as read');
       }
