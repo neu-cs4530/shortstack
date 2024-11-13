@@ -17,4 +17,22 @@ const getArticleById = async (articleID: string): Promise<Article> => {
   return res.data;
 };
 
-export default getArticleById;
+/**
+ * Function to update the article with the given ID.
+ *
+ * @param articleID - The ID of the article to update
+ * @param newArticle - The contents of the article to replace it with.
+ * @returns The updated article
+ * @throws Error if the operation failed.
+ */
+const updateArticleById = async (articleID: string, newArticle: Article): Promise<Article> => {
+  const data = { newArticle };
+  const res = await api.put(`${ARTICLE_API_URL}/updateArticle/${articleID}`, data);
+  if (res.status !== 200) {
+    throw new Error('Error when updating article');
+  }
+
+  return res.data;
+};
+
+export { getArticleById, updateArticleById };
