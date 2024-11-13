@@ -1,50 +1,37 @@
-import React, { useEffect, useState } from 'react';
 import './communityArticlePage.css';
-import { useNavigate, useParams } from 'react-router-dom';
+import { FaPencilAlt } from 'react-icons/fa';
+import useCommunityArticle from '../../../../../hooks/useCommunityArticle';
+import CommunityArticleForm from './communityArticleForm';
 import { Article } from '../../../../../types';
-import getArticleById from '../../../../../services/articleService';
 
 /**
  * The CommunityArticlePage component displays the articles within the community.
  */
 const CommunityArticlePage = () => {
-  const artID = useParams<{ articleID: string }>().articleID;
-  const navigate = useNavigate();
-
-  const [articleID, setArticleID] = useState<string>(artID || '');
-  const [article, setArticle] = useState<Article | null>(null);
-
-  useEffect(() => {
-    if (!artID) {
-      navigate('/community');
-      return;
-    }
-
-    setArticleID(artID);
-  }, [artID, navigate]);
-
-  useEffect(() => {
-    /**
-     * Function to fetch the question data based on the question ID.
-     */
-    const fetchData = async () => {
-      try {
-        const res = await getArticleById(articleID);
-        setArticle(res || null);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching article:', error);
-      }
-    };
-
-    // eslint-disable-next-line no-console
-    fetchData().catch(e => console.log(e));
-  }, [articleID]);
+  const { article, isEditing, canEdit, toggleEditMode, setArticle } = useCommunityArticle();
 
   if (!article) return <div>Loading...</div>;
 
-  return (
+  return isEditing ? (
     <div className='community-article-page'>
+      <CommunityArticleForm
+        title={article.title}
+        body={article.body}
+        articleId={article._id}
+        toggleEditMode={toggleEditMode}
+        submitCallback={(newArticle: Article) => {
+          setArticle(newArticle);
+          toggleEditMode();
+        }}
+      />
+    </div>
+  ) : (
+    <div className='community-article-page'>
+      {canEdit && (
+        <button className='edit-button' onClick={toggleEditMode}>
+          {<FaPencilAlt style={{ marginRight: '10px' }} />}Edit
+        </button>
+      )}
       <h2>{article.title}</h2>
       <p>{article.body}</p>
     </div>

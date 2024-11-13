@@ -1,4 +1,4 @@
-import { Community } from '../types';
+import { Article, Community, CommunityObjectType } from '../types';
 import api from './config';
 
 const COMMUNITY_API_URL = `${process.env.REACT_APP_SERVER_URL}/community`;
@@ -78,4 +78,50 @@ const joinCommunity = async (userId: string, communityID: string): Promise<void>
   return res.data;
 };
 
-export { getCommunityDetails, addCommunity, getCommunities, addQuestionToCommunity, joinCommunity };
+/**
+ * Function to get members of the community that owns the object.
+ *
+ * @param oid - The ID of the object
+ * @param objectType - The type of the object
+ * @returns A list of usernames of the members of the community.
+ */
+const getCommunityMembersByObjectId = async (
+  oid: string,
+  objectType: CommunityObjectType,
+): Promise<string[]> => {
+  const res = await api.get(`${COMMUNITY_API_URL}/getMembers/${oid}/${objectType}`);
+
+  if (res.status !== 200) {
+    throw new Error(res.data);
+  }
+
+  return res.data;
+};
+
+/**
+ * Function to update the article with the given ID.
+ *
+ * @param articleID - The ID of the article to update
+ * @param newArticle - The contents of the article to replace it with.
+ * @returns The updated article
+ * @throws Error if the operation failed.
+ */
+const addArticleToCommunity = async (communityId: string, article: Article): Promise<Article> => {
+  const data = { article };
+  const res = await api.post(`${COMMUNITY_API_URL}/addArticle/${communityId}`, data);
+  if (res.status !== 200) {
+    throw new Error('Error when adding article to community');
+  }
+
+  return res.data;
+};
+
+export {
+  getCommunityDetails,
+  addCommunity,
+  getCommunities,
+  addQuestionToCommunity,
+  joinCommunity,
+  getCommunityMembersByObjectId,
+  addArticleToCommunity,
+};

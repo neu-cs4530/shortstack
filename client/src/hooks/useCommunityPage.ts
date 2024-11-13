@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Question, Poll, Article } from '../types';
 import { getCommunityDetails } from '../services/communityService';
+import useUserContext from './useUserContext';
 
 /**
  * Custom hook for managing the community page state, fetching community data, and handling real-time updates.
@@ -12,11 +13,14 @@ import { getCommunityDetails } from '../services/communityService';
  * @returns articles - List of articles in the community
  */
 const useCommunityPage = () => {
+  const { user, socket } = useUserContext();
   const { communityID } = useParams<{ communityID: string }>();
   const [titleText, setTitleText] = useState<string>('Community');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [polls, setPolls] = useState<Poll[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [canEdit, setCanEdit] = useState<boolean>(false);
+  const [isCreatingArticle, setIsCreatingArticle] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -27,15 +31,50 @@ const useCommunityPage = () => {
           setQuestions(communityData.questions || []);
           setPolls(communityData.polls || []);
           setArticles(communityData.articles || []);
+          setCanEdit(communityData.members.some(m => m === user.username));
         }
       } catch (error) {
         throw new Error('Failed to fetch community data');
       }
     };
     fetchCommunityData();
-  }, [communityID]);
+  }, [communityID, user.username]);
 
-  return { titleText, questions, polls, articles };
+  useEffect(() => {
+    /**
+     * Function to update the appropriate article in the list if an articleUpdate socket event is received.
+     * @param article - The article from the event
+     */
+    const updateArticle = (article: Article) => {
+      const hasArticle = articles.some(a => a._id === article._id);
+      if (hasArticle) {
+        const filteredArticles = articles.filter(a => a._id !== article._id);
+        setArticles([...filteredArticles, article]);
+      }
+    };
+
+    socket.on('articleUpdate', updateArticle);
+
+    return () => {
+      socket.off('articleUpdate', updateArticle);
+    };
+  }, [articles, socket]);
+
+  const toggleCreateArticleForm = () => {
+    setIsCreatingArticle(!isCreatingArticle);
+  };
+
+  return {
+    communityID,
+    titleText,
+    questions,
+    polls,
+    articles,
+    canEdit,
+    isCreatingArticle,
+    toggleCreateArticleForm,
+    setArticles,
+  };
 };
 
 export default useCommunityPage;

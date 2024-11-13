@@ -200,6 +200,11 @@ export enum NotificationType {
 }
 
 /**
+ * Type representing all types of objects that can be owned by a community.
+ */
+export type CommunityObjectType = 'Question' | 'Poll' | 'Article';
+
+/**
  * Interface representing a Notification, which contains:
  * - _id - The unique identifier for the notification. Optional field
  * - notificationType - The type of notification.
@@ -213,7 +218,7 @@ export enum NotificationType {
 export interface Notification {
   _id?: ObjectId;
   notificationType: NotificationType,
-  sourceType?: 'Question' | 'Poll' | 'Article',
+  sourceType?: CommunityObjectType,
   source?: Question | Poll | Article,
   isRead: boolean,
 }
@@ -321,6 +326,7 @@ export interface ServerToClientEvents {
   commentUpdate: (comment: CommentUpdatePayload) => void;
   communityUpdate: (community: CommunityResponse) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
+  articleUpdate: (article: ArticleResponse) => void;
 }
 
 /**
@@ -376,6 +382,33 @@ export interface FindArticleById extends Request {
 }
 
 /**
+ * Interface for the request for creating an article.
+ * - article - The article (duh)
+ */
+export interface CreateArticleRequest extends Request {
+  params: {
+    communityId: string,
+  }
+  body: {
+    article: Article,
+  }
+}
+
+/**
+ * Interface for the request object for updating an article.
+ * - articleID - The ID of the existing article.
+ * - newArticle - The article to replace the existing article.
+ */
+export interface UpdateArticleRequest extends Request {
+  params: {
+    articleID: string,
+  }
+  body: {
+    newArticle: Article,
+  }
+}
+
+/**
  * Type representing the possible responses for an Article-related operation.
  */
 export type ArticleResponse = Article | { error: string };
@@ -408,6 +441,13 @@ export interface AddCommunityRequest extends Request {
     userID: string;
     community: Community;
   };
+}
+
+export interface GetCommunityMembersByObjectIdRequest extends Request {
+  params: {
+    oid: string;
+    objectType: CommunityObjectType;
+  }
 }
 
 /**

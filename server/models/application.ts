@@ -3,12 +3,14 @@ import { QueryOptions } from 'mongoose';
 import {
   Answer,
   AnswerResponse,
+  Article,
   ArticleResponse,
   Challenge,
   ChallengeType,
   Comment,
   CommentResponse,
   Community,
+  CommunityObjectType,
   CommunityResponse,
   Notification,
   NotificationResponse,
@@ -654,10 +656,16 @@ const userToNotifyOnAnswerComment = async (answerID: string): Promise<string[]> 
   return [ans.ansBy];
 };
 
-// Given Question, Poll, or Article ID, notify members of the community the new post was made in.
-const usersToNotifyOnNewCommunityPost = async (
+/**
+ * Given a CommunityObjectType, get all members of the community object is in.
+ * @param oid - The ID of the community object
+ * @param type - The type of the object
+ * @returns A list of the usernames of the members of the community
+ * @throws An error if no community has the given object.
+ */
+export const fetchCommunityMembersByObjectId = async (
   oid: string,
-  type: 'Question' | 'Poll' | 'Article',
+  type: CommunityObjectType,
 ): Promise<string[]> => {
   let community;
   if (type === 'Question') {
@@ -668,7 +676,7 @@ const usersToNotifyOnNewCommunityPost = async (
     community = await CommunityModel.findOne({ articles: oid });
   }
   if (!community) {
-    throw new Error('Error retrieving users to notify');
+    throw new Error('Error retrieving users in community');
   }
   const communityUsernames = community.members;
   return communityUsernames;
@@ -736,19 +744,19 @@ export const usersToNotify = async (
         return await questionAskerToNotify(oid);
 
       case NotificationType.NewQuestion:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Question');
+        return await fetchCommunityMembersByObjectId(oid, 'Question');
 
       case NotificationType.NewPoll:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Poll');
+        return await fetchCommunityMembersByObjectId(oid, 'Poll');
 
       case NotificationType.PollClosed:
         return await usersToNotifyPollClosed(oid);
 
       case NotificationType.NewArticle:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Article');
+        return await fetchCommunityMembersByObjectId(oid, 'Article');
 
       case NotificationType.ArticleUpdate:
-        return await usersToNotifyOnNewCommunityPost(oid, 'Article');
+        return await fetchCommunityMembersByObjectId(oid, 'Article');
 
       case NotificationType.NewReward:
         return await userToNotifyForReward(oid);
@@ -1076,6 +1084,36 @@ export const fetchArticleById = async (articleID: string): Promise<ArticleRespon
 };
 
 /**
+ * Updates the article with the given ID.
+ *
+ * @param articleID - The ID of the article to update
+ * @param article - The article body to replace it with.
+ * @returns - The newly updated article.
+ */
+export const updateArticleById = async (
+  articleID: string,
+  article: Article,
+): Promise<ArticleResponse> => {
+  try {
+    const newArticle: Article = {
+      ...article,
+      _id: new ObjectId(articleID),
+    };
+    const updatedArticle = await ArticleModel.findOneAndReplace({ _id: articleID }, newArticle, {
+      new: true,
+    });
+
+    if (!updatedArticle) {
+      throw new Error('Article not found');
+    }
+
+    return updatedArticle;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
  * Gets all the communities from the database, fully populated with members, questions, polls, and articles.
  *
  * @returns {Promise<Community[] | { error: string }>} - The list of populated communities, or an error message if the operation fails
@@ -1126,6 +1164,35 @@ export const AddQuestionToCommunityModel = async (communityId: string, questionI
     return populatedCommunity;
   } catch (error) {
     return { error: 'Error adding question to community' };
+  }
+};
+
+/**
+ * Saves an article then adds it to the community with the community ID.
+ * @param communityId - The ID of the community to add the article to.
+ * @param article - The article to save.
+ * @returns - The populated community, or an error message if the operation failed.
+ */
+export const saveAndAddArticleToCommunity = async (
+  communityId: string,
+  article: Article,
+): Promise<ArticleResponse> => {
+  try {
+    const savedArticle = await ArticleModel.create(article);
+
+    const updatedCommunity = await CommunityModel.findOneAndUpdate(
+      { _id: communityId },
+      { $push: { articles: savedArticle._id } },
+      { new: true },
+    );
+
+    if (!updatedCommunity) {
+      throw new Error('Community not found');
+    }
+
+    return savedArticle;
+  } catch (error) {
+    return { error: (error as Error).message };
   }
 };
 
