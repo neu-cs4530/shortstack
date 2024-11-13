@@ -21,4 +21,18 @@ const incrementChallengeProgress = async (
   return res.data;
 };
 
-export default incrementChallengeProgress;
+/**
+ * Function to get all challenges for a user.
+ *
+ * @param username - The username of the user.
+ * @throws Error if there is an issue fetching challenges.
+ */
+const getUserChallenges = async (username: string): Promise<UserChallenge[]> => {
+  const res = await api.get(`${CHALLENGE_API_URL}/${username}`);
+  if (res.status !== 200) {
+    throw new Error('Error when fetching user challenges');
+  }
+  return res.data;
+};
+
+export { getUserChallenges, incrementChallengeProgress };

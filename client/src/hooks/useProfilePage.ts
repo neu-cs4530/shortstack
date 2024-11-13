@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getQuestionsByFilter } from '../services/questionService';
 import { Question } from '../types';
 import useUserContext from './useUserContext';
+import useUserChallenges from './useUserChallenge';
 
 /**
  * Custom hook for managing the state and logic of a profile page.
@@ -11,15 +12,16 @@ import useUserContext from './useUserContext';
 const useProfilePage = () => {
   const { user } = useUserContext();
   const [userQuestions, setUserQuestions] = useState([] as Question[]);
+  const { challenges: userChallenges } = useUserChallenges(user.username);
 
   useEffect(() => {
     /**
-     * Function to fetch the questions asked by this user.
+     * Function to fetch the questions asked by and the UserChallenges of the user.
      */
     const fetchData = async () => {
       try {
-        const res = await getQuestionsByFilter('newest', '', user.username);
-        setUserQuestions(res || null);
+        const questions = await getQuestionsByFilter('newest', '', user.username);
+        setUserQuestions(questions || null);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching questions with username:', error);
@@ -30,7 +32,7 @@ const useProfilePage = () => {
     fetchData().catch(e => console.log(e));
   }, [user.username]);
 
-  return { user, userQuestions };
+  return { user, userQuestions, userChallenges };
 };
 
 export default useProfilePage;
