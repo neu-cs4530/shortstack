@@ -55,6 +55,8 @@ const useCommunityPage = () => {
       if (hasArticle) {
         const filteredArticles = articles.filter(a => a._id !== article._id);
         setArticles([...filteredArticles, article]);
+      } else {
+        setArticles([...articles, article]);
       }
     };
 
