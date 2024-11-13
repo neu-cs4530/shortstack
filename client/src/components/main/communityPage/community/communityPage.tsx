@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
 import useCommunityPage from '../../../../hooks/useCommunityPage';
-import QuestionView from '../../questionPage/question';
 
 /**
  * Represents the community page component. Displays the questions, articles, and polls of a community.
