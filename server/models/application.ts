@@ -1311,7 +1311,6 @@ const distributeRewardsIfChallengeComplete = async (
         { username: uc.username },
         {
           $push: { unlockedTitles: uc.challenge.reward },
-          $set: { equippedTitle: uc.challenge.reward }, // TODO: remove once selecting titles/frames is implemented
         },
       );
     }
