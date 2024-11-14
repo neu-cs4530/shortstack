@@ -1,5 +1,6 @@
 import { ChangeEvent, useState, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useUserContext from './useUserContext';
 
 /**
  * Custom hook to manage the state and logic for a header search input.
@@ -13,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 const useHeader = () => {
   const navigate = useNavigate();
 
+  const { user } = useUserContext();
   const [val, setVal] = useState<string>('');
 
   /**
@@ -40,11 +42,21 @@ const useHeader = () => {
     }
   };
 
+  /**
+   * Function that checks if the logged in user has an unread notifications
+   * @returns true if the user has any unread notifications, false if otherwise
+   */
+  const userHasUnreadNotifs = (): boolean => {
+    const unreadNotifs = user.notifications.filter(notif => !notif.isRead);
+    return unreadNotifs.length > 0;
+  };
+
   return {
     val,
     setVal,
     handleInputChange,
     handleKeyDown,
+    userHasUnreadNotifs,
   };
 };
 

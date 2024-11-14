@@ -7,6 +7,7 @@ import {
   addUserToCommunity,
   fetchCommunityMembersByObjectId,
   saveAndAddArticleToCommunity,
+  saveAndAddPollToCommunity,
 } from '../models/application';
 import {
   AddCommunityRequest,
@@ -17,6 +18,8 @@ import {
   GetCommunityMembersByObjectIdRequest,
   CreateArticleRequest,
   Article,
+  Poll,
+  CreatePollRequest,
 } from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
@@ -260,6 +263,42 @@ const communityController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Function that checks if the poll object has all the necessary fields.
+   * @param poll - The poll to validate.
+   * @returns true if the poll is valid, otherwise false
+   */
+  const isValidPoll = (poll: Poll): boolean =>
+    !!poll.title && !!poll.options && poll.options.length > 0;
+
+  /**
+   * Adds a poll to the community and saves the poll.
+   * @param req The HTTP request object containing the community ID and poll data.
+   * @param res The HTTP response object used to send back the status, or an error message if the operation failed.
+   */
+  const addPollToCommunity = async (req: CreatePollRequest, res: Response): Promise<void> => {
+    const { communityId } = req.params;
+    const { poll } = req.body;
+
+    if (!isValidPoll(poll)) {
+      res.status(400).send('Invalid request body');
+      return;
+    }
+
+    try {
+      const savedPoll = await saveAndAddPollToCommunity(communityId, poll);
+
+      if (savedPoll && 'error' in savedPoll) {
+        throw new Error(savedPoll.error);
+      }
+
+      socket.emit('pollUpdate', savedPoll);
+      res.json(savedPoll);
+    } catch (error) {
+      res.status(500).send((error as Error).message);
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.post('/addCommunity', addCommunity);
   router.get('/getCommunity', getAllCommunities);
@@ -268,6 +307,7 @@ const communityController = (socket: FakeSOSocket) => {
   router.put('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
   router.get('/getMembers/:oid/:objectType', getCommunityMembersByObjectId);
   router.post('/addArticle/:communityId', addArticleToCommunity);
+  router.post('/addPoll/:communityId', addPollToCommunity);
 
   return router;
 };
