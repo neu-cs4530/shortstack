@@ -18,6 +18,8 @@ import userController from './controller/user';
 import communityController from './controller/community';
 import articleController from './controller/article';
 import challengeController from './controller/challenge';
+import notificationController from './controller/notification';
+import pollController from './controller/poll';
 
 dotenv.config();
 
@@ -80,6 +82,8 @@ app.use('/user', userController(socket));
 app.use('/community', communityController(socket));
 app.use('/article', articleController(socket));
 app.use('/challenge', challengeController());
+app.use('/notification', notificationController(socket));
+app.use('/poll', pollController());
 
 // Export the app instance
 export { app, server, startServer };

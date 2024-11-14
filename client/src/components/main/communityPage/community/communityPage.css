@@ -19,7 +19,8 @@ ul {
 }
 
 .question-item,
-.article-item {
+.article-item,
+.poll-item {
   color: #007bff;
   cursor: pointer;
   text-decoration: none;
@@ -31,12 +32,6 @@ ul {
 .question-item:hover,
 .article-item:hover {
   color: #0056b3;
-}
-
-.poll-item {
-  font-size: 1em;
-  color: #333;
-  margin-bottom: 10px;
 }
 
 .new-article-button {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, FakeSOSocket } from '../types';
+import { User, FakeSOSocket, Notification } from '../types';
 import { getUserNotifications } from '../services/userService';
 
 const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
@@ -18,13 +18,32 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       }
     };
 
+    /**
+     * Function to handle single notification updates from the socket.
+     *
+     * @param notif - The notification that was updated.
+     */
+    const handleSingleNotifUpdate = (notif: Notification) => {
+      if (user?.notifications.some(n => n._id === notif._id)) {
+        const updatedNotifs = user.notifications.map(n => {
+          if (n._id === notif._id) {
+            return { ...n, isRead: true };
+          }
+          return n;
+        });
+        setUser({ ...user, notifications: updatedNotifs });
+      }
+    };
+
     if (socket) {
       socket.on('notificationUpdate', handleNotificationUpdate);
+      socket.on('singleNotifUpdate', handleSingleNotifUpdate);
     }
 
     return () => {
       if (socket) {
         socket.off('notificationUpdate', handleNotificationUpdate);
+        socket.off('singleNotifUpdate', handleSingleNotifUpdate);
       }
     };
   }, [socket, user]);

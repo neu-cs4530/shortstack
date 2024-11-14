@@ -179,6 +179,7 @@ export interface ServerToClientEvents {
   commentUpdate: (update: CommentUpdatePayload) => void;
   communityUpdate: (update: Community) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
+  singleNotifUpdate: (notification: Notification) => void;
   articleUpdate: (article: Article) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
 }
@@ -260,7 +261,7 @@ export interface PollProps {
   selectedOption?: PollOption | undefined;
   voteButtonClick?: (event: FormEvent<HTMLFormElement>) => void;
   onOptionChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-  poll: Poll;
+  poll?: Poll;
 }
 
 /**
@@ -296,6 +297,15 @@ export interface Notification {
   sourceType?: 'Question' | 'Poll' | 'Article';
   source?: Question | Poll | Article;
   isRead: boolean;
+}
+
+/**
+ * Interface representing the props for the NotificationView component.
+ *
+ * notif - The notification object containing details about the notification.
+ */
+export interface NotificationProps {
+  notif: Notification;
 }
 
 /**

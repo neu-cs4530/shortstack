@@ -36,6 +36,7 @@ import {
   updateArticleById,
   saveAndAddArticleToCommunity,
   addSubscriberToQuestion,
+  fetchPollById,
 } from '../models/application';
 import {
   Answer,
@@ -60,6 +61,7 @@ import NotificationModel from '../models/notifications';
 import ArticleModel from '../models/articles';
 import UserChallengeModel from '../models/useChallenge';
 import ChallengeModel from '../models/challenges';
+import PollModel from '../models/polls';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -2174,6 +2176,50 @@ describe('application module', () => {
 
         if ('error' in result) {
           expect(result.error).toBe('User not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+  });
+
+  describe('Poll model', () => {
+    describe('fetchPollById', () => {
+      test('should return the poll if the operation is successful', async () => {
+        const mockPoll: Poll = {
+          _id: new ObjectId(),
+          title: 'Poll',
+          options: [
+            {
+              text: 'Option',
+              usersVoted: ['me', 'you'],
+            },
+          ],
+          createdBy: 'us',
+          pollDateTime: new Date(),
+          pollDueDate: new Date(),
+        };
+
+        mockingoose(PollModel).toReturn(mockPoll, 'findOne');
+        mockingoose(PollModel).toReturn(mockPoll, 'populate');
+
+        const response = (await fetchPollById(mockPoll._id!.toString())) as Poll;
+
+        expect(response._id).toBe(mockPoll._id);
+        expect(response.title).toBe(mockPoll.title);
+        expect(response.createdBy).toBe(mockPoll.createdBy);
+        expect(response.pollDateTime).toBe(mockPoll.pollDateTime);
+        expect(response.pollDueDate).toBe(mockPoll.pollDueDate);
+      });
+      test('should return an error if findOne returns null', async () => {
+        const mockPollID = new ObjectId();
+
+        mockingoose(PollModel).toReturn(null, 'findOne');
+
+        const response = await fetchPollById(mockPollID.toString());
+
+        if ('error' in response) {
+          expect(response.error).toBe('Poll not found');
         } else {
           expect(false).toBeTruthy();
         }

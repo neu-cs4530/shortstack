@@ -16,6 +16,7 @@ import {
   NotificationResponse,
   NotificationType,
   OrderType,
+  Poll,
   Question,
   QuestionResponse,
   Tag,
@@ -35,6 +36,7 @@ import ArticleModel from './articles';
 import NotificationModel from './notifications';
 import UserChallengeModel from './useChallenge';
 import ChallengeModel from './challenges';
+import PollOptionModel from './pollOptions';
 
 /**
  * Parses tags from a search string.
@@ -1225,6 +1227,27 @@ export const fetchAllCommunities = async (): Promise<Community[] | { error: stri
     return validCommunities;
   } catch (error) {
     return { error: 'Error when fetching communities' };
+  }
+};
+
+/**
+ * Fetches a poll by id
+ * @param pollId - The ID of the poll to fetch
+ * @returns The poll, or an error if the poll was not found
+ */
+export const fetchPollById = async (pollId: string): Promise<Poll | { error: string }> => {
+  try {
+    const poll = await PollModel.findOne({ _id: new ObjectId(pollId) }).populate([
+      { path: 'options', model: PollOptionModel },
+    ]);
+
+    if (!poll) {
+      throw new Error('Poll not found');
+    }
+
+    return poll;
+  } catch (error) {
+    return { error: (error as Error).message };
   }
 };
 

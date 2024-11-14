@@ -30,6 +30,10 @@ const CommunityPage = () => {
     navigate(`/community/article/${articleID}`);
   };
 
+  const handlePollClick = (pollID: string) => {
+    navigate(`/community/poll/${pollID}`);
+  };
+
   return isCreatingArticle ? (
     <div className='article-form-container'>
       <CommunityArticleForm
@@ -88,7 +92,7 @@ const CommunityPage = () => {
       {polls.length > 0 ? (
         <ul>
           {polls.map((poll: Poll) => (
-            <li key={poll._id} className='poll-item'>
+            <li key={poll._id} className='poll-item' onClick={() => handlePollClick(poll._id!)}>
               {poll.title} - Created by {poll.createdBy}
             </li>
           ))}

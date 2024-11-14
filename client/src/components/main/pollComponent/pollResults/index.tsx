@@ -8,11 +8,11 @@ import './index.css';
  * The component will also visually indicate which option the logged in user voted on.
  */
 const PollResults = ({ poll }: PollProps) => {
-  const { optionUserVotedFor, barChartWidth } = usePoll(poll);
+  const { optionUserVotedFor, barChartWidth } = usePoll();
 
   return (
     <div className='poll_results_container'>
-      {poll.options.map((opt, idx) => (
+      {poll?.options.map((opt, idx) => (
         <div
           className={
             optionUserVotedFor === opt ? 'option_results is_voted_option' : 'option_results'

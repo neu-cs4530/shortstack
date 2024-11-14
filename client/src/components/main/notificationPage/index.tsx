@@ -1,5 +1,4 @@
-import useUserContext from '../../../hooks/useUserContext';
-import { markAllNotifsAsRead } from '../../../services/userService';
+import useNotificationPage from '../../../hooks/useNotificationPage';
 import './index.css';
 import NotificationView from './notification';
 
@@ -7,22 +6,7 @@ import NotificationView from './notification';
  * NotificationPage component that displays a user's notifications.
  */
 const NotificationPage = () => {
-  const { user } = useUserContext();
-
-  /**
-   * Function that sets the status of all notifications for the logged in user to read.
-   */
-  const handleReadAll = async () => {
-    // res should be the array of notifications with their status updated.
-    if (user) {
-      try {
-        await markAllNotifsAsRead(user.username);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error while updating all notifications as read');
-      }
-    }
-  };
+  const { notifications, handleReadAll } = useNotificationPage();
 
   return (
     <div>
@@ -37,7 +21,7 @@ const NotificationPage = () => {
         </button>
       </div>
       <div className='notification_list'>
-        {user.notifications.map((notification, idx) => (
+        {notifications.map((notification, idx) => (
           <NotificationView notif={notification} key={idx} />
         ))}
       </div>
