@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaRegBell, FaUserCircle } from 'react-icons/fa';
 import useHeader from '../../hooks/useHeader';
 import './index.css';
 
@@ -11,7 +11,7 @@ import './index.css';
  * notifications page.
  */
 const Header = () => {
-  const { val, handleInputChange, handleKeyDown } = useHeader();
+  const { val, handleInputChange, handleKeyDown, userHasUnreadNotifs } = useHeader();
   const navigate = useNavigate();
 
   const handleNotifications = () => {
@@ -36,7 +36,8 @@ const Header = () => {
             onKeyDown={handleKeyDown}
           />
           <button className='notifications_btn' onClick={handleNotifications}>
-            Notifications
+            {<FaRegBell size='16px' />}
+            {userHasUnreadNotifs() ? <div className='notif_indicator'> </div> : <></>}
           </button>
           <button className='profile_btn' onClick={handleProfile}>
             <FaUserCircle size='32px' className='profile_icon' />

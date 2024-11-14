@@ -66,6 +66,7 @@ export interface Tag {
  * - upVotes - An array of usernames that have upvoted the question.
  * - downVotes - An array of usernames that have downvoted the question.
  * - comments - Object IDs of comments that have been added to the question by users, or comments themselves if populated.
+ * - subscribers - The usernames of subscribed users
  */
 export interface Question {
   _id?: ObjectId;
@@ -79,6 +80,7 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[] | ObjectId[];
+  subscribers: string[];
 }
 
 /**
@@ -242,6 +244,19 @@ export interface VoteRequest extends Request {
 }
 
 /**
+ * Interface for the request body when subscribing to a question.
+ * - body - The question ID and the username of the user subscribing.
+ *  - qid - The unique identifier of the question.
+ *  - username - The username of the user subscribing.
+ */
+export interface SubscribeRequest extends Request {
+  body: {
+    qid: string;
+    username: string;
+  };
+}
+
+/**
  * Interface representing a Comment, which contains:
  * - _id - The unique identifier for the comment. Optional field.
  * - text - The content of the comment.
@@ -315,6 +330,17 @@ export interface NotificationUpdatePayload {
   usernames: string[];
 }
 
+
+/**
+ * Interface representing the payload for a subscriber update socket event, which contains:
+ * - qid - The ID of the question being subscribed to
+ * - subscribers - An array of usernamess who subscribed to the question
+ */
+export interface SubscriberUpdatePayload {
+  qid: string;
+  subscribers: string[];
+}
+
 /**
  * Interface representing the possible events that the server can emit to the client.
  */
@@ -328,6 +354,7 @@ export interface ServerToClientEvents {
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   articleUpdate: (article: ArticleResponse) => void;
   pollUpdate: (poll: PollResponse) => void;
+  subscriberUpdate: (update: SubscriberUpdatePayload) => void;
 }
 
 /**

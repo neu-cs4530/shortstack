@@ -114,6 +114,7 @@ export interface Answer {
  * - upVotes - An array of usernames who upvoted the question.
  * - downVotes - An array of usernames who downvoted the question.
  * - comments - Comments associated with the question.
+ * - subscribers - The usernames of subscribed users
  */
 export interface Question {
   _id?: string;
@@ -127,6 +128,7 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[];
+  subscribers: string[];
 }
 
 /**
@@ -157,6 +159,16 @@ export interface NotificationUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a subscriber update socket event, which contains:
+ * - qid - The ID of the question being subscribed to
+ * - subscribers - An array of usernamess who subscribed to the question
+ */
+export interface SubscriberUpdatePayload {
+  qid: string;
+  subscribers: string[];
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -169,6 +181,7 @@ export interface ServerToClientEvents {
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   articleUpdate: (article: Article) => void;
   pollUpdate: (poll: Poll) => void;
+  subscriberUpdate: (update: SubscriberUpdatePayload) => void;
 }
 
 /**

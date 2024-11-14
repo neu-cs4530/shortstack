@@ -64,6 +64,7 @@ const MOCK_QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new mongoose.Types.ObjectId('65e9b5a995b6c7045a30d823'),
@@ -77,6 +78,7 @@ const MOCK_QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new mongoose.Types.ObjectId('34e9b58910afe6e94fc6e99f'),
@@ -90,6 +92,7 @@ const MOCK_QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
 ];
 

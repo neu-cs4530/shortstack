@@ -88,4 +88,27 @@ const downvoteQuestion = async (qid: string, username: string) => {
   return res.data;
 };
 
-export { getQuestionsByFilter, getQuestionById, addQuestion, upvoteQuestion, downvoteQuestion };
+/**
+ * Function to subscribe to a question.
+ *
+ * @param qid - The ID of the question to subscribe to.
+ * @param username - The username of the person subscribing to the question.
+ * @throws Error if there is an issue subscribing to the question.
+ */
+const subscribeToQuestion = async (qid: string, username: string) => {
+  const data = { qid, username };
+  const res = await api.put(`${QUESTION_API_URL}/addSubscriberToQuestion`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while subscribing to the question');
+  }
+  return res.data;
+};
+
+export {
+  getQuestionsByFilter,
+  getQuestionById,
+  addQuestion,
+  upvoteQuestion,
+  downvoteQuestion,
+  subscribeToQuestion,
+};
