@@ -17,6 +17,7 @@ import {
   NotificationType,
   OrderType,
   Poll,
+  PollResponse,
   Question,
   QuestionResponse,
   Tag,
@@ -688,7 +689,7 @@ const usersToNotifyPollClosed = async (pid: string): Promise<string[]> => {
   const poll = await PollModel.findOne({ _id: pid }).populate([
     {
       path: 'options',
-      model: PollModel,
+      model: PollOptionModel,
     },
   ]);
   if (!poll) {
@@ -1306,6 +1307,48 @@ export const saveAndAddArticleToCommunity = async (
     }
 
     return savedArticle;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Saves a poll and its options, then adds it to the community with the community ID.
+ * @param communityId - The ID of the community to add the poll to.
+ * @param poll - The poll to save, including options data.
+ * @returns - The created poll document or an error message if the operation failed.
+ */
+export const saveAndAddPollToCommunity = async (
+  communityId: string,
+  poll: Poll,
+): Promise<PollResponse> => {
+  try {
+    const optionIds = await Promise.all(
+      poll.options.map(async option => {
+        const pollOption = await PollOptionModel.create(option);
+        return pollOption._id;
+      }),
+    );
+
+    const savedPoll = await PollModel.create({
+      title: poll.title,
+      options: optionIds,
+      createdBy: poll.createdBy,
+      pollDateTime: poll.pollDateTime,
+      pollDueDate: poll.pollDueDate,
+    });
+
+    const updatedCommunity = await CommunityModel.findOneAndUpdate(
+      { _id: communityId },
+      { $push: { polls: savedPoll._id } },
+      { new: true },
+    );
+
+    if (!updatedCommunity) {
+      throw new Error('Community not found');
+    }
+
+    return savedPoll;
   } catch (error) {
     return { error: (error as Error).message };
   }

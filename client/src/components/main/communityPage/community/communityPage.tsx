@@ -32,6 +32,10 @@ const CommunityPage = () => {
 
   const handlePollClick = (pollID: string) => {
     navigate(`/community/poll/${pollID}`);
+  }
+  
+  const handleCreatePollClick = () => {
+    navigate(`/community/${communityID}/createPoll`);
   };
 
   return isCreatingArticle ? (
@@ -69,7 +73,7 @@ const CommunityPage = () => {
         <h2 style={{ marginBottom: '0' }}>Community Articles</h2>
         {canEdit && (
           <button className='new-article-button' onClick={toggleCreateArticleForm}>
-            {<PiNotePencil style={{ marginRight: '5px' }} />}New Article
+            <PiNotePencil style={{ marginRight: '5px' }} /> New Article
           </button>
         )}
       </div>
@@ -88,7 +92,14 @@ const CommunityPage = () => {
         <p>No articles found.</p>
       )}
 
-      <h2>Community Polls</h2>
+      <div className='header-container'>
+        <h2 style={{ marginBottom: '0' }}>Community Polls</h2>
+        {canEdit && (
+          <button className='create-poll-button' onClick={handleCreatePollClick}>
+            <PiNotePencil style={{ marginRight: '5px' }} /> Create Poll
+          </button>
+        )}
+      </div>
       {polls.length > 0 ? (
         <ul>
           {polls.map((poll: Poll) => (

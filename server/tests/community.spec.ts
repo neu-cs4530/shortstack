@@ -10,6 +10,7 @@ const addUserToCommunitySpy = jest.spyOn(util, 'addUserToCommunity');
 const populateCommunitySpy = jest.spyOn(util, 'populateCommunity');
 const fetchCommunityMembersByObjectIdSpy = jest.spyOn(util, 'fetchCommunityMembersByObjectId');
 const saveAndAddArticleToCommunitySpy = jest.spyOn(util, 'saveAndAddArticleToCommunity');
+const saveAndAddPollToCommunitySpy = jest.spyOn(util, 'saveAndAddPollToCommunity');
 
 describe('Community', () => {
   afterEach(async () => {
@@ -304,6 +305,76 @@ describe('Community', () => {
       const response = await supertest(app)
         .post(`/community/addArticle/${mockCommunityId.toString()}`)
         .send(mockArticleBody);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('error');
+    });
+  });
+  describe('POST /addPoll/:communityId', () => {
+    it('should return the saved poll if the operation is successful', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId();
+      const mockPollBody = {
+        poll: {
+          title: 'Poll Title',
+          options: [{ text: 'Option 1' }, { text: 'Option 2' }],
+        },
+      };
+      const expectedPoll = {
+        _id: new mongoose.Types.ObjectId(),
+        title: 'Poll Title',
+        options: [
+          { _id: new mongoose.Types.ObjectId(), text: 'Option 1', usersVoted: [] },
+          { _id: new mongoose.Types.ObjectId(), text: 'Option 2', usersVoted: [] },
+        ],
+        createdBy: 'user123',
+        pollDateTime: new Date(),
+        pollDueDate: new Date(),
+      };
+
+      saveAndAddPollToCommunitySpy.mockResolvedValueOnce(expectedPoll);
+
+      const response = await supertest(app)
+        .post(`/community/addPoll/${mockCommunityId.toString()}`)
+        .send(mockPollBody);
+
+      expect(response.status).toBe(200);
+      expect(response.body._id).toEqual(expectedPoll._id?.toString());
+      expect(response.body.title).toEqual(expectedPoll.title);
+      expect(response.body.options.length).toEqual(expectedPoll.options.length);
+      expect(response.body.options[0].text).toEqual(expectedPoll.options[0].text);
+      expect(response.body.options[1].text).toEqual(expectedPoll.options[1].text);
+    });
+
+    it('should return a 400 status if the poll is invalid', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId();
+      const mockPollBody = {
+        poll: {
+          title: 'Poll Title',
+        },
+      };
+
+      const response = await supertest(app)
+        .post(`/community/addPoll/${mockCommunityId.toString()}`)
+        .send(mockPollBody);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toBe('Invalid request body');
+    });
+
+    it('should return a 500 status if saveAndAddPollToCommunity returns an error', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId();
+      const mockPollBody = {
+        poll: {
+          title: 'Poll Title',
+          options: [{ text: 'Option 1' }, { text: 'Option 2' }],
+        },
+      };
+
+      saveAndAddPollToCommunitySpy.mockResolvedValueOnce({ error: 'error' });
+
+      const response = await supertest(app)
+        .post(`/community/addPoll/${mockCommunityId.toString()}`)
+        .send(mockPollBody);
 
       expect(response.status).toBe(500);
       expect(response.text).toBe('error');

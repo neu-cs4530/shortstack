@@ -181,6 +181,7 @@ export interface ServerToClientEvents {
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   singleNotifUpdate: (notification: Notification) => void;
   articleUpdate: (article: Article) => void;
+  pollUpdate: (poll: Poll) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
 }
 
