@@ -1020,7 +1020,8 @@ export const addVoteToQuestion = async (
 };
 
 /**
- * Adds a username to a question's subscribers.
+ * Adds a username to a question's subscribers. If user is already subscribed, removes the user
+ * from the question's subscribers.
  *
  * @param qid The ID of the question to add a vote to.
  * @param username The username of the user who subscribed.

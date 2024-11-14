@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Question } from '../types';
 import useUserContext from './useUserContext';
+import { subscribeToQuestion } from '../services/questionService';
 
 /**
  * Custom hook to handle subscribing logic for a question.
@@ -11,11 +12,26 @@ import useUserContext from './useUserContext';
  *
  * @returns subscribed - Whether the user is subscribed or not
  * @returns setSubscribed - The function to manually update user's subscribed status
+ * @returns handleSubscribed - The function to handle subscribing to a question.
  */
 
 const useSubscribedStatus = ({ question }: { question: Question }) => {
   const { user, socket } = useUserContext();
   const [subscribed, setSubscribed] = useState<boolean>(false);
+
+  /**
+   * Function to handle subscribing to a question.
+   */
+  const handleSubscribe = async () => {
+    try {
+      if (question._id) {
+        await subscribeToQuestion(question._id, user.username);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error subscribing to question:', error);
+    }
+  };
 
   useEffect(() => {
     /**
@@ -23,12 +39,8 @@ const useSubscribedStatus = ({ question }: { question: Question }) => {
      *
      * @returns Whether the user is subscribed or not.
      */
-    const getSubscribedStatus = () => {
-      if (user.username && question?.subscribers?.includes(user.username)) {
-        return true;
-      }
-      return false;
-    };
+    const getSubscribedStatus = () =>
+      !!user.username && question?.subscribers?.includes(user.username);
 
     // Set the initial subscribed status
     setSubscribed(getSubscribedStatus());
@@ -37,6 +49,7 @@ const useSubscribedStatus = ({ question }: { question: Question }) => {
   return {
     subscribed,
     setSubscribed,
+    handleSubscribe,
   };
 };
 

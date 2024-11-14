@@ -1,6 +1,4 @@
-import { subscribeToQuestion } from '../../../services/questionService';
 import './index.css';
-import useUserContext from '../../../hooks/useUserContext';
 import { Question } from '../../../types';
 import useSubscribedStatus from '../../../hooks/useSubscribedStatus';
 
@@ -19,22 +17,7 @@ interface SubscribeComponentProps {
  * @param question - The question object containing subscribed user information.
  */
 const SubscribeComponent = ({ question }: SubscribeComponentProps) => {
-  const { user } = useUserContext();
-  const { subscribed } = useSubscribedStatus({ question });
-
-  /**
-   * Function to handle subscribing to a question.
-   */
-  const handleSubscribe = async () => {
-    try {
-      if (question._id) {
-        await subscribeToQuestion(question._id, user.username);
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error subscribing to question:', error);
-    }
-  };
+  const { subscribed, handleSubscribe } = useSubscribedStatus({ question });
 
   return (
     <div className='subscribe-container'>

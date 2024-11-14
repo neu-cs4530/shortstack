@@ -818,6 +818,28 @@ describe('application module', () => {
         expect(result.subscribers).toEqual(['testUser']);
       });
 
+      test('addSubscriberToQuestion should remove username as a subscriber if user was subscribed already', async () => {
+        const mockQuestion = { ...QUESTIONS[0], subscribers: ['testUser'] };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        mockingoose(QuestionModel).toReturn(
+          { ...mockQuestion, subscribers: [] },
+          'findOneAndUpdate',
+        );
+
+        const result = (await addSubscriberToQuestion('someQuestionId', 'testUser')) as Question;
+
+        expect(result._id).toBeDefined();
+        expect(result.title).toEqual(mockQuestion.title);
+        expect(result.text).toEqual(mockQuestion.text);
+        expect(result.tags.length).toEqual(mockQuestion.tags.length);
+        expect(result.askedBy).toEqual(mockQuestion.askedBy);
+        expect(result.askDateTime).toEqual(mockQuestion.askDateTime);
+        expect(result.views).toEqual(mockQuestion.views);
+        expect(result.answers.length).toEqual(mockQuestion.answers.length);
+        expect(result.subscribers).toEqual([]);
+      });
+
       test('addSubscriberToQuestion should return an error object if the question to subscribe to not found', async () => {
         mockingoose(QuestionModel).toReturn(null, 'findOne');
 
