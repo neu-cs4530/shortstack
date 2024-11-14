@@ -61,6 +61,29 @@ const addPoints = async (username: string, numPoints: number): Promise<User> => 
 };
 
 /**
+ * Function to equip a reward to a user.
+ *
+ * @param username - The user who's equipped reward is to be updated.
+ * @param reward - The reward to equip.
+ * @param type - The type of the reward, either a frame or a title.
+ * @throws Error if there is an issue equipping the reward.
+ */
+const equipReward = async (
+  username: string,
+  reward: string,
+  type: 'frame' | 'title',
+): Promise<{ username: string; reward: string; type: string }> => {
+  const data = { username, reward, type };
+  const res = await api.put(`${USER_API_URL}/updateEquippedReward`, data);
+
+  if (res.status !== 200) {
+    throw new Error(`Error while changing user's equipped reward`);
+  }
+
+  return res.data;
+};
+
+/**
  * Function to send a notification. The users to add the notification to are determined by the
  * type of the notification and the given ObjectID.
  *
@@ -119,4 +142,12 @@ const markAllNotifsAsRead = async (username: string): Promise<Notification[]> =>
   return res.data;
 };
 
-export { addUser, loginUser, addPoints, notifyUsers, getUserNotifications, markAllNotifsAsRead };
+export {
+  addUser,
+  loginUser,
+  addPoints,
+  equipReward,
+  notifyUsers,
+  getUserNotifications,
+  markAllNotifsAsRead,
+};

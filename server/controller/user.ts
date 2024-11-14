@@ -2,6 +2,7 @@ import express, { Response, Request } from 'express';
 import {
   AddPointsRequest,
   AddUserRequest,
+  EquipRewardRequest,
   FakeSOSocket,
   NewNotificationRequest,
   Notification,
@@ -16,6 +17,7 @@ import {
   populateNotification,
   usersToNotify,
   updateUserNotifsAsRead,
+  equipReward,
 } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
@@ -138,6 +140,36 @@ const userController = (socket: FakeSOSocket) => {
       res.json(updatedUser);
     } catch (error) {
       res.status(500).send('Error when adding points to user');
+    }
+  };
+
+  /**
+   * Sets a user's equiped rewards.
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The EquipRewardRequest object containing username and reward data to update.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const equipRewardToUser = async (req: EquipRewardRequest, res: Response) => {
+    if (!req.body.username || !req.body.reward || !req.body.type) {
+      res.status(400).send('Invalid request');
+      return;
+    }
+
+    const { username, reward, type } = req.body;
+
+    try {
+      const status = await equipReward(username, reward, type);
+      if ('error' in status) {
+        throw new Error(status.error as string);
+      }
+
+      socket.emit('equippedRewardUpdate', status);
+      res.json(status);
+    } catch (error) {
+      res.status(500).send('Error when equipping reward');
     }
   };
 
@@ -269,6 +301,7 @@ const userController = (socket: FakeSOSocket) => {
   router.post('/notify', notify);
   router.get('/getUserNotifications/:username', getUserNotifications);
   router.put('/markAllNotifsAsRead/:username', markAllNotifsAsRead);
+  router.put('/updateEquippedReward', equipRewardToUser);
 
   return router;
 };
