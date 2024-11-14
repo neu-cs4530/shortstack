@@ -93,7 +93,7 @@ const useArticleForm = ({
       } else if (articleId) {
         const updatedArticle = await updateArticleById(articleId, article);
         submitCallback(updatedArticle);
-        await sendArticleNotification(updatedArticle, NotificationType.NewArticle);
+        await sendArticleNotification(updatedArticle, NotificationType.ArticleUpdate);
       }
     } catch (error) {
       // eslint-disable-next-line no-alert
