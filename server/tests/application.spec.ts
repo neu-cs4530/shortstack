@@ -38,6 +38,7 @@ import {
   saveAndAddPollToCommunity,
   addSubscriberToQuestion,
   fetchPollById,
+  equipReward,
 } from '../models/application';
 import {
   Answer,
@@ -1260,6 +1261,62 @@ describe('application module', () => {
         }
       });
     });
+
+    describe('equipReward', () => {
+      test('equipReward with type frame should update user reward and return username, reward type, and equipped reward', async () => {
+        mockingoose(UserModel).toReturn(
+          { ...newUser, equippedFrame: 'profile_frames-01.png' },
+          'findOneAndUpdate',
+        );
+        const result = (await equipReward('UserA', 'profile_frames-01.png', 'frame')) as {
+          username: string;
+          reward: string;
+          type: string;
+        };
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.reward).toEqual('profile_frames-01.png');
+        expect(result.type).toEqual('frame');
+      });
+
+      test('equipReward with type title should update user reward and return username, reward type, and equipped reward', async () => {
+        mockingoose(UserModel).toReturn(
+          { ...newUser, equippedTitle: 'Rookie Responder' },
+          'findOneAndUpdate',
+        );
+        const result = (await equipReward('UserA', 'Rookie Responder', 'title')) as {
+          username: string;
+          reward: string;
+          type: string;
+        };
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.reward).toEqual('Rookie Responder');
+        expect(result.type).toEqual('title');
+      });
+
+      test('equipReward should return an object with error if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+        const result = await equipReward('UserA', 'Rookie Responder', 'title');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('equipReward should return an object with error if findOneAndUpdate returns an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
+        const result = await equipReward('UserA', 'Rookie Responder', 'title');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
   });
 
   describe('Article model', () => {
@@ -2227,7 +2284,6 @@ describe('application module', () => {
           { username: userA.username },
           {
             $push: { unlockedTitles: challenge1.reward },
-            $set: { equippedTitle: challenge1.reward },
           },
         );
       });

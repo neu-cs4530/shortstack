@@ -169,6 +169,18 @@ export interface SubscriberUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a reward equip update socket event.
+ * - username - The user who's equipped reward was updated.
+ * - reward - The equipped reward.
+ * - type - The type of the reward, either a frame or a title.
+ */
+export interface EquippedRewardUpdatePayload {
+  username: string;
+  reward: string;
+  type: 'frame' | 'title';
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -183,6 +195,7 @@ export interface ServerToClientEvents {
   articleUpdate: (article: Article) => void;
   pollUpdate: (poll: Poll) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
+  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
 }
 
 /**

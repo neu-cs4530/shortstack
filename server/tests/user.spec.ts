@@ -8,6 +8,7 @@ import { Article, Notification, NotificationType, Poll, User } from '../types';
 const saveUserSpy = jest.spyOn(util, 'saveUser');
 const findUserSpy = jest.spyOn(util, 'findUser');
 const addPointsToUserSpy = jest.spyOn(util, 'addPointsToUser');
+const equipRewardSpy = jest.spyOn(util, 'equipReward');
 const usersToNotifySpy = jest.spyOn(util, 'usersToNotify');
 const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
 const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
@@ -232,6 +233,112 @@ describe('User API', () => {
       addPointsToUserSpy.mockResolvedValueOnce({ error: 'Error when adding points to a user' });
       // Making the request
       const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('PUT /updateEquippedReward', () => {
+    afterEach(async () => {
+      await mongoose.connection.close(); // Ensure the connection is properly closed
+    });
+
+    afterAll(async () => {
+      await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+    });
+
+    it('should return the username, updated reward, and reward type that was added for type frame', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        reward: 'profile_frames-01.png',
+        type: 'frame',
+      };
+      equipRewardSpy.mockResolvedValueOnce({
+        username: 'UserA',
+        reward: 'profile_frames-01.png',
+        type: 'frame',
+      });
+      // Making the request
+      const response = await supertest(app).put('/user/updateEquippedReward').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        username: 'UserA',
+        reward: 'profile_frames-01.png',
+        type: 'frame',
+      });
+    });
+
+    it('should return the username, updated reward, and reward type that was added for type title', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        reward: 'Rookie Responder',
+        type: 'title',
+      };
+      equipRewardSpy.mockResolvedValueOnce({
+        username: 'UserA',
+        reward: 'Rookie Responder',
+        type: 'title',
+      });
+      // Making the request
+      const response = await supertest(app).put('/user/updateEquippedReward').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        username: 'UserA',
+        reward: 'Rookie Responder',
+        type: 'title',
+      });
+    });
+
+    it('should return bad request if missing username', async () => {
+      const mockReqBody = {
+        reward: 'profile_frames-01.png',
+        type: 'frame',
+      };
+      // Making the request
+      const response = await supertest(app).put('/user/updateEquippedReward').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if missing reward to equip', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        type: 'frame',
+      };
+      // Making the request
+      const response = await supertest(app).put('/user/updateEquippedReward').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if missing type of reward to equip', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        reward: 'profile_frames-01.png',
+      };
+      // Making the request
+      const response = await supertest(app).put('/user/updateEquippedReward').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 500 if error object returned by `equipReward`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        reward: 'profile_frames-01.png',
+        type: 'frame',
+      };
+      equipRewardSpy.mockResolvedValueOnce({ error: 'Error equipping reward' });
+      // Making the request
+      const response = await supertest(app).put('/user/updateEquippedReward').send(mockReqBody);
 
       // Asserting the response
       expect(response.status).toBe(500);

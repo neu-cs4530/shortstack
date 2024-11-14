@@ -68,6 +68,7 @@ const ProfilePage = () => {
         )}
         {activeTab === 'rewards' && (
           <RewardsView
+            username={user.username}
             unlockedFrames={user.unlockedFrames}
             unlockedTitles={user.unlockedTitles}
             equippedFrame={user.equippedFrame}
