@@ -1173,7 +1173,7 @@ describe('application module', () => {
         expect(result.type).toEqual('frame');
       });
 
-      test('equipReward with type frame should update user reward and return username, reward type, and equipped reward', async () => {
+      test('equipReward with type title should update user reward and return username, reward type, and equipped reward', async () => {
         mockingoose(UserModel).toReturn(
           { ...newUser, equippedTitle: 'Rookie Responder' },
           'findOneAndUpdate',

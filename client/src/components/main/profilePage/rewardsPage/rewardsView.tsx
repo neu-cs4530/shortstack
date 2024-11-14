@@ -16,6 +16,7 @@ interface RewardsViewProps {
 /**
  * RewardsView component renders the unlocked frames and titles for a user.
  *
+ * @param username - The user's username.
  * @param unlockedFrames - The frames unlocked by the user.
  * @param unlockedTitles - The titles unlocked by the user.
  * @param equippedFrame - The user's currently equipped frame.
@@ -31,8 +32,8 @@ const RewardsView = ({
   /**
    * Function to handle changing a user's equipped reward.
    *
-   * @param unlockedFrames - The frames unlocked by the user.
-   * @param unlockedTitles - The titles unlocked by the user.
+   * @param item - The string representation of the reward to equip.
+   * @param type - The type of reward, either a frame or a title.
    */
   const handleEquip = async (item: string, type: 'frame' | 'title') => {
     try {
