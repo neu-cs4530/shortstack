@@ -71,6 +71,28 @@ const useCommunityPage = () => {
     setIsCreatingArticle(!isCreatingArticle);
   };
 
+  useEffect(() => {
+    /**
+     * Function to update a poll in the list if a pollUpdate socket event is received.
+     * @param poll - The updated poll from the event
+     */
+    const updatePoll = (poll: Poll) => {
+      const hasPoll = polls.some(p => p._id === poll._id);
+      if (hasPoll) {
+        const filteredPolls = polls.filter(p => p._id !== poll._id);
+        setPolls([...filteredPolls, poll]);
+      } else {
+        setPolls([...polls, poll]);
+      }
+    };
+
+    socket.on('pollUpdate', updatePoll);
+
+    return () => {
+      socket.off('pollUpdate', updatePoll);
+    };
+  }, [polls, socket]);
+
   return {
     communityID,
     titleText,

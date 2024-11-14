@@ -17,6 +17,7 @@ import CommunityList from './main/communityPage/communityList';
 import CommunityPage from './main/communityPage/community/communityPage';
 import NewCommunityPage from './main/newCommunity';
 import useFakeStackOverflow from '../hooks/useFakeStackOverflow';
+import CreatePollPage from './main/communityPage/community/poll/pollCreationPage';
 
 const ProtectedRoute = ({
   user,
@@ -64,6 +65,7 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/community' element={<CommunityList />} />
             <Route path='/community/:communityID' element={<CommunityPage />} />
             <Route path='/community/article/:articleID' element={<CommunityArticlePage />} />
+            <Route path='/community/:communityID/createPoll' element={<CreatePollPage />} />
             <Route path='/community/create' element={<NewCommunityPage />} />
             <Route path='/profile' element={<ProfilePage />} />
           </Route>

@@ -35,6 +35,7 @@ import {
   fetchCommunityMembersByObjectId,
   updateArticleById,
   saveAndAddArticleToCommunity,
+  saveAndAddPollToCommunity,
   addSubscriberToQuestion,
 } from '../models/application';
 import {
@@ -60,6 +61,7 @@ import NotificationModel from '../models/notifications';
 import ArticleModel from '../models/articles';
 import UserChallengeModel from '../models/useChallenge';
 import ChallengeModel from '../models/challenges';
+import PollModel from '../models/polls';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -1453,18 +1455,22 @@ describe('application module', () => {
     describe('saveAndAddArticleToCommunity', () => {
       test('saveAndAddArticleToCommunity should return the saved article if the operation is successful', async () => {
         const mockCommunityId = communityWithUser._id!;
-        const mockArticle: Article = {
-          title: 'title',
-          body: 'body',
-        };
-        const mockSavedArticle: Article = {
-          _id: new ObjectId(),
-          title: 'title',
-          body: 'body',
-        };
-        const mockCommunity = { ...communityWithUser, articles: [mockSavedArticle._id] };
+        const fixedArticleId = new ObjectId('507f1f77bcf86cd799439012'); // fixed ObjectId
 
-        mockingoose(ArticleModel).toReturn(mockSavedArticle, 'create');
+        const mockArticle = {
+          title: 'Article Title',
+          body: 'Article Body',
+        };
+        const mockSavedArticle = {
+          _id: fixedArticleId,
+          ...mockArticle,
+        };
+        const mockCommunity = { ...communityWithUser, articles: [fixedArticleId] };
+
+        // mock ArticleModel.create to return the fixed article ID
+        jest
+          .spyOn(ArticleModel, 'create')
+          .mockImplementationOnce(() => Promise.resolve(mockSavedArticle as any));
         mockingoose(CommunityModel).toReturn(mockCommunity, 'findOneAndUpdate');
 
         const result = (await saveAndAddArticleToCommunity(
@@ -1472,17 +1478,7 @@ describe('application module', () => {
           mockArticle,
         )) as Article;
 
-        /*
-          I have no clue why this is failing I'm going insane.
-          For whatever reason, the received ID is the expected ID but incremented by one (even though it's mocked)
-            - Expected  - 1
-            + Received  + 1
-
-            - "673443df9c80042a1e194ebc"
-            + "673443df9c80042a1e194ebd"
-          I give up.
-         */
-        // expect(result._id).toBe(mockSavedArticle._id);
+        expect(result._id?.toString()).toBe(fixedArticleId.toString());
         expect(result.title).toBe(mockArticle.title);
         expect(result.body).toBe(mockArticle.body);
       });
@@ -1498,6 +1494,72 @@ describe('application module', () => {
         mockingoose(CommunityModel).toReturn(null, 'findOneAndUpdate');
 
         const result = await saveAndAddArticleToCommunity(mockCommunityId.toString(), mockArticle);
+
+        if ('error' in result) {
+          expect(result.error).toBe('Community not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+    describe('saveAndAddPollToCommunity', () => {
+      test('saveAndAddPollToCommunity should return the saved poll if the operation is successful', async () => {
+        const mockCommunityId = communityWithUser._id!;
+        const fixedPollId = new ObjectId('507f1f77bcf86cd799439011'); // fixed ObjectId
+
+        const mockPoll = {
+          title: 'Poll Title',
+          options: [
+            { text: 'Option 1', usersVoted: [] },
+            { text: 'Option 2', usersVoted: [] },
+          ],
+          createdBy: 'user123',
+          pollDateTime: new Date(),
+          pollDueDate: new Date(),
+        };
+        const mockSavedPoll = {
+          _id: fixedPollId,
+          ...mockPoll,
+        };
+        const mockCommunity = { ...communityWithUser, polls: [fixedPollId] };
+
+        // mock PollModel.create for the fixed poll ID
+        jest
+          .spyOn(PollModel, 'create')
+          .mockImplementationOnce(() => Promise.resolve(mockSavedPoll as any));
+
+        mockingoose(CommunityModel).toReturn(mockCommunity, 'findOneAndUpdate');
+
+        const result = (await saveAndAddPollToCommunity(
+          mockCommunityId.toString(),
+          mockPoll,
+        )) as Poll;
+
+        expect(result._id?.toString()).toBe(fixedPollId.toString());
+        expect(result.title).toBe(mockPoll.title);
+        expect(result.options.length).toBe(mockPoll.options.length);
+        expect(result.options[0].text).toBe(mockPoll.options[0].text);
+        expect(result.options[1].text).toBe(mockPoll.options[1].text);
+      });
+
+      test('saveAndAddPollToCommunity should return an error if findOneAndUpdate returns null', async () => {
+        const mockCommunityId = new ObjectId();
+        const mockPoll = {
+          title: 'Poll Title',
+          options: [
+            { text: 'Option 1', usersVoted: [] },
+            { text: 'Option 2', usersVoted: [] },
+          ],
+          createdBy: 'user123',
+          pollDateTime: new Date(),
+          pollDueDate: new Date(),
+        };
+        const mockSavedPoll = { ...mockPoll, _id: new ObjectId() };
+
+        mockingoose(PollModel).toReturn(mockSavedPoll, 'create');
+        mockingoose(CommunityModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await saveAndAddPollToCommunity(mockCommunityId.toString(), mockPoll);
 
         if ('error' in result) {
           expect(result.error).toBe('Community not found');

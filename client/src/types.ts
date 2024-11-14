@@ -180,6 +180,7 @@ export interface ServerToClientEvents {
   communityUpdate: (update: Community) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   articleUpdate: (article: Article) => void;
+  pollUpdate: (poll: Poll) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
 }
 

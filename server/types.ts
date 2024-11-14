@@ -353,6 +353,7 @@ export interface ServerToClientEvents {
   communityUpdate: (community: CommunityResponse) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   articleUpdate: (article: ArticleResponse) => void;
+  pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
 }
 
@@ -562,3 +563,22 @@ export interface UserChallengeRequest extends Request {
  * Type representing the possible responses for a UserChallenge-related operation.
  */
 export type UserChallengeResponse = UserChallenge | { error: string };
+
+/**
+ * Type representing the possible responses for a Poll-related operation.
+ */
+export type PollResponse = Poll | { error: string };
+
+/**
+ * Interface for the request body when creating a new poll.
+ * - communityId - The unique identifier of the community.
+ * - poll - The poll being created.
+ */
+export interface CreatePollRequest extends Request {
+  params: {
+    communityId: string,
+  };
+  body: {
+    poll: Poll,
+  };
+}
