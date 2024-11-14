@@ -1233,6 +1233,27 @@ export const fetchAllCommunities = async (): Promise<Community[] | { error: stri
 };
 
 /**
+ * Fetches a poll by id
+ * @param pollId - The ID of the poll to fetch
+ * @returns The poll, or an error if the poll was not found
+ */
+export const fetchPollById = async (pollId: string): Promise<Poll | { error: string }> => {
+  try {
+    const poll = await PollModel.findOne({ _id: new ObjectId(pollId) }).populate([
+      { path: 'options', model: PollOptionModel },
+    ]);
+
+    if (!poll) {
+      throw new Error('Poll not found');
+    }
+
+    return poll;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
  * Adds a question ID to the specified community's question list.
  *
  * @param communityId - The ID of the community.

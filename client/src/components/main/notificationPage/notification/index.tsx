@@ -1,16 +1,7 @@
-import React from 'react';
 import './index.css';
 import { FaArrowUp, FaCommentDots, FaFileAlt, FaGift, FaPoll } from 'react-icons/fa';
-import { Notification, NotificationType } from '../../../../types';
-
-/**
- * Interface representing the props for the NotificationView component.
- *
- * notif - The notification object containing details about the notification.
- */
-interface NotificationProps {
-  notif: Notification;
-}
+import { NotificationProps, NotificationType } from '../../../../types';
+import useNotification from '../../../../hooks/useNotification';
 
 /**
  * NotificationView component that displays the content of a notification.
@@ -18,6 +9,8 @@ interface NotificationProps {
  * @param notif : The notification object to be displayed
  */
 const NotificationView = ({ notif }: NotificationProps) => {
+  const { handleNotificationClick } = useNotification({ notif });
+
   /**
    * Function that determines the text displayed in a notification
    * @param notifType - The type of notification that needs to be displayed
@@ -91,7 +84,9 @@ const NotificationView = ({ notif }: NotificationProps) => {
   };
 
   return (
-    <button className={notif.isRead ? 'notif_container' : 'notif_container unread'}>
+    <button
+      onClick={handleNotificationClick}
+      className={notif.isRead ? 'notif_container' : 'notif_container unread'}>
       <div>{notifIcon(notif.notificationType)}</div>
       <div className='notif_text'>
         <h3>{notifSourceText(notif.notificationType)}</h3>

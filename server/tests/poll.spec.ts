@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import supertest from 'supertest';
-import { app } from '../app';
 import * as util from '../models/application';
+import { app } from '../app';
 import { Poll } from '../types';
+
+const fetchPollByIdSpy = jest.spyOn(util, 'fetchPollById');
 
 const saveAndAddPollToCommunitySpy = jest.spyOn(util, 'saveAndAddPollToCommunity');
 
@@ -25,6 +27,41 @@ describe('Poll API', () => {
 
   afterAll(async () => {
     await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+  });
+  describe('GET /pollById/:pollId', () => {
+    it('should return the poll if it exists', async () => {
+      const mockPollID = new mongoose.Types.ObjectId();
+      const mockPoll2: Poll = {
+        _id: mockPollID,
+        title: 'Poll',
+        options: [
+          {
+            text: 'Option',
+            usersVoted: ['me', 'you'],
+          },
+        ],
+        createdBy: 'us',
+        pollDateTime: new Date(),
+        pollDueDate: new Date(),
+      };
+
+      fetchPollByIdSpy.mockResolvedValueOnce(mockPoll2);
+
+      const response = await supertest(app).get(`/poll/getPollById/${mockPollID}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body._id.toString()).toBe(mockPollID.toString());
+    });
+    it('should return a 500 status if the operation fails', async () => {
+      const mockPollID = new mongoose.Types.ObjectId();
+
+      fetchPollByIdSpy.mockResolvedValueOnce({ error: 'error' });
+
+      const response = await supertest(app).get(`/poll/getPollById/${mockPollID}`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('error');
+    });
   });
 
   describe('POST /addPoll/:communityId', () => {

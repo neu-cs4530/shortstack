@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, FakeSOSocket } from '../types';
+import { User, FakeSOSocket, Notification } from '../types';
 import { getUserNotifications } from '../services/userService';
 
 const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
@@ -14,6 +14,23 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
     const handleNotificationUpdate = async ({ usernames }: { usernames: string[] }) => {
       if (user && usernames.includes(user.username)) {
         const updatedNotifs = await getUserNotifications(user.username);
+        setUser({ ...user, notifications: updatedNotifs });
+      }
+    };
+
+    /**
+     * Function to handle single notification updates from the socket.
+     *
+     * @param notif - The notification that was updated.
+     */
+    const handleSingleNotifUpdate = (notif: Notification) => {
+      if (user?.notifications.some(n => n._id === notif._id)) {
+        const updatedNotifs = user.notifications.map(n => {
+          if (n._id === notif._id) {
+            return { ...n, isRead: true };
+          }
+          return n;
+        });
         setUser({ ...user, notifications: updatedNotifs });
       }
     };
@@ -45,12 +62,14 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
 
     if (socket) {
       socket.on('notificationUpdate', handleNotificationUpdate);
+      socket.on('singleNotifUpdate', handleSingleNotifUpdate);
       socket.on('equippedRewardUpdate', handleEquippedRewardUpdate);
     }
 
     return () => {
       if (socket) {
         socket.off('notificationUpdate', handleNotificationUpdate);
+        socket.off('singleNotifUpdate', handleSingleNotifUpdate);
         socket.off('equippedRewardUpdate', handleEquippedRewardUpdate);
       }
     };

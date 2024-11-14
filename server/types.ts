@@ -347,7 +347,7 @@ export interface AnswerUpdatePayload {
 }
 
 /**
- * Interface representing the payload for a vote update socket event.
+ * Interface representing the payload for a notification update socket event.
  * - usernames - The users who're being notified.
  */
 export interface NotificationUpdatePayload {
@@ -388,6 +388,7 @@ export interface ServerToClientEvents {
   commentUpdate: (comment: CommentUpdatePayload) => void;
   communityUpdate: (community: CommunityResponse) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
+  singleNotifUpdate: (notification: Notification) => void;
   articleUpdate: (article: ArticleResponse) => void;
   pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;

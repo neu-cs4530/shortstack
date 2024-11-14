@@ -1,6 +1,8 @@
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Poll, PollOption } from '../types';
 import useUserContext from './useUserContext';
+import getPollById from '../services/pollService';
 
 /**
  * Custom hook for managing the state and logic of a poll.
@@ -13,13 +15,31 @@ import useUserContext from './useUserContext';
  * @returns optionUserVotedFor - the function that handles finding the option the user voted for.
  * @returns barChartWidth - the function that calculates an option's bar chart size based on number of votes.
  */
-const usePoll = (poll: Poll) => {
+const usePoll = () => {
+  const { pollID } = useParams();
   const [voted, setVoted] = useState(false);
   const [selectedOption, setSelectedOption] = useState<PollOption | undefined>(undefined);
+  const [poll, setPoll] = useState<Poll | undefined>(undefined);
   const { user } = useUserContext();
 
+  useEffect(() => {
+    const fetchPoll = async (id: string) => {
+      try {
+        const fetchedPoll = await getPollById(id);
+        setPoll(fetchedPoll);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
+    };
+
+    if (pollID) {
+      fetchPoll(pollID);
+    }
+  }, [pollID]);
+
   // Finding the option that the logged in user voted on for the poll.
-  const optionUserVotedFor = poll.options
+  const optionUserVotedFor = poll?.options
     .filter(opt => opt.usersVoted.includes(user.username))
     .at(0);
 
@@ -29,6 +49,9 @@ const usePoll = (poll: Poll) => {
    * @returns - a string that dictates the style width of the option's bar chart bar.
    */
   const barChartWidth = (numVoted: number): string => {
+    if (!poll) {
+      return '';
+    }
     const pollOptionVotes: number[] = poll.options.map(opt => opt.usersVoted.length);
     const mostVotedAmount = pollOptionVotes.sort((a, b) => b - a).at(0);
     if (mostVotedAmount) {
@@ -55,11 +78,12 @@ const usePoll = (poll: Poll) => {
    */
   const onOptionChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedIndex = event.target.value;
-    const chosenOption = poll.options.at(parseInt(selectedIndex, 10));
+    const chosenOption = poll?.options.at(parseInt(selectedIndex, 10));
     setSelectedOption(chosenOption);
   };
 
   return {
+    poll,
     voted,
     setVoted,
     selectedOption,

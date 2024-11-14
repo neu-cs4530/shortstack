@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
 import './index.css';
+import { useParams } from 'react-router-dom';
 import QuestionView from '../questionPage/question';
 import useProfilePage from '../../../hooks/useProfilePage';
 import ChallengeView from './challengePage/challengeView';
 import RewardsView from './rewardsPage/rewardsView';
 
 const ProfilePage = () => {
+  const { tab } = useParams();
   const { user, userQuestions, userChallenges } = useProfilePage();
-  const [activeTab, setActiveTab] = useState('activity');
+  const [activeTab, setActiveTab] = useState(tab);
 
   return (
     <div className='profile_container'>

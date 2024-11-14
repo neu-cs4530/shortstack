@@ -19,7 +19,7 @@ const Header = () => {
   };
 
   const handleProfile = () => {
-    navigate('/profile');
+    navigate('/profile/activity');
   };
 
   return (

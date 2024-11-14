@@ -9,7 +9,7 @@ import './index.css';
 const PollVoting = ({ poll, selectedOption, voteButtonClick, onOptionChange }: PollProps) => (
   <form className='pollVotingContainer' onSubmit={voteButtonClick}>
     <div className='votingOptionsContainer'>
-      {poll.options.map((opt, idx) => (
+      {poll?.options.map((opt, idx) => (
         <div className='optionContainer' key={idx}>
           <input
             type='radio'
