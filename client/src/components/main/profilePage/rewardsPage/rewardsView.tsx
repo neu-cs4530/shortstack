@@ -1,10 +1,12 @@
 import React from 'react';
 import './rewardsView.css';
+import { equipReward } from '../../../../services/userService';
 
 /**
  * Interface representing the props for the RewardsView component.
  */
 interface RewardsViewProps {
+  username: string;
   unlockedFrames: string[];
   unlockedTitles: string[];
   equippedFrame: string;
@@ -16,15 +18,29 @@ interface RewardsViewProps {
  *
  * @param unlockedFrames - The frames unlocked by the user.
  * @param unlockedTitles - The titles unlocked by the user.
+ * @param equippedFrame - The user's currently equipped frame.
+ * @param equippedFrame - The user's currently equipped title.
  */
 const RewardsView = ({
+  username,
   unlockedFrames,
   unlockedTitles,
   equippedFrame,
   equippedTitle,
 }: RewardsViewProps) => {
-  const handleEquip = (item: string, type: 'frame' | 'title') => {
-    // TODO : Add functionality to equip the item.
+  /**
+   * Function to handle changing a user's equipped reward.
+   *
+   * @param unlockedFrames - The frames unlocked by the user.
+   * @param unlockedTitles - The titles unlocked by the user.
+   */
+  const handleEquip = async (item: string, type: 'frame' | 'title') => {
+    try {
+      await equipReward(username, item, type);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error((error as Error).message);
+    }
   };
 
   return (
@@ -73,4 +89,5 @@ const RewardsView = ({
     </div>
   );
 };
+
 export default RewardsView;

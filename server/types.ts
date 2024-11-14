@@ -171,6 +171,30 @@ export interface AddPointsRequest extends Request {
 }
 
 /**
+ * Interface for the request body when equipping a reward.
+ * - body - The username and the number of points to add.
+ *  - username - The username of the user who's equipping the reward.
+ *  - reward - The reward to equip, either a frame or a title.
+ *  - type - The type of reward.
+ */
+export interface EquipRewardRequest extends Request {
+  body: {
+    username: string,
+    reward: string,
+    type: 'frame' | 'title',
+  };
+}
+
+/**
+ * Type representing the possible responses for a reward equip operation.
+ */
+export type EquipRewardResponse = {
+  username: string,
+  reward: string,
+  type: 'frame' | 'title',
+} | { error: string };
+
+/**
  * Interface for the request body when creating a new notification.
  * - body - The ObjectID and the notification to create.
  *  - oid - An ObjectID used to determine what user's to add the new notification to.
@@ -316,6 +340,18 @@ export interface NotificationUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a reward equip update socket event.
+ * - username - The user who's equipped reward was updated.
+ * - reward - The equipped reward.
+ * - type - The type of the reward, either a frame or a title.
+ */
+export interface EquippedRewardUpdatePayload {
+  username: string;
+  reward: string;
+  type: 'frame' | 'title';
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -327,6 +363,7 @@ export interface ServerToClientEvents {
   communityUpdate: (community: CommunityResponse) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   articleUpdate: (article: ArticleResponse) => void;
+  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
 }
 
 /**

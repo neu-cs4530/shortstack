@@ -12,6 +12,7 @@ import {
   Community,
   CommunityObjectType,
   CommunityResponse,
+  EquipRewardResponse,
   Notification,
   NotificationResponse,
   NotificationType,
@@ -1317,6 +1318,38 @@ const distributeRewardsIfChallengeComplete = async (
   });
 
   await Promise.all(promises);
+};
+
+/**
+ * Function to change a user's equipped reward.
+ *
+ * @param {string} username - The user who's equipped reward is to be updated.
+ * @param {string} reward - The reward to equip.
+ * @param {string} type - The type of the reward, either a frame or a title.
+ *
+ * @returns {Promise<EquipRewardResponse>} - Details of the equipped reward or an error message.
+ */
+export const equipReward = async (
+  username: string,
+  reward: string,
+  type: 'frame' | 'title',
+): Promise<EquipRewardResponse> => {
+  const operation =
+    type === 'frame' ? { $set: { equippedFrame: reward } } : { $set: { equippedTitle: reward } };
+
+  try {
+    const user = await UserModel.findOneAndUpdate({ username }, operation, { new: true });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+    return {
+      username: user.username,
+      reward: type === 'frame' ? user.equippedFrame : user.equippedTitle,
+      type,
+    };
+  } catch (error) {
+    return { error: 'Error equipping reward' };
+  }
 };
 
 /**

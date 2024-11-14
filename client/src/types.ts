@@ -157,6 +157,18 @@ export interface NotificationUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a reward equip update socket event.
+ * - username - The user who's equipped reward was updated.
+ * - reward - The equipped reward.
+ * - type - The type of the reward, either a frame or a title.
+ */
+export interface EquippedRewardUpdatePayload {
+  username: string;
+  reward: string;
+  type: 'frame' | 'title';
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -168,6 +180,7 @@ export interface ServerToClientEvents {
   communityUpdate: (update: Community) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   articleUpdate: (article: Article) => void;
+  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
 }
 
 /**
