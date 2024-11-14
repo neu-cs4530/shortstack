@@ -37,6 +37,7 @@ import ArticleModel from './articles';
 import NotificationModel from './notifications';
 import UserChallengeModel from './useChallenge';
 import ChallengeModel from './challenges';
+import PollOptionModel from './pollOptions';
 
 /**
  * Parses tags from a search string.
@@ -1257,17 +1258,30 @@ export const saveAndAddArticleToCommunity = async (
 };
 
 /**
- * Saves a poll then adds it to the community with the community ID.
+ * Saves a poll and its options, then adds it to the community with the community ID.
  * @param communityId - The ID of the community to add the poll to.
- * @param poll - The poll to save.
- * @returns - The populated community, or an error message if the operation failed.
+ * @param poll - The poll to save, including options data.
+ * @returns - The created poll document or an error message if the operation failed.
  */
 export const saveAndAddPollToCommunity = async (
   communityId: string,
   poll: Poll,
 ): Promise<PollResponse> => {
   try {
-    const savedPoll = await PollModel.create(poll);
+    const optionIds = await Promise.all(
+      poll.options.map(async option => {
+        const pollOption = await PollOptionModel.create(option);
+        return pollOption._id;
+      }),
+    );
+
+    const savedPoll = await PollModel.create({
+      title: poll.title,
+      options: optionIds,
+      createdBy: poll.createdBy,
+      pollDateTime: poll.pollDateTime,
+      pollDueDate: poll.pollDueDate,
+    });
 
     const updatedCommunity = await CommunityModel.findOneAndUpdate(
       { _id: communityId },

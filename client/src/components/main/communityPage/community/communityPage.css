@@ -56,3 +56,10 @@ ul {
   width: 60%;
   margin: 24px auto;
 }
+
+.create-poll-button {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  height: 30px;
+}

@@ -124,7 +124,18 @@ const addArticleToCommunity = async (communityId: string, article: Article): Pro
  * @throws Error if there is an issue adding the poll to the community.
  */
 const addPollToCommunity = async (communityId: string, poll: Poll): Promise<Poll> => {
-  const data = { poll };
+  const data = {
+    poll: {
+      title: poll.title,
+      options: poll.options.map(option => ({
+        text: option.text,
+        usersVoted: option.usersVoted || [],
+      })),
+      createdBy: poll.createdBy,
+      pollDateTime: poll.pollDateTime,
+      pollDueDate: poll.pollDueDate,
+    },
+  };
   const res = await api.post(`${COMMUNITY_API_URL}/addPoll/${communityId}`, data);
   if (res.status !== 200) {
     throw new Error('Error when adding poll to community');

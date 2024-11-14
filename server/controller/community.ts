@@ -280,6 +280,9 @@ const communityController = (socket: FakeSOSocket) => {
     const { communityId } = req.params;
     const { poll } = req.body;
 
+    console.log('Received community ID:', communityId);
+    console.log('Received poll data:', poll);
+
     if (!isValidPoll(poll)) {
       res.status(400).send('Invalid request body');
       return;
