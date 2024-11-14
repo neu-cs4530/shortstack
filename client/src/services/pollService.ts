@@ -4,10 +4,10 @@ import api from './config';
 const POLL_API_URL = `${process.env.REACT_APP_SERVER_URL}/poll`;
 
 /**
- * Function to mark a notification as read.
+ * Function to get a Poll by its ID.
  *
- * @param notifId - The ID of the notification to mark as read.
- * @returns The notification, marked as read
+ * @param notifId - The ID of the poll.
+ * @returns The poll
  * @throws Error if the operation failed
  */
 const getPollById = async (pollId: string): Promise<Poll> => {
