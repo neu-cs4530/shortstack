@@ -62,6 +62,7 @@ import ArticleModel from '../models/articles';
 import UserChallengeModel from '../models/useChallenge';
 import ChallengeModel from '../models/challenges';
 import PollModel from '../models/polls';
+import PollOptionModel from '../models/pollOptions';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -1864,15 +1865,65 @@ describe('application module', () => {
       }
     });
 
-    test('usersToNotify with NotificationType.NewQuestion should return usernames of community members', async () => {
-      // TODO: finish tests for usersToNotify when implementing community notifications
+    test.each([
+      [NotificationType.NewQuestion],
+      [NotificationType.NewArticle],
+      [NotificationType.ArticleUpdate],
+      [NotificationType.NewPoll],
+    ])('usersToNotify with %p should throw an error if community not found', async notifType => {
+      mockingoose(CommunityModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('validID', notifType);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
     });
 
-    test('usersToNotify with NotificationType.NewReward should return username of user', async () => {
-      mockingoose(UserModel).toReturn(userA, 'findOne');
-      const result = await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
+    test.each([
+      [NotificationType.NewQuestion],
+      [NotificationType.NewArticle],
+      [NotificationType.ArticleUpdate],
+      [NotificationType.NewPoll],
+    ])('usersToNotify with %p should return usernames of community members', async notifType => {
+      const communityWithMembers = { ...communityWithID, members: ['UserA', 'UserB', 'UserC'] };
+      mockingoose(CommunityModel).toReturn(communityWithMembers, 'findOne');
 
-      expect(result).toEqual(['UserA']);
+      const result = await usersToNotify('validID', notifType);
+
+      expect(result).toEqual(['UserA', 'UserB', 'UserC']);
+    });
+
+    test('usersToNotify with NotificationType.PollClosed should return usernames of voters in the poll', async () => {
+      const mockPollOption = {
+        _id: new ObjectId('67352106dc5a3515358f567f'),
+        text: 'Poll option 1',
+        usersVoted: ['test_user'],
+      };
+      const mockPoll: Poll = {
+        _id: new ObjectId(),
+        title: 'Poll title',
+        options: [mockPollOption],
+        createdBy: 'test_user',
+        pollDateTime: new Date(),
+        pollDueDate: new Date(),
+      };
+      mockingoose(PollModel).toReturn(mockPoll, 'findOne');
+      mockingoose(PollOptionModel).toReturn(mockPoll, 'populate');
+
+      const result = (await usersToNotify('validID', NotificationType.PollClosed)) as string[];
+
+      expect(result.includes('test_user')).toBeTruthy();
+    });
+
+    test('usersToNotify with NotificationType.PollClosed should throw an error if poll not found', async () => {
+      mockingoose(PollModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.PollClosed);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
     });
 
     test('usersToNotify with NotificationType.NewReward should throw an error if question not found', async () => {
@@ -1883,6 +1934,11 @@ describe('application module', () => {
       } catch (error) {
         expect(true).toBeTruthy();
       }
+    });
+
+    test('usersToNotify with invalid notification type should return an empty array', async () => {
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', '' as NotificationType);
+      expect(result).toEqual([]);
     });
 
     test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Question', async () => {

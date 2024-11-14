@@ -1,7 +1,8 @@
 import { ChangeEvent, useState } from 'react';
 import { addArticleToCommunity } from '../services/communityService';
 import { updateArticleById } from '../services/articleService';
-import { Article } from '../types';
+import { Article, Notification, NotificationType } from '../types';
+import { notifyUsers } from '../services/userService';
 
 /**
  * Custom hook for managing the state of an article form.
@@ -32,14 +33,50 @@ const useArticleForm = ({
   const [articleTitleInput, setArticleTitleInput] = useState<string>(title || '');
   const [articleBodyInput, setArticleBodyInput] = useState<string>(body || '');
 
+  /**
+   * Function to handle article title input change.
+   *
+   * @param e - the event object.
+   */
   const handleArticleTitleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setArticleTitleInput(e.target.value);
   };
 
+  /**
+   * Function to handle article body input change.
+   *
+   * @param e - the event object.
+   */
   const handleArticleBodyInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setArticleBodyInput(e.target.value);
   };
 
+  /**
+   * Function to notify members of a community of a new article or article update
+   *
+   * @param article - the new/updated article.
+   * @param type - The notification type.
+   */
+  const sendArticleNotification = async (
+    article: Article,
+    type: NotificationType,
+  ): Promise<void> => {
+    if (article._id) {
+      const notif: Notification = {
+        notificationType: type,
+        sourceType: 'Article',
+        source: article,
+        isRead: false,
+      };
+      await notifyUsers(article._id, notif);
+    }
+  };
+
+  /**
+   * Function to handle submitting an article.
+   *
+   * @param e - the event object.
+   */
   const handleArticleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -52,9 +89,11 @@ const useArticleForm = ({
       if (communityId && !articleId) {
         const createdArticle = await addArticleToCommunity(communityId, article);
         submitCallback(createdArticle);
+        await sendArticleNotification(createdArticle, NotificationType.NewArticle);
       } else if (articleId) {
         const updatedArticle = await updateArticleById(articleId, article);
         submitCallback(updatedArticle);
+        await sendArticleNotification(updatedArticle, NotificationType.ArticleUpdate);
       }
     } catch (error) {
       // eslint-disable-next-line no-alert
