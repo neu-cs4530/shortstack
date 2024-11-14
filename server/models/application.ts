@@ -17,6 +17,8 @@ import {
   NotificationResponse,
   NotificationType,
   OrderType,
+  Poll,
+  PollResponse,
   Question,
   QuestionResponse,
   Tag,
@@ -36,6 +38,7 @@ import ArticleModel from './articles';
 import NotificationModel from './notifications';
 import UserChallengeModel from './useChallenge';
 import ChallengeModel from './challenges';
+import PollOptionModel from './pollOptions';
 
 /**
  * Parses tags from a search string.
@@ -635,8 +638,7 @@ const usersToNotifyOnNewAnswer = async (qid: string): Promise<string[]> => {
   if (!question) {
     throw new Error('Error retrieving users to notify');
   }
-  // TODO: return question.subscribers usernames once subscription has been implemented.
-  return [question.askedBy];
+  return [question.askedBy, ...question.subscribers];
 };
 
 // Given Question ID, notify question.askedBy on new Comment or Upvote
@@ -688,7 +690,7 @@ const usersToNotifyPollClosed = async (pid: string): Promise<string[]> => {
   const poll = await PollModel.findOne({ _id: pid }).populate([
     {
       path: 'options',
-      model: PollModel,
+      model: PollOptionModel,
     },
   ]);
   if (!poll) {
@@ -1022,6 +1024,41 @@ export const addVoteToQuestion = async (
 };
 
 /**
+ * Adds a username to a question's subscribers. If user is already subscribed, removes the user
+ * from the question's subscribers.
+ *
+ * @param qid The ID of the question to add a vote to.
+ * @param username The username of the user who subscribed.
+ *
+ * @returns Promise<QuestionResponse> - The updated question or an error message
+ */
+export const addSubscriberToQuestion = async (
+  qid: string,
+  username: string,
+): Promise<QuestionResponse> => {
+  try {
+    const question = await QuestionModel.findOne({ _id: qid });
+
+    if (!question) {
+      return { error: 'Question not found' };
+    }
+
+    const operation = question.subscribers.includes(username)
+      ? { $pull: { subscribers: username } }
+      : { $push: { subscribers: username } };
+
+    const result = await QuestionModel.findOneAndUpdate({ _id: qid }, operation, { new: true });
+
+    if (!result) {
+      return { error: 'Error when subscribing to question' };
+    }
+    return result;
+  } catch (err) {
+    return { error: 'Error when subscribing to question' };
+  }
+};
+
+/**
  * Adds an answer to a question.
  *
  * @param {string} qid - The ID of the question to add an answer to
@@ -1250,6 +1287,48 @@ export const saveAndAddArticleToCommunity = async (
     }
 
     return savedArticle;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Saves a poll and its options, then adds it to the community with the community ID.
+ * @param communityId - The ID of the community to add the poll to.
+ * @param poll - The poll to save, including options data.
+ * @returns - The created poll document or an error message if the operation failed.
+ */
+export const saveAndAddPollToCommunity = async (
+  communityId: string,
+  poll: Poll,
+): Promise<PollResponse> => {
+  try {
+    const optionIds = await Promise.all(
+      poll.options.map(async option => {
+        const pollOption = await PollOptionModel.create(option);
+        return pollOption._id;
+      }),
+    );
+
+    const savedPoll = await PollModel.create({
+      title: poll.title,
+      options: optionIds,
+      createdBy: poll.createdBy,
+      pollDateTime: poll.pollDateTime,
+      pollDueDate: poll.pollDueDate,
+    });
+
+    const updatedCommunity = await CommunityModel.findOneAndUpdate(
+      { _id: communityId },
+      { $push: { polls: savedPoll._id } },
+      { new: true },
+    );
+
+    if (!updatedCommunity) {
+      throw new Error('Community not found');
+    }
+
+    return savedPoll;
   } catch (error) {
     return { error: (error as Error).message };
   }

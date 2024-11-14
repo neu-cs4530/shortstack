@@ -66,6 +66,7 @@ export interface Tag {
  * - upVotes - An array of usernames that have upvoted the question.
  * - downVotes - An array of usernames that have downvoted the question.
  * - comments - Object IDs of comments that have been added to the question by users, or comments themselves if populated.
+ * - subscribers - The usernames of subscribed users
  */
 export interface Question {
   _id?: ObjectId;
@@ -79,6 +80,7 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[] | ObjectId[];
+  subscribers: string[];
 }
 
 /**
@@ -266,6 +268,19 @@ export interface VoteRequest extends Request {
 }
 
 /**
+ * Interface for the request body when subscribing to a question.
+ * - body - The question ID and the username of the user subscribing.
+ *  - qid - The unique identifier of the question.
+ *  - username - The username of the user subscribing.
+ */
+export interface SubscribeRequest extends Request {
+  body: {
+    qid: string;
+    username: string;
+  };
+}
+
+/**
  * Interface representing a Comment, which contains:
  * - _id - The unique identifier for the comment. Optional field.
  * - text - The content of the comment.
@@ -339,6 +354,17 @@ export interface NotificationUpdatePayload {
   usernames: string[];
 }
 
+
+/**
+ * Interface representing the payload for a subscriber update socket event, which contains:
+ * - qid - The ID of the question being subscribed to
+ * - subscribers - An array of usernamess who subscribed to the question
+ */
+export interface SubscriberUpdatePayload {
+  qid: string;
+  subscribers: string[];
+}
+
 /**
  * Interface representing the payload for a reward equip update socket event.
  * - username - The user who's equipped reward was updated.
@@ -363,6 +389,8 @@ export interface ServerToClientEvents {
   communityUpdate: (community: CommunityResponse) => void;
   notificationUpdate: (notification: NotificationUpdatePayload) => void;
   articleUpdate: (article: ArticleResponse) => void;
+  pollUpdate: (poll: PollResponse) => void;
+  subscriberUpdate: (update: SubscriberUpdatePayload) => void;
   equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
 }
 
@@ -572,3 +600,22 @@ export interface UserChallengeRequest extends Request {
  * Type representing the possible responses for a UserChallenge-related operation.
  */
 export type UserChallengeResponse = UserChallenge | { error: string };
+
+/**
+ * Type representing the possible responses for a Poll-related operation.
+ */
+export type PollResponse = Poll | { error: string };
+
+/**
+ * Interface for the request body when creating a new poll.
+ * - communityId - The unique identifier of the community.
+ * - poll - The poll being created.
+ */
+export interface CreatePollRequest extends Request {
+  params: {
+    communityId: string,
+  };
+  body: {
+    poll: Poll,
+  };
+}

@@ -31,6 +31,8 @@
   padding: 7px 9px;
   border: 1px solid black;
   background-color: #f0f0f0;
+  display: flex;
+  border-radius: 4px;
 }
 
 .notifications_btn:hover {
@@ -49,4 +51,12 @@
 
 .profile_icon:hover {
   color: black;
+}
+
+.notif_indicator {
+  background-color: blue;
+  border-radius: 100%;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
 }

@@ -35,6 +35,8 @@ import {
   fetchCommunityMembersByObjectId,
   updateArticleById,
   saveAndAddArticleToCommunity,
+  saveAndAddPollToCommunity,
+  addSubscriberToQuestion,
   equipReward,
 } from '../models/application';
 import {
@@ -60,6 +62,8 @@ import NotificationModel from '../models/notifications';
 import ArticleModel from '../models/articles';
 import UserChallengeModel from '../models/useChallenge';
 import ChallengeModel from '../models/challenges';
+import PollModel from '../models/polls';
+import PollOptionModel from '../models/pollOptions';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -159,6 +163,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new ObjectId('65e9b5a995b6c7045a30d823'),
@@ -172,6 +177,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new ObjectId('65e9b9b44c052f0a08ecade0'),
@@ -185,6 +191,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: new ObjectId('65e9b716ff0e892116b2de09'),
@@ -198,6 +205,7 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
 ];
 
@@ -614,6 +622,7 @@ describe('application module', () => {
           upVotes: [],
           downVotes: [],
           comments: [],
+          subscribers: [],
         };
 
         const result = (await saveQuestion(mockQn)) as Question;
@@ -787,6 +796,102 @@ describe('application module', () => {
         const result = await addVoteToQuestion('someQuestionId', 'testUser', 'downvote');
 
         expect(result).toEqual({ error: 'Error when adding downvote to question' });
+      });
+    });
+
+    describe('addSubscriberToQuestion', () => {
+      test('addSubscriberToQuestion should add username as a subscriber to a question', async () => {
+        const mockQuestion = { ...QUESTIONS[0] };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        mockingoose(QuestionModel).toReturn(
+          { ...mockQuestion, subscribers: ['testUser'] },
+          'findOneAndUpdate',
+        );
+
+        const result = (await addSubscriberToQuestion('someQuestionId', 'testUser')) as Question;
+
+        expect(result._id).toBeDefined();
+        expect(result.title).toEqual(mockQuestion.title);
+        expect(result.text).toEqual(mockQuestion.text);
+        expect(result.tags.length).toEqual(mockQuestion.tags.length);
+        expect(result.askedBy).toEqual(mockQuestion.askedBy);
+        expect(result.askDateTime).toEqual(mockQuestion.askDateTime);
+        expect(result.views).toEqual(mockQuestion.views);
+        expect(result.answers.length).toEqual(mockQuestion.answers.length);
+        expect(result.subscribers).toEqual(['testUser']);
+      });
+
+      test('addSubscriberToQuestion should remove username as a subscriber if user was subscribed already', async () => {
+        const mockQuestion = { ...QUESTIONS[0], subscribers: ['testUser'] };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        mockingoose(QuestionModel).toReturn(
+          { ...mockQuestion, subscribers: [] },
+          'findOneAndUpdate',
+        );
+
+        const result = (await addSubscriberToQuestion('someQuestionId', 'testUser')) as Question;
+
+        expect(result._id).toBeDefined();
+        expect(result.title).toEqual(mockQuestion.title);
+        expect(result.text).toEqual(mockQuestion.text);
+        expect(result.tags.length).toEqual(mockQuestion.tags.length);
+        expect(result.askedBy).toEqual(mockQuestion.askedBy);
+        expect(result.askDateTime).toEqual(mockQuestion.askDateTime);
+        expect(result.views).toEqual(mockQuestion.views);
+        expect(result.answers.length).toEqual(mockQuestion.answers.length);
+        expect(result.subscribers).toEqual([]);
+      });
+
+      test('addSubscriberToQuestion should return an error object if the question to subscribe to not found', async () => {
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addSubscriberToQuestion should return an error object if findOneAndUpdate returns null', async () => {
+        mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+        mockingoose(QuestionModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addSubscriberToQuestion should return an error object if a database error occurs while finding question', async () => {
+        mockingoose(QuestionModel).toReturn(new Error('Database error'), 'findOne');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addSubscriberToQuestion should return an error object if a database error occurs while updating question', async () => {
+        mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
+        mockingoose(QuestionModel).toReturn(new Error('Database error'), 'findOneAndUpdate');
+
+        const result = await addSubscriberToQuestion('someQuestionId', 'testUser');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
       });
     });
   });
@@ -1408,18 +1513,22 @@ describe('application module', () => {
     describe('saveAndAddArticleToCommunity', () => {
       test('saveAndAddArticleToCommunity should return the saved article if the operation is successful', async () => {
         const mockCommunityId = communityWithUser._id!;
-        const mockArticle: Article = {
-          title: 'title',
-          body: 'body',
-        };
-        const mockSavedArticle: Article = {
-          _id: new ObjectId(),
-          title: 'title',
-          body: 'body',
-        };
-        const mockCommunity = { ...communityWithUser, articles: [mockSavedArticle._id] };
+        const fixedArticleId = new ObjectId('507f1f77bcf86cd799439012'); // fixed ObjectId
 
-        mockingoose(ArticleModel).toReturn(mockSavedArticle, 'create');
+        const mockArticle = {
+          title: 'Article Title',
+          body: 'Article Body',
+        };
+        const mockSavedArticle = {
+          _id: fixedArticleId,
+          ...mockArticle,
+        };
+        const mockCommunity = { ...communityWithUser, articles: [fixedArticleId] };
+
+        // mock ArticleModel.create to return the fixed article ID
+        jest
+          .spyOn(ArticleModel, 'create')
+          .mockImplementationOnce(() => Promise.resolve(mockSavedArticle as any));
         mockingoose(CommunityModel).toReturn(mockCommunity, 'findOneAndUpdate');
 
         const result = (await saveAndAddArticleToCommunity(
@@ -1427,17 +1536,7 @@ describe('application module', () => {
           mockArticle,
         )) as Article;
 
-        /*
-          I have no clue why this is failing I'm going insane.
-          For whatever reason, the received ID is the expected ID but incremented by one (even though it's mocked)
-            - Expected  - 1
-            + Received  + 1
-
-            - "673443df9c80042a1e194ebc"
-            + "673443df9c80042a1e194ebd"
-          I give up.
-         */
-        // expect(result._id).toBe(mockSavedArticle._id);
+        expect(result._id?.toString()).toBe(fixedArticleId.toString());
         expect(result.title).toBe(mockArticle.title);
         expect(result.body).toBe(mockArticle.body);
       });
@@ -1453,6 +1552,72 @@ describe('application module', () => {
         mockingoose(CommunityModel).toReturn(null, 'findOneAndUpdate');
 
         const result = await saveAndAddArticleToCommunity(mockCommunityId.toString(), mockArticle);
+
+        if ('error' in result) {
+          expect(result.error).toBe('Community not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+    describe('saveAndAddPollToCommunity', () => {
+      test('saveAndAddPollToCommunity should return the saved poll if the operation is successful', async () => {
+        const mockCommunityId = communityWithUser._id!;
+        const fixedPollId = new ObjectId('507f1f77bcf86cd799439011'); // fixed ObjectId
+
+        const mockPoll = {
+          title: 'Poll Title',
+          options: [
+            { text: 'Option 1', usersVoted: [] },
+            { text: 'Option 2', usersVoted: [] },
+          ],
+          createdBy: 'user123',
+          pollDateTime: new Date(),
+          pollDueDate: new Date(),
+        };
+        const mockSavedPoll = {
+          _id: fixedPollId,
+          ...mockPoll,
+        };
+        const mockCommunity = { ...communityWithUser, polls: [fixedPollId] };
+
+        // mock PollModel.create for the fixed poll ID
+        jest
+          .spyOn(PollModel, 'create')
+          .mockImplementationOnce(() => Promise.resolve(mockSavedPoll as any));
+
+        mockingoose(CommunityModel).toReturn(mockCommunity, 'findOneAndUpdate');
+
+        const result = (await saveAndAddPollToCommunity(
+          mockCommunityId.toString(),
+          mockPoll,
+        )) as Poll;
+
+        expect(result._id?.toString()).toBe(fixedPollId.toString());
+        expect(result.title).toBe(mockPoll.title);
+        expect(result.options.length).toBe(mockPoll.options.length);
+        expect(result.options[0].text).toBe(mockPoll.options[0].text);
+        expect(result.options[1].text).toBe(mockPoll.options[1].text);
+      });
+
+      test('saveAndAddPollToCommunity should return an error if findOneAndUpdate returns null', async () => {
+        const mockCommunityId = new ObjectId();
+        const mockPoll = {
+          title: 'Poll Title',
+          options: [
+            { text: 'Option 1', usersVoted: [] },
+            { text: 'Option 2', usersVoted: [] },
+          ],
+          createdBy: 'user123',
+          pollDateTime: new Date(),
+          pollDueDate: new Date(),
+        };
+        const mockSavedPoll = { ...mockPoll, _id: new ObjectId() };
+
+        mockingoose(PollModel).toReturn(mockSavedPoll, 'create');
+        mockingoose(CommunityModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await saveAndAddPollToCommunity(mockCommunityId.toString(), mockPoll);
 
         if ('error' in result) {
           expect(result.error).toBe('Community not found');
@@ -1695,12 +1860,19 @@ describe('application module', () => {
   });
 
   describe('usersToNotify', () => {
-    // TODO update first test once subscribing is implemented
     test('usersToNotify with NotificationType.Answer should return username of question asker', async () => {
-      mockingoose(QuestionModel).toReturn(QUESTIONS[0], 'findOne');
-      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.Answer);
+      const mockQuestion = { ...QUESTIONS[0], subscribers: ['userA', 'userB', 'userC'] };
+      mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+      const result = (await usersToNotify(
+        '65e9b58910afe6e94fc6e6dc',
+        NotificationType.Answer,
+      )) as string[];
 
-      expect(result).toEqual(['q_by1']);
+      expect(result.length).toEqual(4);
+      expect(result.includes('q_by1')).toBeTruthy();
+      expect(result.includes('userA')).toBeTruthy();
+      expect(result.includes('userB')).toBeTruthy();
+      expect(result.includes('userC')).toBeTruthy();
     });
 
     test('usersToNotify with NotificationType.Comment should return username of question asker', async () => {
@@ -1750,15 +1922,65 @@ describe('application module', () => {
       }
     });
 
-    test('usersToNotify with NotificationType.NewQuestion should return usernames of community members', async () => {
-      // TODO: finish tests for usersToNotify when implementing community notifications
+    test.each([
+      [NotificationType.NewQuestion],
+      [NotificationType.NewArticle],
+      [NotificationType.ArticleUpdate],
+      [NotificationType.NewPoll],
+    ])('usersToNotify with %p should throw an error if community not found', async notifType => {
+      mockingoose(CommunityModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('validID', notifType);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
     });
 
-    test('usersToNotify with NotificationType.NewReward should return username of user', async () => {
-      mockingoose(UserModel).toReturn(userA, 'findOne');
-      const result = await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
+    test.each([
+      [NotificationType.NewQuestion],
+      [NotificationType.NewArticle],
+      [NotificationType.ArticleUpdate],
+      [NotificationType.NewPoll],
+    ])('usersToNotify with %p should return usernames of community members', async notifType => {
+      const communityWithMembers = { ...communityWithID, members: ['UserA', 'UserB', 'UserC'] };
+      mockingoose(CommunityModel).toReturn(communityWithMembers, 'findOne');
 
-      expect(result).toEqual(['UserA']);
+      const result = await usersToNotify('validID', notifType);
+
+      expect(result).toEqual(['UserA', 'UserB', 'UserC']);
+    });
+
+    test('usersToNotify with NotificationType.PollClosed should return usernames of voters in the poll', async () => {
+      const mockPollOption = {
+        _id: new ObjectId('67352106dc5a3515358f567f'),
+        text: 'Poll option 1',
+        usersVoted: ['test_user'],
+      };
+      const mockPoll: Poll = {
+        _id: new ObjectId(),
+        title: 'Poll title',
+        options: [mockPollOption],
+        createdBy: 'test_user',
+        pollDateTime: new Date(),
+        pollDueDate: new Date(),
+      };
+      mockingoose(PollModel).toReturn(mockPoll, 'findOne');
+      mockingoose(PollOptionModel).toReturn(mockPoll, 'populate');
+
+      const result = (await usersToNotify('validID', NotificationType.PollClosed)) as string[];
+
+      expect(result.includes('test_user')).toBeTruthy();
+    });
+
+    test('usersToNotify with NotificationType.PollClosed should throw an error if poll not found', async () => {
+      mockingoose(PollModel).toReturn(null, 'findOne');
+      try {
+        await usersToNotify('65e9b58910afe6e94fc6e6dc', NotificationType.PollClosed);
+        expect(false).toBeTruthy();
+      } catch (error) {
+        expect(true).toBeTruthy();
+      }
     });
 
     test('usersToNotify with NotificationType.NewReward should throw an error if question not found', async () => {
@@ -1769,6 +1991,11 @@ describe('application module', () => {
       } catch (error) {
         expect(true).toBeTruthy();
       }
+    });
+
+    test('usersToNotify with invalid notification type should return an empty array', async () => {
+      const result = await usersToNotify('65e9b58910afe6e94fc6e6dc', '' as NotificationType);
+      expect(result).toEqual([]);
     });
 
     test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Question', async () => {

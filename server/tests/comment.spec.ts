@@ -51,6 +51,7 @@ describe('POST /addComment', () => {
       downVotes: [],
       answers: [],
       comments: [mockComment._id],
+      subscribers: [],
     } as Question);
 
     popDocSpy.mockResolvedValueOnce({
@@ -65,6 +66,7 @@ describe('POST /addComment', () => {
       downVotes: [],
       answers: [],
       comments: [mockComment],
+      subscribers: [],
     });
 
     const response = await supertest(app).post('/comment/addComment').send(mockReqBody);
@@ -350,6 +352,7 @@ describe('POST /addComment', () => {
       downVotes: [],
       answers: [],
       comments: [mockComment._id],
+      subscribers: [],
     };
 
     saveCommentSpy.mockResolvedValueOnce(mockComment);
