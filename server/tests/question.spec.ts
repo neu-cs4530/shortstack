@@ -5,6 +5,7 @@ import * as util from '../models/application';
 import { Question } from '../types';
 
 const addVoteToQuestionSpy = jest.spyOn(util, 'addVoteToQuestion');
+const addSubscriberToQuestionSpy = jest.spyOn(util, 'addSubscriberToQuestion');
 
 interface MockResponse {
   msg: string;
@@ -66,6 +67,7 @@ const MOCK_QUESTIONS = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: '65e9b5a995b6c7045a30d823',
@@ -79,6 +81,7 @@ const MOCK_QUESTIONS = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
   {
     _id: '34e9b58910afe6e94fc6e99f',
@@ -92,6 +95,7 @@ const MOCK_QUESTIONS = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    subscribers: [],
   },
 ];
 
@@ -473,6 +477,90 @@ describe('GET /getQuestionById/:qid', () => {
     );
 
     // Asserting the response
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('PUT /addSubscriberToQuestion', () => {
+  afterEach(async () => {
+    await mongoose.connection.close(); // Ensure the connection is properly closed
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+  });
+
+  it('should subscribe to a question successfully', async () => {
+    const mockReqBody = {
+      qid: '65e9b58910afe6e94fc6e6dc',
+      username: 'test-user',
+    };
+
+    const mockResponse: Question = {
+      _id: new mongoose.Types.ObjectId('34e9b58910afe6e94fc6e99f'),
+      title: 'Question Title',
+      text: 'Question Text',
+      tags: [],
+      answers: [],
+      askedBy: 'question_user',
+      askDateTime: new Date('2024-06-03'),
+      views: ['question1_user', 'question3_user'],
+      upVotes: [],
+      downVotes: [],
+      comments: [],
+      subscribers: ['test-user'],
+    };
+
+    addSubscriberToQuestionSpy.mockResolvedValueOnce(mockResponse);
+
+    const response = await supertest(app)
+      .put('/question/addSubscriberToQuestion')
+      .send(mockReqBody);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ...mockResponse,
+      _id: '34e9b58910afe6e94fc6e99f',
+      askDateTime: mockResponse.askDateTime.toISOString(),
+    });
+  });
+
+  it('should return status 400 if username missing from request body', async () => {
+    const mockReqBody = {
+      qid: '65e9b58910afe6e94fc6e6dc',
+    };
+
+    const response = await supertest(app)
+      .put('/question/addSubscriberToQuestion')
+      .send(mockReqBody);
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should return status 400 if qid missing from request body', async () => {
+    const mockReqBody = {
+      username: 'test-user',
+    };
+
+    const response = await supertest(app)
+      .put('/question/addSubscriberToQuestion')
+      .send(mockReqBody);
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should return status 500 if error occurs while adding subscriber to question', async () => {
+    const mockReqBody = {
+      qid: '65e9b58910afe6e94fc6e6dc',
+      username: 'test-user',
+    };
+
+    addSubscriberToQuestionSpy.mockResolvedValueOnce({ error: 'Error subscribing to question' });
+
+    const response = await supertest(app)
+      .put('/question/addSubscriberToQuestion')
+      .send(mockReqBody);
+
     expect(response.status).toBe(500);
   });
 });

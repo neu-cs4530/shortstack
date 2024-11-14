@@ -27,6 +27,7 @@ const mockQuestion: Question = {
   upVotes: [],
   downVotes: [],
   comments: [],
+  subscribers: [],
 };
 
 const simplifyQuestion = (question: Question) => ({
@@ -156,6 +157,7 @@ describe('POST /addQuestion', () => {
       upVotes: [],
       downVotes: [],
       comments: [],
+      subscribers: [],
     };
 
     const result: Question = {
@@ -170,6 +172,7 @@ describe('POST /addQuestion', () => {
       upVotes: [],
       downVotes: [],
       comments: [],
+      subscribers: [],
     };
 
     // Set up the mock to resolve with unique tags

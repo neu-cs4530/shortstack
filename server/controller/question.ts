@@ -7,6 +7,7 @@ import {
   AddQuestionRequest,
   VoteRequest,
   FakeSOSocket,
+  SubscribeRequest,
 } from '../types';
 import {
   addVoteToQuestion,
@@ -17,6 +18,7 @@ import {
   processTags,
   populateDocument,
   saveQuestion,
+  addSubscriberToQuestion,
 } from '../models/application';
 
 const questionController = (socket: FakeSOSocket) => {
@@ -227,12 +229,45 @@ const questionController = (socket: FakeSOSocket) => {
     voteQuestion(req, res, 'downvote');
   };
 
+  /**
+   * Handles subscribing to a question. The request must contain the question ID (qid) and the username.
+   * If the request is invalid or an error occurs, the appropriate HTTP response status and message are returned.
+   *
+   * @param req The VoteRequest object containing the question ID and the username.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const subscribeToQuestion = async (req: SubscribeRequest, res: Response): Promise<void> => {
+    if (!req.body.qid || !req.body.username) {
+      res.status(400).send('Invalid request');
+      return;
+    }
+
+    const { qid, username } = req.body;
+
+    try {
+      const updatedQuestion = await addSubscriberToQuestion(qid, username);
+
+      if ('error' in updatedQuestion) {
+        throw new Error(updatedQuestion.error as string);
+      }
+
+      // Emit the updated subscriber data to all connected clients
+      socket.emit('subscriberUpdate', { qid, subscribers: updatedQuestion.subscribers });
+      res.status(200).send(updatedQuestion);
+    } catch (err) {
+      res.status(500).send(`Error when subscribing to question: ${(err as Error).message}`);
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getQuestion', getQuestionsByFilter);
   router.get('/getQuestionById/:qid', getQuestionById);
   router.post('/addQuestion', addQuestion);
   router.post('/upvoteQuestion', upvoteQuestion);
   router.post('/downvoteQuestion', downvoteQuestion);
+  router.put('/addSubscriberToQuestion', subscribeToQuestion);
 
   return router;
 };
