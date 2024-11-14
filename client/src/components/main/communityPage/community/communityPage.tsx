@@ -32,8 +32,8 @@ const CommunityPage = () => {
 
   const handlePollClick = (pollID: string) => {
     navigate(`/community/poll/${pollID}`);
-  }
-  
+  };
+
   const handleCreatePollClick = () => {
     navigate(`/community/${communityID}/createPoll`);
   };

@@ -31,7 +31,7 @@ describe('Poll API', () => {
   describe('GET /pollById/:pollId', () => {
     it('should return the poll if it exists', async () => {
       const mockPollID = new mongoose.Types.ObjectId();
-      const mockPoll: Poll = {
+      const mockPoll2: Poll = {
         _id: mockPollID,
         title: 'Poll',
         options: [
@@ -45,7 +45,7 @@ describe('Poll API', () => {
         pollDueDate: new Date(),
       };
 
-      fetchPollByIdSpy.mockResolvedValueOnce(mockPoll);
+      fetchPollByIdSpy.mockResolvedValueOnce(mockPoll2);
 
       const response = await supertest(app).get(`/poll/getPollById/${mockPollID}`);
 
