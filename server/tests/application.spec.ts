@@ -2056,7 +2056,6 @@ describe('application module', () => {
           { username: userA.username },
           {
             $push: { unlockedTitles: challenge1.reward },
-            $set: { equippedTitle: challenge1.reward },
           },
         );
       });
