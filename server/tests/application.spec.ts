@@ -1407,6 +1407,94 @@ describe('application module', () => {
   });
 
   describe('Community model', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+      jest.restoreAllMocks();
+    });
+    describe('fetchAllCommunities', () => {
+      test('should return a list of populated communities when successful', async () => {
+        const mockCommunities = [
+          {
+            _id: new ObjectId(),
+            name: 'Community 1',
+            members: [],
+            questions: [],
+            articles: [],
+            polls: [],
+          },
+          {
+            _id: new ObjectId(),
+            name: 'Community 2',
+            members: ['user1'],
+            questions: [],
+            articles: [],
+            polls: [],
+          },
+        ];
+
+        mockingoose(CommunityModel).toReturn(mockCommunities, 'find');
+
+        jest
+          .spyOn(application, 'populateCommunity')
+          .mockImplementation(async (...args: unknown[]) => {
+            const id = args[0] as string;
+            const community = mockCommunities.find(comm => comm._id.toString() === id);
+            return community ? { ...community } : { error: 'Community not found' };
+          });
+
+        const result = await application.fetchAllCommunities();
+
+        expect(result).toEqual(mockCommunities);
+      });
+      test('should filter out invalid communities and return valid ones only', async () => {
+        const mockCommunities: Array<
+          | {
+              _id: ObjectId;
+              name: string;
+              members: string[];
+              questions: Question[];
+              articles: Article[];
+              polls: Poll[];
+            }
+          | { error: string }
+        > = [
+          {
+            _id: new ObjectId(),
+            name: 'Community 1',
+            members: [],
+            questions: [],
+            articles: [],
+            polls: [],
+          },
+          { error: 'Invalid community' },
+        ];
+
+        mockingoose(CommunityModel).toReturn(mockCommunities, 'find');
+
+        jest
+          .spyOn(application, 'populateCommunity')
+          .mockImplementation(async (...args: unknown[]) => {
+            const id = args[0] as string;
+            const community = mockCommunities.find(
+              comm => '_id' in comm && comm._id.toString() === id,
+            );
+            return community && !(community as any).error
+              ? community
+              : { error: 'Community not found' };
+          });
+
+        const result = await application.fetchAllCommunities();
+
+        expect(result).toEqual([mockCommunities[0]]);
+      });
+      test('should return an error when fetchAllCommunities fails', async () => {
+        mockingoose(CommunityModel).toReturn(new Error('Error fetching communities'), 'find');
+
+        const result = await application.fetchAllCommunities();
+
+        expect(result).toEqual({ error: 'Error when fetching communities' });
+      });
+    });
     describe('Save community', () => {
       test('Save community should return the saved community', async () => {
         const result = (await saveCommunity(newCommunity)) as Community;

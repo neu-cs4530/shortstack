@@ -76,6 +76,53 @@ describe('Community', () => {
       expect(response.text).toBe('Error fetching communities');
     });
   });
+  describe('GET /getCommunityById/:communityId', () => {
+    it('should return the community details when given a valid community ID', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+      const mockCommunity: Community = {
+        _id: new mongoose.Types.ObjectId(mockCommunityId),
+        name: 'Test Community',
+        members: ['user1', 'user2'],
+        questions: [],
+        articles: [],
+        polls: [],
+      };
+
+      populateCommunitySpy.mockResolvedValueOnce(mockCommunity);
+
+      const response = await supertest(app).get(`/community/getCommunityById/${mockCommunityId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        _id: mockCommunity._id?.toString(),
+        name: mockCommunity.name,
+        members: mockCommunity.members,
+        questions: mockCommunity.questions,
+        articles: mockCommunity.articles,
+        polls: mockCommunity.polls,
+      });
+    });
+    it('should return a 500 status if the community is not found', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+
+      populateCommunitySpy.mockResolvedValueOnce({ error: 'Community not found' });
+
+      const response = await supertest(app).get(`/community/getCommunityById/${mockCommunityId}`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('Error fetching community details');
+    });
+    it('should return a 500 status if an error occurs while fetching community details', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+
+      populateCommunitySpy.mockRejectedValueOnce(new Error('Error fetching community details'));
+
+      const response = await supertest(app).get(`/community/getCommunityById/${mockCommunityId}`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('Error fetching community details');
+    });
+  });
   describe('PUT /addQuestionToCommunity/:communityId', () => {
     it('should add a question to a community', async () => {
       const mockCommunityId = new mongoose.Types.ObjectId();
