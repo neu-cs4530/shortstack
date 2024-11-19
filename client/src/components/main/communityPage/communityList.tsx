@@ -33,7 +33,7 @@ const CommunityList = () => {
       ) : (
         <p>No joined communities.</p>
       )}
-      <h2>Available Communities</h2>
+      <h2>Communities Available to Join</h2>
       {availableCommunities.length > 0 ? (
         <ul>
           {availableCommunities.map(community => (

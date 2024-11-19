@@ -1,7 +1,8 @@
 import express, { Response } from 'express';
 import { fetchPollById } from '../models/application';
+import { FakeSOSocket } from '../types';
 
-const pollController = () => {
+const pollController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
