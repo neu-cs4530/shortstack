@@ -71,6 +71,12 @@ import * as application from '../models/application';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
 
+const addPointsToUserSpy = jest.spyOn(application, 'addPointsToUser');
+const fetchAndIncrementChallengesByUserAndTypeSpy = jest.spyOn(
+  application,
+  'fetchAndIncrementChallengesByUserAndType',
+);
+
 const newUser: User = {
   username: 'UserA',
   password: 'abc123',
@@ -2356,12 +2362,6 @@ describe('application module', () => {
     });
 
     describe('incrementProgressForAskedByUser', () => {
-      const addPointsToUserSpy = jest.spyOn(application, 'addPointsToUser');
-      const fetchAndIncrementChallengesByUserAndTypeSpy = jest.spyOn(
-        application,
-        'fetchAndIncrementChallengesByUserAndType',
-      );
-
       test('should add a point to the user who asked the question and increment their upvote-related challenges', async () => {
         const mockQuestion = QUESTIONS[0];
         const mockUser: User = {
