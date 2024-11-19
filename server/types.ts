@@ -393,6 +393,7 @@ export interface ServerToClientEvents {
   pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
   equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  upvoteReceived: (username: string) => void;
 }
 
 /**
@@ -524,7 +525,7 @@ export type CommunityResponse = Community | { error: string };
 /**
  * Type representing the possible action options for a challenge's type.
  */
-export type ChallengeType = 'answer' | 'question';
+export type ChallengeType = 'answer' | 'question' | 'upvote';
 
 /**
  * Interface representing a Challenge, which contains:
@@ -620,3 +621,8 @@ export interface CreatePollRequest extends Request {
     poll: Poll,
   };
 }
+
+/**
+ * Type representing the possible responses for updating a user's upvote-related progress.
+ */
+export type IncrementUpvoteProgressResponse = { updatedUser: string } | { error: string };

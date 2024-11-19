@@ -19,6 +19,7 @@ import {
   populateDocument,
   saveQuestion,
   addSubscriberToQuestion,
+  incrementProgressForAskedByUser,
 } from '../models/application';
 
 const questionController = (socket: FakeSOSocket) => {
@@ -184,15 +185,19 @@ const questionController = (socket: FakeSOSocket) => {
     const { qid, username } = req.body;
 
     try {
-      let status;
-      if (type === 'upvote') {
-        status = await addVoteToQuestion(qid, username, type);
-      } else {
-        status = await addVoteToQuestion(qid, username, type);
-      }
+      const status = await addVoteToQuestion(qid, username, type);
 
       if (status && 'error' in status) {
         throw new Error(status.error as string);
+      }
+
+      if (status.msg === 'Question upvoted successfully') {
+        const incrementProgressResponse = await incrementProgressForAskedByUser(qid);
+        if ('updatedUser' in incrementProgressResponse) {
+          // emit socket event telling user they received an upvote
+          socket.emit('upvoteReceived', incrementProgressResponse.updatedUser);
+        }
+        // TODO: if any challenges were completed, send a notification to the user
       }
 
       // Emit the updated vote counts to all connected clients

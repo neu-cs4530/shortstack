@@ -29,6 +29,7 @@ const challengeController = () => {
         throw new Error(response.error);
       }
 
+      // TODO: if a challenge is completed, send a notification to the user
       res.json(response as UserChallenge[]);
     } catch (error) {
       res.status(500).send((error as Error).message);

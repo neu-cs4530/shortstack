@@ -196,6 +196,7 @@ export interface ServerToClientEvents {
   pollUpdate: (poll: Poll) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
   equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  upvoteReceived: (username: string) => void;
 }
 
 /**
@@ -330,7 +331,7 @@ export type NotificationResponse = Notification | { error: string };
 /**
  * Type representing the possible action options for a challenge's type.
  */
-export type ChallengeType = 'answer' | 'question';
+export type ChallengeType = 'answer' | 'question' | 'upvote';
 
 /**
  * Interface representing a Challenge, which contains:
