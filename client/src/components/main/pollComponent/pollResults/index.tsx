@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import usePoll from '../../../../hooks/usePoll';
 import { PollProps } from '../../../../types';
 import './index.css';
@@ -9,6 +10,7 @@ import './index.css';
  */
 const PollResults = ({ poll }: PollProps) => {
   const { optionUserVotedFor, barChartWidth } = usePoll();
+  const navigate = useNavigate();
 
   return (
     <div className='poll_results_container'>
@@ -26,6 +28,11 @@ const PollResults = ({ poll }: PollProps) => {
           </div>
         </div>
       ))}
+      <div className='back_button'>
+        <button type='button' onClick={() => navigate(-1)}>
+          Back to community
+        </button>
+      </div>
     </div>
   );
 };
