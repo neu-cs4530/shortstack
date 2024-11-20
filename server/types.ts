@@ -622,10 +622,8 @@ export interface CreatePollRequest extends Request {
 }
 
 /**
- * Interface for the request body when voting on a poll.
- * - pollId - The ID of the poll.
- * - optionId - The ID of the poll option being voted for.
- * - username - The username of the user voting.
+ * Interface for the request body for getting a poll by its ID.
+ * - pollId - The unique identifier of the poll.
  */
 export interface GetPollByIdRequest extends Request {
   params: {
