@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Poll, PollOption } from '../types';
 import useUserContext from './useUserContext';
-import getPollById from '../services/pollService';
+import { getPollById, voteOnPoll } from '../services/pollService';
 
 /**
  * Custom hook for managing the state and logic of a poll.
@@ -20,13 +20,17 @@ const usePoll = () => {
   const [voted, setVoted] = useState(false);
   const [selectedOption, setSelectedOption] = useState<PollOption | undefined>(undefined);
   const [poll, setPoll] = useState<Poll | undefined>(undefined);
-  const { user } = useUserContext();
+  const { user, socket } = useUserContext();
 
   useEffect(() => {
     const fetchPoll = async (id: string) => {
       try {
         const fetchedPoll = await getPollById(id);
         setPoll(fetchedPoll);
+        const hasVoted = fetchedPoll.options.some((opt: PollOption) =>
+          opt.usersVoted.includes(user.username),
+        );
+        setVoted(hasVoted);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
@@ -36,7 +40,7 @@ const usePoll = () => {
     if (pollID) {
       fetchPoll(pollID);
     }
-  }, [pollID]);
+  }, [pollID, user.username]);
 
   // Finding the option that the logged in user voted on for the poll.
   const optionUserVotedFor = poll?.options
@@ -67,9 +71,26 @@ const usePoll = () => {
    *
    * @param event: The form event from submission.
    */
-  const voteButtonClick = (event: FormEvent<HTMLFormElement>) => {
+  const voteButtonClick = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setVoted(true);
+    if (!selectedOption || !poll) {
+      // eslint-disable-next-line no-console
+      console.error('No option selected or poll not loaded');
+      return;
+    }
+
+    try {
+      const updatedPoll = await voteOnPoll({
+        pollId: poll._id!,
+        optionId: selectedOption._id!,
+        username: user.username,
+      });
+      setPoll(updatedPoll);
+      setVoted(true);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error voting on poll:', error);
+    }
   };
 
   /**
@@ -81,6 +102,24 @@ const usePoll = () => {
     const chosenOption = poll?.options.at(parseInt(selectedIndex, 10));
     setSelectedOption(chosenOption);
   };
+
+  useEffect(() => {
+    const handlePollUpdate = (updatedPoll: Poll) => {
+      if (poll && updatedPoll._id === poll._id) {
+        setPoll(updatedPoll);
+        const hasVoted = updatedPoll.options.some((opt: PollOption) =>
+          opt.usersVoted.includes(user.username),
+        );
+        setVoted(hasVoted);
+      }
+    };
+
+    socket.on('pollUpdate', handlePollUpdate);
+
+    return () => {
+      socket.off('pollUpdate', handlePollUpdate);
+    };
+  }, [poll, user.username, socket]);
 
   return {
     poll,

@@ -4,6 +4,11 @@ import usePoll from '../../../hooks/usePoll';
 import { getMetaData } from '../../../tool';
 import './index.css';
 
+/**
+ * PollPage component that displays the poll title and the PollVoting or PollResults component.
+ * The PollPage component will only show the PollVoting component if the user has not voted yet.
+ * After submitting a vote, the user will see the PollResults component.
+ */
 const PollPage = () => {
   const { poll, voted, selectedOption, voteButtonClick, onOptionChange } = usePoll();
 
@@ -26,7 +31,7 @@ const PollPage = () => {
               poll={poll}
             />
           ) : (
-            <PollResults poll={poll}></PollResults>
+            <PollResults poll={poll} />
           )}
         </div>
       </div>

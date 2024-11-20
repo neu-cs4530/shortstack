@@ -15,7 +15,9 @@ const PollResults = ({ poll }: PollProps) => {
       {poll?.options.map((opt, idx) => (
         <div
           className={
-            optionUserVotedFor === opt ? 'option_results is_voted_option' : 'option_results'
+            optionUserVotedFor?._id === opt._id
+              ? 'option_results is_voted_option'
+              : 'option_results'
           }
           key={idx}>
           <h5 id='optText'>{opt.text}</h5>
