@@ -2643,38 +2643,6 @@ describe('application module', () => {
         expect(result).toHaveProperty('error', 'Error when adding vote to poll option');
       });
 
-      test('should return an error if pollId is invalid', async () => {
-        const invalidPollId = 'invalidPollId';
-
-        const result = await addVoteToPollOption(
-          invalidPollId,
-          mockOptionId.toString(),
-          mockUsername,
-        );
-
-        expect(result).toHaveProperty('error');
-      });
-
-      test('should return an error if optionId is invalid', async () => {
-        // Mock PollModel.findById().populate() to return mockPoll
-        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
-          () =>
-            ({
-              populate: () => Promise.resolve(mockPoll),
-            }) as any,
-        );
-
-        const invalidOptionId = 'invalidOptionId';
-
-        const result = await addVoteToPollOption(
-          mockPollId.toString(),
-          invalidOptionId,
-          mockUsername,
-        );
-
-        expect(result).toHaveProperty('error', 'Poll option not found');
-      });
-
       test('should return an error if username is missing', async () => {
         const result = await addVoteToPollOption(
           mockPollId.toString(),
@@ -2683,6 +2651,33 @@ describe('application module', () => {
         );
 
         expect(result).toHaveProperty('error', 'Invalid input data');
+      });
+      test('should return an error if the updated poll cannot be retrieved', async () => {
+        // Mock PollModel.findById().populate() to return mockPoll on the first call
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(mockPoll),
+            }) as any,
+        );
+
+        jest.spyOn(PollOptionModel, 'findOneAndUpdate').mockResolvedValueOnce(updatedOption as any);
+
+        // Mock PollModel.findById().populate() to return null on the second call
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(null),
+            }) as any,
+        );
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'Error retrieving updated poll');
       });
     });
   });

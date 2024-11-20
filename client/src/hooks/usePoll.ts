@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Poll, PollOption } from '../types';
+import { Poll, PollOption, PollVoteData } from '../types';
 import useUserContext from './useUserContext';
 import { getPollById, voteOnPoll } from '../services/pollService';
 
@@ -80,11 +80,14 @@ const usePoll = () => {
     }
 
     try {
-      const updatedPoll = await voteOnPoll({
+      const pollVoteData: PollVoteData = {
         pollId: poll._id!,
         optionId: selectedOption._id!,
         username: user.username,
-      });
+      };
+
+      const updatedPoll = await voteOnPoll(pollVoteData);
+
       setPoll(updatedPoll);
       setVoted(true);
     } catch (error) {

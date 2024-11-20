@@ -49,12 +49,11 @@ const pollController = (socket: FakeSOSocket) => {
       const result = await addVoteToPollOption(pollId, optionId, username);
 
       if ('error' in result) {
-        res.status(400).send(result.error);
+        res.status(500).send(result.error);
         return;
       }
 
       socket.emit('pollUpdate', result);
-      socket.emit('pollVoteUpdate', result);
 
       res.json(result);
     } catch (error) {

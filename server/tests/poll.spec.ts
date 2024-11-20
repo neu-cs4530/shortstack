@@ -158,14 +158,14 @@ describe('Poll API', () => {
       expect(response.body._id).toEqual(mockPoll._id?.toString());
     });
 
-    it('should return a 400 status if addVoteToPollOption returns an error', async () => {
+    it('should return a 500 status if addVoteToPollOption returns an error', async () => {
       addVoteToPollOptionSpy.mockResolvedValueOnce({
         error: 'User has already voted in this poll',
       });
 
       const response = await supertest(app).post('/poll/voteOnPoll').send(mockVoteRequest);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(500);
       expect(response.text).toBe('User has already voted in this poll');
     });
 

@@ -1,4 +1,4 @@
-import { Poll } from '../types';
+import { Poll, PollVoteData } from '../types';
 import api from './config';
 
 const POLL_API_URL = `${process.env.REACT_APP_SERVER_URL}/poll`;
@@ -25,7 +25,7 @@ const getPollById = async (pollId: string): Promise<Poll> => {
  * @returns The updated poll
  * @throws Error if the operation failed
  */
-const voteOnPoll = async (voteData: { pollId: string; optionId: string; username: string }) => {
+const voteOnPoll = async (voteData: PollVoteData) => {
   const res = await api.post(`${POLL_API_URL}/voteOnPoll`, voteData);
   if (res.status !== 200) {
     throw new Error('Error voting on poll');
