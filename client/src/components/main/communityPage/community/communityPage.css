@@ -1,6 +1,6 @@
 .community-page h1 {
   font-size: 2em;
-  margin-bottom: 20px;
+  margin: 0px;
 }
 
 .community-page h2 {
@@ -9,8 +9,49 @@
   color: #333;
 }
 
+.community-page h5 {
+  margin-bottom: 8px;
+}
+
 .community-page {
-  padding: 25px;
+  padding: 0px;
+}
+
+.community-title {
+  background-color: #F0CDB2;
+  padding: 64px 32px 64px 32px;
+}
+
+.tab-bar {
+  background-color: #F0CDB2;
+  padding: 0px 32px 0px 32px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+
+.nav-tab {
+  background-color: #DAAA80;
+  padding: 8px 24px 4px 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  border-radius: 16px 16px 0px 0px;
+  cursor: pointer;
+}
+
+.nav-tab:hover {
+  background-color: #a98565
+}
+
+.nav-tab#active {
+  background-color: white;
+}
+
+.community-content {
+  padding: 32px;
 }
 
 ul {

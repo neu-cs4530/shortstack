@@ -26,6 +26,7 @@ const useCommunityPage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [canEdit, setCanEdit] = useState<boolean>(false);
   const [isCreatingArticle, setIsCreatingArticle] = useState<boolean>(false);
+  const [currentTab, setCurrentTab] = useState<'Questions' | 'Articles' | 'Polls'>('Questions');
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -103,6 +104,8 @@ const useCommunityPage = () => {
     isCreatingArticle,
     toggleCreateArticleForm,
     setArticles,
+    currentTab,
+    setCurrentTab,
   };
 };
 
