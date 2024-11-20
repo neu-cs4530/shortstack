@@ -1,5 +1,6 @@
 import './communityArticlePage.css';
 import { FaPencilAlt } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
 import useCommunityArticle from '../../../../../hooks/useCommunityArticle';
 import CommunityArticleForm from './communityArticleForm';
 import { Article } from '../../../../../types';
@@ -33,7 +34,7 @@ const CommunityArticlePage = () => {
         </button>
       )}
       <h2>{article.title}</h2>
-      <p>{article.body}</p>
+      <ReactMarkdown>{article.body}</ReactMarkdown>
     </div>
   );
 };

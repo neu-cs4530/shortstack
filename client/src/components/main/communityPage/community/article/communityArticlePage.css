@@ -36,3 +36,9 @@
   width: min-content;
   align-self: flex-end;
 }
+
+li {
+  display: list-item;
+  list-style-type: disc;
+  margin-left: 16px;
+}
