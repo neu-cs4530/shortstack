@@ -1254,6 +1254,64 @@ export const fetchPollById = async (pollId: string): Promise<Poll | { error: str
 };
 
 /**
+ * Adds a user's vote to a poll option.
+ *
+ * @param {string} pollId - The ID of the poll containing the option.
+ * @param {string} optionId - The ID of the poll option being voted on.
+ * @param {string} username - The username of the user voting.
+ *
+ * @returns {Promise<PollResponse>} - The updated poll or an error message.
+ */
+export const addVoteToPollOption = async (
+  pollId: string,
+  optionId: string,
+  username: string,
+): Promise<PollResponse> => {
+  if (!pollId || !optionId || !username) {
+    return { error: 'Invalid input data' };
+  }
+  try {
+    const poll = await PollModel.findById(pollId).populate({
+      path: 'options',
+      model: PollOptionModel,
+    });
+
+    if (!poll) {
+      return { error: 'Poll not found' };
+    }
+
+    const hasVoted = poll.options.some(option => option.usersVoted.includes(username));
+
+    if (hasVoted) {
+      return { error: 'User has already voted in this poll' };
+    }
+
+    const updatedOption = await PollOptionModel.findOneAndUpdate(
+      { _id: optionId },
+      { $addToSet: { usersVoted: username } },
+      { new: true },
+    );
+
+    if (!updatedOption) {
+      return { error: 'Poll option not found' };
+    }
+
+    const updatedPoll = await PollModel.findById(pollId).populate({
+      path: 'options',
+      model: PollOptionModel,
+    });
+
+    if (!updatedPoll) {
+      return { error: 'Error retrieving updated poll' };
+    }
+
+    return updatedPoll;
+  } catch (error) {
+    return { error: 'Error when adding vote to poll option' };
+  }
+};
+
+/**
  * Adds a question ID to the specified community's question list.
  *
  * @param communityId - The ID of the community.

@@ -393,6 +393,7 @@ export interface ServerToClientEvents {
   pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
   equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  pollVoteUpdate: (poll: PollResponse) => void;
 }
 
 /**
@@ -620,3 +621,28 @@ export interface CreatePollRequest extends Request {
     poll: Poll,
   };
 }
+
+export interface GetPollByIdRequest extends Request {
+  params: {
+    pollId: string;
+  };
+};
+
+/**
+ * Interface for the request body when voting on a poll.
+ * - pollId - The ID of the poll.
+ * - optionId - The ID of the poll option being voted for.
+ * - username - The username of the user voting.
+ */
+export interface VoteOnPollRequest extends Request {
+  body: {
+    pollId: string;
+    optionId: string;
+    username: string;
+  };
+}
+
+/**
+ * Type representing the possible responses for a PollOption-related operation.
+ */
+export type PollOptionResponse = PollOption | { error: string };
