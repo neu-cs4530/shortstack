@@ -21,6 +21,9 @@ const CommunityPage = () => {
     setArticles,
     currentTab,
     setCurrentTab,
+    searchTerm,
+    handleInputChange,
+    handleKeyDown,
   } = useCommunityPage();
   const navigate = useNavigate();
 
@@ -48,7 +51,9 @@ const CommunityPage = () => {
     if (currentTab === 'Questions') {
       return (
         <div className='community-content'>
-          <h2>Community Questions</h2>
+          <div className='header-container'>
+            <h2>Community Questions</h2>
+          </div>
           <hr />
           {questions.length > 0 ? (
             <ul>
@@ -79,7 +84,14 @@ const CommunityPage = () => {
                   <PiNotePencil style={{ marginRight: '5px' }} /> New Article
                 </button>
               )}
-              <input id='searchBar' placeholder='Search ...' type='text' />
+              <input
+                id='searchBar'
+                placeholder='Search ...'
+                type='text'
+                value={searchTerm}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+              />
             </div>
           </div>
           <hr></hr>

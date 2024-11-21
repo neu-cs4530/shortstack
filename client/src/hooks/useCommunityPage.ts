@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, KeyboardEvent, ChangeEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { Question, Poll, Article } from '../types';
 import { getCommunityDetails } from '../services/communityService';
@@ -16,6 +16,11 @@ import useUserContext from './useUserContext';
  * @returns isCreatingArticle - Is the user creating an article
  * @returns toggleCreateArticleForm - Function to toggle between the article creation form and the community page
  * @returns setArticles - Function to set the articles array
+ * @returns currentTab - The tab selected by the user indicating what community content they want to see.
+ * @returns setCurrentTab - Function to set the tab the user has selected
+ * @returns searchTerm - the string that the user inputted to filter articles
+ * @returns handleInputChange - function to handle changes in the search bar's input field.
+ * @returns handleKeyDown - function to handle 'Enter' key press and trigger the search.
  */
 const useCommunityPage = () => {
   const { user, socket } = useUserContext();
@@ -27,6 +32,7 @@ const useCommunityPage = () => {
   const [canEdit, setCanEdit] = useState<boolean>(false);
   const [isCreatingArticle, setIsCreatingArticle] = useState<boolean>(false);
   const [currentTab, setCurrentTab] = useState<'Questions' | 'Articles' | 'Polls'>('Questions');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -94,6 +100,37 @@ const useCommunityPage = () => {
     };
   }, [polls, socket]);
 
+  /**
+   * Function to handle changes in the input field.
+   *
+   * @param e - the event object.
+   */
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  /**
+   * Function to handle 'Enter' key press and trigger the search.
+   *
+   * @param e - the event object.
+   */
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+
+      // Filter the community's article
+      const searchedArticles = articles.filter(a => {
+        const articleTitle = a.title.toUpperCase();
+        const articleBody = a.body.toUpperCase();
+        const searchTermUpcase = searchTerm?.toUpperCase();
+
+        return articleTitle.includes(searchTermUpcase) || articleBody.includes(searchTermUpcase);
+      });
+
+      setArticles(searchedArticles);
+    }
+  };
+
   return {
     communityID,
     titleText,
@@ -106,6 +143,9 @@ const useCommunityPage = () => {
     setArticles,
     currentTab,
     setCurrentTab,
+    searchTerm,
+    handleInputChange,
+    handleKeyDown,
   };
 };
 
