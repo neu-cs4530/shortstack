@@ -1468,7 +1468,7 @@ const distributeRewardsIfChallengeComplete = async (
       await UserModel.findOneAndUpdate(
         { username: uc.username },
         {
-          $push: { unlockedTitles: uc.challenge.reward },
+          $addToSet: { unlockedTitles: uc.challenge.reward },
         },
       );
     }
@@ -1632,7 +1632,7 @@ export const incrementProgressForAskedByUser = async (
   qid: string,
 ): Promise<UserChallenge[] | { error: string }> => {
   try {
-    const question = await QuestionModel.findOne({ _id: new ObjectId(qid) });
+    const question = await QuestionModel.findOne({ _id: qid });
 
     if (!question) {
       throw new Error('Question not found');

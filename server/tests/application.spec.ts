@@ -2374,7 +2374,7 @@ describe('application module', () => {
         expect(userRewardsUpdateSpy).toHaveBeenCalledWith(
           { username: userA.username },
           {
-            $push: { unlockedTitles: challenge1.reward },
+            $addToSet: { unlockedTitles: challenge1.reward },
           },
         );
       });
