@@ -33,7 +33,7 @@ const CommunityArticlePage = () => {
           {<FaPencilAlt style={{ marginRight: '10px' }} />}Edit
         </button>
       )}
-      <h2>{article.title}</h2>
+      <h2 id='articleTitle'>{article.title}</h2>
       <ReactMarkdown>{article.body}</ReactMarkdown>
     </div>
   );
