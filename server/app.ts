@@ -83,7 +83,7 @@ app.use('/community', communityController(socket));
 app.use('/article', articleController(socket));
 app.use('/challenge', challengeController());
 app.use('/notification', notificationController(socket));
-app.use('/poll', pollController());
+app.use('/poll', pollController(socket));
 
 // Export the app instance
 export { app, server, startServer };

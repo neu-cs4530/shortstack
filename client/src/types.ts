@@ -365,3 +365,16 @@ export interface UserChallenge {
   challenge: Challenge;
   progress: Date[];
 }
+
+/**
+ * Interface representing the props for voting on a poll.
+ *
+ * pollId - The id of the Poll object.
+ * optionId - The id of the PollOption object.
+ * username - The username of the user voting on the poll.
+ */
+export interface PollVoteData {
+  pollId: string;
+  optionId: string;
+  username: string;
+}
