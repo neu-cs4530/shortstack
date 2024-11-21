@@ -18,9 +18,10 @@ import useUserContext from './useUserContext';
  * @returns setArticles - Function to set the articles array
  * @returns currentTab - The tab selected by the user indicating what community content they want to see.
  * @returns setCurrentTab - Function to set the tab the user has selected
- * @returns searchTerm - the string that the user inputted to filter articles
+ * @returns searchBarValue - the current input inside of the search bar.
  * @returns handleInputChange - function to handle changes in the search bar's input field.
  * @returns handleKeyDown - function to handle 'Enter' key press and trigger the search.
+ * @returns filterArticlesBySearch - function to filter the community's articles with the entered search term.
  */
 const useCommunityPage = () => {
   const { user, socket } = useUserContext();
@@ -32,7 +33,8 @@ const useCommunityPage = () => {
   const [canEdit, setCanEdit] = useState<boolean>(false);
   const [isCreatingArticle, setIsCreatingArticle] = useState<boolean>(false);
   const [currentTab, setCurrentTab] = useState<'Questions' | 'Articles' | 'Polls'>('Questions');
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchBarValue, setSearchBarValue] = useState<string>('');
+  const [enteredSearch, setEnteredSearch] = useState<string>('');
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -106,7 +108,7 @@ const useCommunityPage = () => {
    * @param e - the event object.
    */
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    setSearchBarValue(e.target.value);
   };
 
   /**
@@ -118,18 +120,24 @@ const useCommunityPage = () => {
     if (e.key === 'Enter') {
       e.preventDefault();
 
-      // Filter the community's article
-      const searchedArticles = articles.filter(a => {
-        const articleTitle = a.title.toUpperCase();
-        const articleBody = a.body.toUpperCase();
-        const searchTermUpcase = searchTerm?.toUpperCase();
-
-        return articleTitle.includes(searchTermUpcase) || articleBody.includes(searchTermUpcase);
-      });
-
-      setArticles(searchedArticles);
+      setEnteredSearch(searchBarValue);
     }
   };
+
+  /**
+   * Function to filter the community's articles with the search term -- looking for the term in
+   * each article's title or body.
+   * @returns A list of articles that include the entered search term.
+   */
+  const filterArticlesBySearch = (): Article[] =>
+    articles.filter(article => {
+      console.log(article);
+      const upcaseTitle = article.title.toUpperCase();
+      const upcaseBody = article.body.toUpperCase();
+      const upcaseSearchTerm = enteredSearch.toUpperCase();
+
+      return upcaseTitle.includes(upcaseSearchTerm) || upcaseBody.includes(upcaseSearchTerm);
+    });
 
   return {
     communityID,
@@ -143,9 +151,10 @@ const useCommunityPage = () => {
     setArticles,
     currentTab,
     setCurrentTab,
-    searchTerm,
+    searchBarValue,
     handleInputChange,
     handleKeyDown,
+    filterArticlesBySearch,
   };
 };
 

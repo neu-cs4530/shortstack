@@ -21,9 +21,10 @@ const CommunityPage = () => {
     setArticles,
     currentTab,
     setCurrentTab,
-    searchTerm,
+    searchBarValue,
     handleInputChange,
     handleKeyDown,
+    filterArticlesBySearch,
   } = useCommunityPage();
   const navigate = useNavigate();
 
@@ -88,7 +89,7 @@ const CommunityPage = () => {
                 id='searchBar'
                 placeholder='Search ...'
                 type='text'
-                value={searchTerm}
+                value={searchBarValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
               />
@@ -97,7 +98,7 @@ const CommunityPage = () => {
           <hr></hr>
           {articles.length > 0 ? (
             <ul>
-              {articles.map((article: Article) => (
+              {filterArticlesBySearch().map((article: Article) => (
                 <li
                   key={article._id}
                   className='article-item'
