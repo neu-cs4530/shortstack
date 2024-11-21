@@ -133,6 +133,7 @@ export interface AddQuestionRequest extends Request {
  * - unlockedTitles - The titles the user has unlocked
  * - equippedFrame - The filepath of the frame the user has equipped
  * - equippedTitle - The title the user has equipped
+ * - notifications - The notifications the user has
  */
 export interface User {
   _id?: ObjectId;

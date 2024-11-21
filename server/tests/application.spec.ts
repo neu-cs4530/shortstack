@@ -68,16 +68,11 @@ import UserChallengeModel from '../models/useChallenge';
 import ChallengeModel from '../models/challenges';
 import PollModel from '../models/polls';
 import PollOptionModel from '../models/pollOptions';
-import * as application from '../models/application';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
-
-const addPointsToUserSpy = jest.spyOn(application, 'addPointsToUser');
-const fetchAndIncrementChallengesByUserAndTypeSpy = jest.spyOn(
-  application,
-  'fetchAndIncrementChallengesByUserAndType',
-);
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const application = require('../models/application');
 
 const newUser: User = {
   username: 'UserA',
@@ -2452,6 +2447,15 @@ describe('application module', () => {
     });
 
     describe('incrementProgressForAskedByUser', () => {
+      let addPointsToUserSpy: jest.SpyInstance;
+      let fetchAndIncrementChallengesByUserAndTypeSpy: jest.SpyInstance;
+      beforeEach(() => {
+        addPointsToUserSpy = jest.spyOn(application, 'addPointsToUser');
+        fetchAndIncrementChallengesByUserAndTypeSpy = jest.spyOn(
+          application,
+          'fetchAndIncrementChallengesByUserAndType',
+        );
+      });
       test('should add a point to the user who asked the question and increment their upvote-related challenges', async () => {
         const mockQuestion = QUESTIONS[0];
         const mockUser: User = {
