@@ -131,7 +131,6 @@ const useCommunityPage = () => {
    */
   const filterArticlesBySearch = (): Article[] =>
     articles.filter(article => {
-      console.log(article);
       const upcaseTitle = article.title.toUpperCase();
       const upcaseBody = article.body.toUpperCase();
       const upcaseSearchTerm = enteredSearch.toUpperCase();
