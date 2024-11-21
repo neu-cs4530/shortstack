@@ -49,6 +49,7 @@ const CommunityPage = () => {
       return (
         <div className='community-content'>
           <h2>Community Questions</h2>
+          <hr />
           {questions.length > 0 ? (
             <ul>
               {questions.map((question: Question) => (
@@ -72,12 +73,16 @@ const CommunityPage = () => {
         <div className='community-content'>
           <div className='header-container'>
             <h2 style={{ marginBottom: '0' }}>Community Articles</h2>
-            {canEdit && (
-              <button className='new-article-button' onClick={toggleCreateArticleForm}>
-                <PiNotePencil style={{ marginRight: '5px' }} /> New Article
-              </button>
-            )}
+            <div className='header-buttons'>
+              {canEdit && (
+                <button className='new-article-button' onClick={toggleCreateArticleForm}>
+                  <PiNotePencil style={{ marginRight: '5px' }} /> New Article
+                </button>
+              )}
+              <input id='searchBar' placeholder='Search ...' type='text' />
+            </div>
           </div>
+          <hr></hr>
           {articles.length > 0 ? (
             <ul>
               {articles.map((article: Article) => (
@@ -106,6 +111,7 @@ const CommunityPage = () => {
             </button>
           )}
         </div>
+        <hr />
         {polls.length > 0 ? (
           <ul>
             {polls.map((poll: Poll) => (
