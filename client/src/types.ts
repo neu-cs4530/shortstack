@@ -174,7 +174,7 @@ export interface SubscriberUpdatePayload {
  * - reward - The equipped reward.
  * - type - The type of the reward, either a frame or a title.
  */
-export interface EquippedRewardUpdatePayload {
+export interface RewardUpdatePayload {
   username: string;
   reward: string;
   type: 'frame' | 'title';
@@ -195,7 +195,8 @@ export interface ServerToClientEvents {
   articleUpdate: (article: Article) => void;
   pollUpdate: (poll: Poll) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
-  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  equippedRewardUpdate: (update: RewardUpdatePayload) => void;
+  unlockedRewardUpdate: (update: RewardUpdatePayload) => void;
   upvoteReceived: (username: string) => void;
 }
 

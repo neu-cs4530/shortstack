@@ -193,11 +193,25 @@ const questionController = (socket: FakeSOSocket) => {
 
       if (status.msg === 'Question upvoted successfully') {
         const incrementProgressResponse = await incrementProgressForAskedByUser(qid);
-        if ('updatedUser' in incrementProgressResponse) {
-          // emit socket event telling user they received an upvote
-          socket.emit('upvoteReceived', incrementProgressResponse.updatedUser);
+        if ('error' in incrementProgressResponse) {
+          throw new Error(incrementProgressResponse.error);
         }
-        // TODO: if any challenges were completed, send a notification to the user
+
+        if (incrementProgressResponse.length > 0) {
+          // emit socket event telling user they received an upvote
+          socket.emit('upvoteReceived', incrementProgressResponse[0].username);
+          // emit socket event with rewards of completed challenges
+          incrementProgressResponse.forEach(uc => {
+            // TODO: if a challenge is completed, send a notification to the user
+            if (uc.progress.length >= uc.challenge.actionAmount) {
+              socket.emit('unlockedRewardUpdate', {
+                username: incrementProgressResponse[0].username,
+                reward: uc.challenge.reward,
+                type: 'title', // all challenge rewards are titles
+              });
+            }
+          });
+        }
       }
 
       // Emit the updated vote counts to all connected clients

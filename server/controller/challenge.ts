@@ -1,11 +1,16 @@
 import express, { Response } from 'express';
-import { ChallengeProgressRequest, UserChallenge, UserChallengeRequest } from '../types';
+import {
+  ChallengeProgressRequest,
+  FakeSOSocket,
+  UserChallenge,
+  UserChallengeRequest,
+} from '../types';
 import {
   fetchAndIncrementChallengesByUserAndType,
   fetchUserChallengesByUsername,
 } from '../models/application';
 
-const challengeController = () => {
+const challengeController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
@@ -29,7 +34,17 @@ const challengeController = () => {
         throw new Error(response.error);
       }
 
-      // TODO: if a challenge is completed, send a notification to the user
+      response.forEach(uc => {
+        // TODO: if a challenge is completed, send a notification to the user
+        if (uc.progress.length >= uc.challenge.actionAmount) {
+          socket.emit('unlockedRewardUpdate', {
+            username,
+            reward: uc.challenge.reward,
+            type: 'title', // all challenge rewards are titles
+          });
+        }
+      });
+
       res.json(response as UserChallenge[]);
     } catch (error) {
       res.status(500).send((error as Error).message);

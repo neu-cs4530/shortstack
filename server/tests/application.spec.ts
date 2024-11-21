@@ -2473,12 +2473,11 @@ describe('application module', () => {
         addPointsToUserSpy.mockResolvedValueOnce(mockUser);
         fetchAndIncrementChallengesByUserAndTypeSpy.mockResolvedValueOnce([userChallenge1]);
 
-        const response = await incrementProgressForAskedByUser(mockQuestion._id!.toString());
-        if ('updatedUser' in response) {
-          expect(response.updatedUser).toBe(mockUser.username);
-        } else {
-          expect(false).toBeTruthy();
-        }
+        const response = (await incrementProgressForAskedByUser(
+          mockQuestion._id!.toString(),
+        )) as UserChallenge[];
+
+        expect(response.length).toBe(1);
       });
       test('should return an error if the question is not found', async () => {
         mockingoose(QuestionModel).toReturn(null, 'findOne');

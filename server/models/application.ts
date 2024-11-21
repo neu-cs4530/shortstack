@@ -13,7 +13,6 @@ import {
   CommunityObjectType,
   CommunityResponse,
   EquipRewardResponse,
-  IncrementUpvoteProgressResponse,
   Notification,
   NotificationResponse,
   NotificationType,
@@ -1631,7 +1630,7 @@ export const fetchAndIncrementChallengesByUserAndType = async (
  */
 export const incrementProgressForAskedByUser = async (
   qid: string,
-): Promise<IncrementUpvoteProgressResponse> => {
+): Promise<UserChallenge[] | { error: string }> => {
   try {
     const question = await QuestionModel.findOne({ _id: new ObjectId(qid) });
 
@@ -1656,7 +1655,7 @@ export const incrementProgressForAskedByUser = async (
       throw new Error(updatedUserChallenges.error);
     }
 
-    return { updatedUser: question.askedBy };
+    return updatedUserChallenges;
   } catch (error) {
     return { error: (error as Error).message };
   }
