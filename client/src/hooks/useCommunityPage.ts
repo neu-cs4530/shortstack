@@ -21,7 +21,7 @@ import useUserContext from './useUserContext';
  * @returns searchBarValue - the current input inside of the search bar.
  * @returns handleInputChange - function to handle changes in the search bar's input field.
  * @returns handleKeyDown - function to handle 'Enter' key press and trigger the search.
- * @returns filterArticlesBySearch - function to filter the community's articles with the entered search term.
+ * @returns searchedArticles - the articles that match the entered search term.
  */
 const useCommunityPage = () => {
   const { user, socket } = useUserContext();
@@ -34,7 +34,7 @@ const useCommunityPage = () => {
   const [isCreatingArticle, setIsCreatingArticle] = useState<boolean>(false);
   const [currentTab, setCurrentTab] = useState<'Questions' | 'Articles' | 'Polls'>('Questions');
   const [searchBarValue, setSearchBarValue] = useState<string>('');
-  const [enteredSearch, setEnteredSearch] = useState<string>('');
+  const [searchedArticles, setSearchedArticles] = useState<Article[]>([]);
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -46,6 +46,7 @@ const useCommunityPage = () => {
           setPolls(communityData.polls || []);
           setArticles(communityData.articles || []);
           setCanEdit(communityData.members.some(m => m === user.username));
+          setSearchedArticles(communityData.articles || []);
         }
       } catch (error) {
         throw new Error('Failed to fetch community data');
@@ -112,31 +113,32 @@ const useCommunityPage = () => {
   };
 
   /**
+   * Function to filter the community's articles with the search term -- looking for the term in
+   * each article's title or body.
+   */
+  const filterArticlesBySearch = (searchTerm: string): void =>
+    setSearchedArticles(
+      articles.filter(article => {
+        const upcaseTitle = article.title.toUpperCase();
+        const upcaseBody = article.body.toUpperCase();
+        const upcaseSearchTerm = searchTerm.toUpperCase();
+
+        return upcaseTitle.includes(upcaseSearchTerm) || upcaseBody.includes(upcaseSearchTerm);
+      }),
+    );
+
+  /**
    * Function to handle 'Enter' key press and trigger the search.
    *
    * @param e - the event object.
    */
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
 
-      setEnteredSearch(searchBarValue);
+      await filterArticlesBySearch(searchBarValue);
     }
   };
-
-  /**
-   * Function to filter the community's articles with the search term -- looking for the term in
-   * each article's title or body.
-   * @returns A list of articles that include the entered search term.
-   */
-  const filterArticlesBySearch = (): Article[] =>
-    articles.filter(article => {
-      const upcaseTitle = article.title.toUpperCase();
-      const upcaseBody = article.body.toUpperCase();
-      const upcaseSearchTerm = enteredSearch.toUpperCase();
-
-      return upcaseTitle.includes(upcaseSearchTerm) || upcaseBody.includes(upcaseSearchTerm);
-    });
 
   return {
     communityID,
@@ -153,7 +155,7 @@ const useCommunityPage = () => {
     searchBarValue,
     handleInputChange,
     handleKeyDown,
-    filterArticlesBySearch,
+    searchedArticles,
   };
 };
 

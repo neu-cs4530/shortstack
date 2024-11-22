@@ -24,7 +24,7 @@ const CommunityPage = () => {
     searchBarValue,
     handleInputChange,
     handleKeyDown,
-    filterArticlesBySearch,
+    searchedArticles,
   } = useCommunityPage();
   const navigate = useNavigate();
 
@@ -96,9 +96,9 @@ const CommunityPage = () => {
             </div>
           </div>
           <hr></hr>
-          {articles.length > 0 ? (
+          {searchedArticles.length > 0 ? (
             <ul>
-              {filterArticlesBySearch().map((article: Article) => (
+              {searchedArticles.map((article: Article) => (
                 <li
                   key={article._id}
                   className='article-item'
