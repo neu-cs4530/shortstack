@@ -5,9 +5,9 @@ import {
   fetchAllCommunities,
   AddQuestionToCommunityModel,
   addUserToCommunity,
-  fetchCommunityMembersByObjectId,
   saveAndAddArticleToCommunity,
   saveAndAddPollToCommunity,
+  fetchCommunityByObjectId,
 } from '../models/application';
 import {
   AddCommunityRequest,
@@ -15,7 +15,7 @@ import {
   CommunityResponse,
   Community,
   FakeSOSocket,
-  GetCommunityMembersByObjectIdRequest,
+  GetCommunityByObjectIdRequest,
   CreateArticleRequest,
   Article,
   Poll,
@@ -214,21 +214,21 @@ const communityController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Gets the usernames of the members of the community that owns the object.
+   * Gets the community that owns the object.
    * @param req The HTTP request object containing the object ID and object type as parameters.
    * @param res The HTTP response object used to send back the status, or an error message
    *            if the operation failed.
    */
-  const getCommunityMembersByObjectId = async (
-    req: GetCommunityMembersByObjectIdRequest,
+  const getCommunityByObjectId = async (
+    req: GetCommunityByObjectIdRequest,
     res: Response,
   ): Promise<void> => {
     const { oid, objectType } = req.params;
 
     try {
-      const usernames = await fetchCommunityMembersByObjectId(oid, objectType);
+      const community = await fetchCommunityByObjectId(oid, objectType);
 
-      res.json(usernames);
+      res.json(community);
     } catch (error) {
       res.status(500).send((error as Error).message);
     }
@@ -305,7 +305,7 @@ const communityController = (socket: FakeSOSocket) => {
   router.get('/getCommunityById/:communityId', getCommunityById);
   router.put('/joinCommunity/:communityId/:userId', joinCommunity);
   router.put('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
-  router.get('/getMembers/:oid/:objectType', getCommunityMembersByObjectId);
+  router.get('/getCommunityByObjectId/:oid/:objectType', getCommunityByObjectId);
   router.post('/addArticle/:communityId', addArticleToCommunity);
   router.post('/addPoll/:communityId', addPollToCommunity);
 

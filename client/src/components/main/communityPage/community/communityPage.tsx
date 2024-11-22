@@ -4,6 +4,7 @@ import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
 import useCommunityPage from '../../../../hooks/useCommunityPage';
 import CommunityArticleForm from './article/communityArticleForm';
+import CommunityBreadcrumb from './breadcrumb/communityBreadcrumb';
 
 /**
  * Represents the community page component. Displays the questions, articles, and polls of a community.
@@ -141,21 +142,31 @@ const CommunityPage = () => {
   };
 
   return isCreatingArticle ? (
-    <div className='article-form-container'>
-      <CommunityArticleForm
-        communityId={communityID}
-        toggleEditMode={toggleCreateArticleForm}
-        submitCallback={(newArticle: Article) => {
-          setArticles([...articles, newArticle]);
-          toggleCreateArticleForm();
-        }}
-      />
-    </div>
+    <>
+      <CommunityBreadcrumb communityID={communityID} subPageType={'New Article'} />
+      <div className='article-form-container'>
+        <CommunityArticleForm
+          communityId={communityID}
+          toggleEditMode={toggleCreateArticleForm}
+          submitCallback={(newArticle: Article) => {
+            setArticles([...articles, newArticle]);
+            toggleCreateArticleForm();
+          }}
+        />
+      </div>
+    </>
   ) : (
     <div className='community-page'>
       <div className='community-title'>
-        <h5>Community:</h5>
-        <h1>{titleText}</h1>
+        <CommunityBreadcrumb
+          communityID={communityID}
+          subPageType={'Community'}
+          styleOverride={{ paddingLeft: '0' }}
+        />
+        <div>
+          <h5>Community:</h5>
+          <h1>{titleText}</h1>
+        </div>
       </div>
 
       <div className='tab-bar'>
