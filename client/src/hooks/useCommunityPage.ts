@@ -132,11 +132,11 @@ const useCommunityPage = () => {
    *
    * @param e - the event object.
    */
-  const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
 
-      await filterArticlesBySearch();
+      filterArticlesBySearch();
     }
   };
 
