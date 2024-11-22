@@ -1319,10 +1319,14 @@ export const addVoteToPollOption = async (
  * @returns The updated community document or an error object.
  */
 export const AddQuestionToCommunityModel = async (communityId: string, questionId: string) => {
+  if (!communityId || !questionId) {
+    return { error: 'Invalid input: communityId and questionId are required' };
+  }
+
   try {
     const updatedCommunity = await CommunityModel.findByIdAndUpdate(
       communityId,
-      { $push: { questions: questionId } },
+      { $addToSet: { questions: questionId } },
       { new: true },
     );
 
