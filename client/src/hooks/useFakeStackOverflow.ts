@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { User, FakeSOSocket, Notification, RewardUpdatePayload } from '../types';
-import { getUserNotifications } from '../services/userService';
+import { User, FakeSOSocket, Notification, RewardUpdatePayload, NotificationType } from '../types';
+import { getUserNotifications, notifyUsers } from '../services/userService';
 
 /**
  * Custom hook to manage the state and logic of FakeStackOverflow.
@@ -63,6 +63,13 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       if (user && user.username === username) {
         if (type === 'title' && !user.unlockedTitles.some(t => t === reward)) {
           setUser({ ...user, unlockedTitles: [...user.unlockedTitles, reward] });
+        }
+        const notif: Notification = {
+          notificationType: NotificationType.NewReward,
+          isRead: false,
+        };
+        if (user._id) {
+          await notifyUsers(user._id, notif);
         }
       }
     };
