@@ -133,6 +133,7 @@ export interface AddQuestionRequest extends Request {
  * - unlockedTitles - The titles the user has unlocked
  * - equippedFrame - The filepath of the frame the user has equipped
  * - equippedTitle - The title the user has equipped
+ * - notifications - The notifications the user has
  */
 export interface User {
   _id?: ObjectId;
@@ -371,7 +372,7 @@ export interface SubscriberUpdatePayload {
  * - reward - The equipped reward.
  * - type - The type of the reward, either a frame or a title.
  */
-export interface EquippedRewardUpdatePayload {
+export interface RewardUpdatePayload {
   username: string;
   reward: string;
   type: 'frame' | 'title';
@@ -392,7 +393,9 @@ export interface ServerToClientEvents {
   articleUpdate: (article: ArticleResponse) => void;
   pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
-  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  equippedRewardUpdate: (update: RewardUpdatePayload) => void;
+  unlockedRewardUpdate: (update: RewardUpdatePayload) => void;
+  upvoteReceived: (username: string) => void;
 }
 
 /**
@@ -524,7 +527,7 @@ export type CommunityResponse = Community | { error: string };
 /**
  * Type representing the possible action options for a challenge's type.
  */
-export type ChallengeType = 'answer' | 'question';
+export type ChallengeType = 'answer' | 'question' | 'upvote';
 
 /**
  * Interface representing a Challenge, which contains:

@@ -81,7 +81,7 @@ app.use('/comment', commentController(socket));
 app.use('/user', userController(socket));
 app.use('/community', communityController(socket));
 app.use('/article', articleController(socket));
-app.use('/challenge', challengeController());
+app.use('/challenge', challengeController(socket));
 app.use('/notification', notificationController(socket));
 app.use('/poll', pollController(socket));
 

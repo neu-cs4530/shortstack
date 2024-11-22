@@ -113,3 +113,7 @@ export const CHAL5_DESCRIPTION = 'Answer 10 questions in a single day';
 export const CHAL5_AMT = 10;
 export const CHAL5_REWARD = 'Unstoppable';
 export const CHAL5_HRS = 24;
+
+export const CHAL6_DESCRIPTION = 'Receive 25 upvotes';
+export const CHAL6_AMT = 25;
+export const CHAL6_REWARD = 'Popular';

@@ -39,6 +39,7 @@ import {
   addSubscriberToQuestion,
   fetchPollById,
   equipReward,
+  incrementProgressForAskedByUser,
   addVoteToPollOption,
 } from '../models/application';
 import {
@@ -2373,7 +2374,7 @@ describe('application module', () => {
         expect(userRewardsUpdateSpy).toHaveBeenCalledWith(
           { username: userA.username },
           {
-            $push: { unlockedTitles: challenge1.reward },
+            $addToSet: { unlockedTitles: challenge1.reward },
           },
         );
       });
@@ -2439,6 +2440,91 @@ describe('application module', () => {
 
         if ('error' in result) {
           expect(result.error).toBe('User not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+
+    describe('incrementProgressForAskedByUser', () => {
+      let addPointsToUserSpy: jest.SpyInstance;
+      let fetchAndIncrementChallengesByUserAndTypeSpy: jest.SpyInstance;
+      beforeEach(() => {
+        addPointsToUserSpy = jest.spyOn(application, 'addPointsToUser');
+        fetchAndIncrementChallengesByUserAndTypeSpy = jest.spyOn(
+          application,
+          'fetchAndIncrementChallengesByUserAndType',
+        );
+      });
+      test('should add a point to the user who asked the question and increment their upvote-related challenges', async () => {
+        const mockQuestion = QUESTIONS[0];
+        const mockUser: User = {
+          username: mockQuestion.askedBy,
+          password: 'abc123',
+          totalPoints: 1,
+          unlockedFrames: [],
+          unlockedTitles: [],
+          equippedFrame: '',
+          equippedTitle: '',
+          notifications: [],
+        };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        addPointsToUserSpy.mockResolvedValueOnce(mockUser);
+        fetchAndIncrementChallengesByUserAndTypeSpy.mockResolvedValueOnce([userChallenge1]);
+
+        const response = (await incrementProgressForAskedByUser(
+          mockQuestion._id!.toString(),
+        )) as UserChallenge[];
+
+        expect(response.length).toBe(1);
+      });
+      test('should return an error if the question is not found', async () => {
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+
+        const response = await incrementProgressForAskedByUser(new ObjectId().toString());
+
+        if ('error' in response) {
+          expect(response.error).toBe('Question not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+      test('should return an error if adding points to the user fails', async () => {
+        const mockQuestion = QUESTIONS[0];
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        addPointsToUserSpy.mockResolvedValueOnce({ error: 'error' });
+
+        const response = await incrementProgressForAskedByUser(mockQuestion._id!.toString());
+        if ('error' in response) {
+          expect(response.error).toBe('Failed to add points to user for upvote');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+      test('should return an error if incrementing progress for the users challenges fails', async () => {
+        const mockQuestion = QUESTIONS[0];
+        const mockUser: User = {
+          username: mockQuestion.askedBy,
+          password: 'abc123',
+          totalPoints: 1,
+          unlockedFrames: [],
+          unlockedTitles: [],
+          equippedFrame: '',
+          equippedTitle: '',
+          notifications: [],
+        };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        addPointsToUserSpy.mockResolvedValueOnce(mockUser);
+        fetchAndIncrementChallengesByUserAndTypeSpy.mockResolvedValueOnce({
+          error: 'incrementChallengesError',
+        });
+
+        const response = await incrementProgressForAskedByUser(mockQuestion._id!.toString());
+        if ('error' in response) {
+          expect(response.error).toBe('incrementChallengesError');
         } else {
           expect(false).toBeTruthy();
         }

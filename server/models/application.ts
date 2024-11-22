@@ -1468,7 +1468,7 @@ const distributeRewardsIfChallengeComplete = async (
       await UserModel.findOneAndUpdate(
         { username: uc.username },
         {
-          $push: { unlockedTitles: uc.challenge.reward },
+          $addToSet: { unlockedTitles: uc.challenge.reward },
         },
       );
     }
@@ -1614,6 +1614,46 @@ export const fetchAndIncrementChallengesByUserAndType = async (
     });
 
     const updatedUserChallenges: UserChallenge[] = await Promise.all(updatePromises);
+
+    return updatedUserChallenges;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Adds progress to upvote-related challenges for the user who asked the question with the question ID
+ * Adds points for the upvote to the user who asked the question with the question ID
+ *
+ * @param qid - The ID of the question to get the askedBy user from.
+ * @returns - A username of the user whose progress was updated, or an error if the operation failed
+ */
+export const incrementProgressForAskedByUser = async (
+  qid: string,
+): Promise<UserChallenge[] | { error: string }> => {
+  try {
+    const question = await QuestionModel.findOne({ _id: qid });
+
+    if (!question) {
+      throw new Error('Question not found');
+    }
+
+    // add points to user
+    const addPointsResponse = await addPointsToUser(question.askedBy, 1);
+
+    if ('error' in addPointsResponse) {
+      throw new Error('Failed to add points to user for upvote');
+    }
+
+    // increment upvote-related challenges for user
+    const updatedUserChallenges = await fetchAndIncrementChallengesByUserAndType(
+      question.askedBy,
+      'upvote',
+    );
+
+    if ('error' in updatedUserChallenges) {
+      throw new Error(updatedUserChallenges.error);
+    }
 
     return updatedUserChallenges;
   } catch (error) {
