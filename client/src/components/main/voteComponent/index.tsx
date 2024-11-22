@@ -1,9 +1,10 @@
 import { downvoteQuestion, upvoteQuestion } from '../../../services/questionService';
 import './index.css';
 import useUserContext from '../../../hooks/useUserContext';
-import { Question } from '../../../types';
+import { Notification, NotificationType, Question } from '../../../types';
 import useVoteStatus from '../../../hooks/useVoteStatus';
 import SubscribeComponent from '../subscribeComponent';
+import { notifyUsers } from '../../../services/userService';
 
 /**
  * Interface represents the props for the VoteComponent.
@@ -33,6 +34,13 @@ const VoteComponent = ({ question }: VoteComponentProps) => {
       if (question._id) {
         if (type === 'upvote') {
           await upvoteQuestion(question._id, user.username);
+          const upvoteNotif: Notification = {
+            notificationType: NotificationType.Upvote,
+            sourceType: 'Question',
+            source: { _id: question._id } as Question,
+            isRead: false,
+          };
+          await notifyUsers(question._id, upvoteNotif);
         } else if (type === 'downvote') {
           await downvoteQuestion(question._id, user.username);
         }
