@@ -174,9 +174,21 @@ export interface SubscriberUpdatePayload {
  * - reward - The equipped reward.
  * - type - The type of the reward, either a frame or a title.
  */
-export interface RewardUpdatePayload {
+export interface EquippedRewardUpdatePayload {
   username: string;
   reward: string;
+  type: 'frame' | 'title';
+}
+
+/**
+ * Interface representing the payload for an unlocked reward(s) update socket event.
+ * - username - The user who's equipped reward was updated.
+ * - rewards - The unlocked reward(s).
+ * - type - The type of the reward(s), either a frame or a title.
+ */
+export interface UnlockedRewardUpdatePayload {
+  username: string;
+  rewards: string[];
   type: 'frame' | 'title';
 }
 
@@ -207,8 +219,8 @@ export interface ServerToClientEvents {
   articleUpdate: (article: Article) => void;
   pollUpdate: (poll: Poll) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
-  equippedRewardUpdate: (update: RewardUpdatePayload) => void;
-  unlockedRewardUpdate: (update: RewardUpdatePayload) => void;
+  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  unlockedRewardUpdate: (update: UnlockedRewardUpdatePayload) => void;
   pointsUpdate: (update: PointsUpdatePayload) => void;
   upvoteReceived: (username: string) => void;
 }

@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { User, FakeSOSocket, Notification, RewardUpdatePayload } from '../types';
+import {
+  User,
+  FakeSOSocket,
+  Notification,
+  EquippedRewardUpdatePayload,
+  UnlockedRewardUpdatePayload,
+} from '../types';
 import { getUserNotifications } from '../services/userService';
 
 /**
@@ -49,7 +55,11 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
      * @param reward - The equipped reward.
      * @param type - The type of the reward, either a frame or a title.
      */
-    const handleEquippedRewardUpdate = async ({ username, reward, type }: RewardUpdatePayload) => {
+    const handleEquippedRewardUpdate = async ({
+      username,
+      reward,
+      type,
+    }: EquippedRewardUpdatePayload) => {
       if (user && user.username === username) {
         if (type === 'frame') {
           setUser({ ...user, equippedFrame: reward });
@@ -59,10 +69,17 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       }
     };
 
-    const handleUnlockedRewardUpdate = async ({ username, reward, type }: RewardUpdatePayload) => {
+    const handleUnlockedRewardUpdate = async ({
+      username,
+      rewards,
+      type,
+    }: UnlockedRewardUpdatePayload) => {
       if (user && user.username === username) {
-        if (type === 'title' && !user.unlockedTitles.some(t => t === reward)) {
-          setUser({ ...user, unlockedTitles: [...user.unlockedTitles, reward] });
+        if (type === 'title' && !user.unlockedTitles.some(t => rewards.includes(t))) {
+          setUser({ ...user, unlockedTitles: [...user.unlockedTitles, ...rewards] });
+        }
+        if (type === 'frame' && !user.unlockedFrames.some(t => rewards.includes(t))) {
+          setUser({ ...user, unlockedFrames: [...user.unlockedFrames, ...rewards] });
         }
       }
     };

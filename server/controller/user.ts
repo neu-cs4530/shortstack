@@ -158,6 +158,14 @@ const userController = (socket: FakeSOSocket) => {
         throw new Error(updatedUser.error as string);
       }
 
+      if (newUnlockedFrames.length) {
+        socket.emit('unlockedRewardUpdate', {
+          username,
+          rewards: newUnlockedFrames,
+          type: 'frame',
+        });
+      }
+
       socket.emit('pointsUpdate', {
         username,
         pointsAdded: numPoints,
