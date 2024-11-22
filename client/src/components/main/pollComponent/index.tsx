@@ -3,6 +3,7 @@ import PollResults from './pollResults';
 import usePoll from '../../../hooks/usePoll';
 import { getMetaData } from '../../../tool';
 import './index.css';
+import ProfilePicture from '../profilePicture';
 
 /**
  * PollPage component that displays the poll title and the PollVoting or PollResults component.
@@ -18,8 +19,15 @@ const PollPage = () => {
         <div className='pollContent'>
           <div className='pollTitleSection'>
             <h2>{poll?.title}</h2>
+            <div className='createdByText'>
+              <div className='profile-pic-container'>
+                <ProfilePicture username={poll.createdBy} />
+              </div>
+              <h5>Created by:</h5>
+              <h5 className='usernameText'>{poll.createdBy}</h5>
+            </div>
             <h5 className='greyText'>
-              Created: {getMetaData(new Date(poll.pollDateTime))}, Ends:{' '}
+              Created on: {getMetaData(new Date(poll.pollDateTime))}, Ends:{' '}
               {getMetaData(new Date(poll.pollDueDate))}
             </h5>
           </div>

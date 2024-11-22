@@ -41,6 +41,20 @@
   flex-direction: row;
 }
 
+.lastActivity .profile-pic-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  height: 40px;
+  width: auto;
+  margin-right: 16px;
+}
+
+.askedByText {
+  display: inline-block;
+}
+
 .question_author {
   color: red;
 }

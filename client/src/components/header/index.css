@@ -42,7 +42,7 @@
 .profile_btn {
   background-color: transparent;
   border-style: none;
-  height: 48px;
+  width: 48px;
   cursor: pointer;
   display: flex;
   justify-content: center;

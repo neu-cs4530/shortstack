@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
 import { Question } from '../../../../types';
+import ProfilePicture from '../../profilePicture';
 
 /**
  * Interface representing the props for the Question component.
@@ -73,9 +74,13 @@ const QuestionView = ({ q }: QuestionProps) => {
         </div>
       </div>
       <div className='lastActivity'>
-        <div className='question_author'>{q.askedBy}</div>
-        <div>&nbsp;</div>
-        <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
+        <div className='profile-pic-container'>
+          <ProfilePicture username={q.askedBy} />
+        </div>
+        <div className='askedByText'>
+          <div className='question_author'>{q.askedBy}</div>
+          <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
+        </div>
       </div>
     </div>
   );

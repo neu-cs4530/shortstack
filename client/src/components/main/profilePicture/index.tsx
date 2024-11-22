@@ -6,6 +6,8 @@ import './index.css';
 /**
  * The ProfilePicture component renders the user's profile picture inside any equipped frames they
  * may have unlocked on the site.
+ *
+ * @param username - the username of the user whose profile picture & frame we are displaying
  */
 const ProfilePicture = ({ username }: { username: string }) => {
   const { frame } = useProfilePicture(username);
