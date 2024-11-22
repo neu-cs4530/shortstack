@@ -7,7 +7,9 @@ import useUserChallenges from './useUserChallenge';
 /**
  * Custom hook for managing the state and logic of a profile page.
  *
- * @returns userQuestions - the questions that were asked by the user
+ * @returns user - the user logged into the site.
+ * @returns userQuestions - the questions that were asked by the user.
+ * @returns userChallenges - the challenges the user has completed.
  */
 const useProfilePage = () => {
   const { user } = useUserContext();

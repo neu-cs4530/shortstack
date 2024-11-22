@@ -142,6 +142,15 @@ const markAllNotifsAsRead = async (username: string): Promise<Notification[]> =>
   return res.data;
 };
 
+const getUserFrame = async (username: string): Promise<string> => {
+  const res = await api.get(`${USER_API_URL}/getUserFrame/${username}`);
+  if (res.status !== 200) {
+    throw new Error(`Error when fetching the frame for user: ${username}`);
+  }
+
+  return res.data;
+};
+
 export {
   addUser,
   loginUser,
@@ -150,4 +159,5 @@ export {
   notifyUsers,
   getUserNotifications,
   markAllNotifsAsRead,
+  getUserFrame,
 };
