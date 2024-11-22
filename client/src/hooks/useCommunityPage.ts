@@ -116,12 +116,12 @@ const useCommunityPage = () => {
    * Function to filter the community's articles with the search term -- looking for the term in
    * each article's title or body.
    */
-  const filterArticlesBySearch = (searchTerm: string): void =>
+  const filterArticlesBySearch = (): void =>
     setSearchedArticles(
       articles.filter(article => {
         const upcaseTitle = article.title.toUpperCase();
         const upcaseBody = article.body.toUpperCase();
-        const upcaseSearchTerm = searchTerm.toUpperCase();
+        const upcaseSearchTerm = searchBarValue.toUpperCase();
 
         return upcaseTitle.includes(upcaseSearchTerm) || upcaseBody.includes(upcaseSearchTerm);
       }),
@@ -136,7 +136,7 @@ const useCommunityPage = () => {
     if (e.key === 'Enter') {
       e.preventDefault();
 
-      await filterArticlesBySearch(searchBarValue);
+      await filterArticlesBySearch();
     }
   };
 
