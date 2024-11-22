@@ -8,7 +8,7 @@
   flex-direction: column;
 }
 
-.community-article-page h2 {
+.community-article-page #articleTitle {
   font-size: 2em;
   color: #007bff;
   margin-bottom: 20px;
@@ -35,4 +35,34 @@
   align-items: center;
   width: min-content;
   align-self: flex-end;
+}
+
+.community-article-page li {
+  display: list-item;
+}
+
+.community-article-page ul {
+  list-style-type: disc;
+  margin-left: 16px;
+}
+
+.community-article-page blockquote {
+  background-color: #FFE0C8;
+  border-left-width: 4px;
+  border-left-color: #DAAA80;
+  border-left-style: solid;
+  padding-left: 16px;
+}
+
+.community-article-page code {
+  background-color: rgb(235, 235, 235);
+  font-family: monospace, 'Courier New', Courier;
+  font-size: 0.75em;
+  color: black;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.community-article-page img {
+  max-width: 100%;
 }
