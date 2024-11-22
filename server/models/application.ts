@@ -1330,6 +1330,16 @@ export const AddQuestionToCommunityModel = async (communityId: string, questionI
       return { error: 'Community not found' };
     }
 
+    const updatedQuestion = await QuestionModel.findByIdAndUpdate(
+      questionId,
+      { community: communityId },
+      { new: true },
+    );
+
+    if (!updatedQuestion) {
+      return { error: 'Question not found' };
+    }
+
     const populatedCommunity = await populateCommunity(communityId);
 
     if (populatedCommunity && 'error' in populatedCommunity) {

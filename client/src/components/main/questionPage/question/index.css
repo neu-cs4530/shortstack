@@ -48,3 +48,29 @@
 .question_meta {
   color: #bbbbbb;
 }
+
+.question_community {
+  margin-top: 10px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.community_label {
+  font-weight: bold;
+  color: #6c757d;
+}
+
+.community_link {
+  color: #007bff;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.community_link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
 import { Question } from '../../../../types';
+import useCommunityDetails from '../../../../hooks/useCommunityDetails';
 
 /**
  * Interface representing the props for the Question component.
@@ -22,6 +23,7 @@ interface QuestionProps {
  */
 const QuestionView = ({ q }: QuestionProps) => {
   const navigate = useNavigate();
+  const community = useCommunityDetails(q.community);
 
   /**
    * Function to navigate to the home page with the specified tag as a search parameter.
@@ -77,6 +79,19 @@ const QuestionView = ({ q }: QuestionProps) => {
         <div>&nbsp;</div>
         <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
       </div>
+      {community && (
+        <div className='question_community'>
+          <span className='community_label'>Community:</span>{' '}
+          <span
+            className='community_link'
+            onClick={e => {
+              e.stopPropagation();
+              navigate(`/community/${community._id}`);
+            }}>
+            {community.name}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

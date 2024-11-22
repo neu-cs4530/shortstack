@@ -115,6 +115,7 @@ export interface Answer {
  * - downVotes - An array of usernames who downvoted the question.
  * - comments - Comments associated with the question.
  * - subscribers - The usernames of subscribed users
+ * - community - The community the question belongs to.
  */
 export interface Question {
   _id?: string;
@@ -129,6 +130,7 @@ export interface Question {
   downVotes: string[];
   comments: Comment[];
   subscribers: string[];
+  community?: string;
 }
 
 /**

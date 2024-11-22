@@ -163,12 +163,13 @@ const communityController = (socket: FakeSOSocket) => {
     try {
       const updatedCommunity = await AddQuestionToCommunityModel(communityId, questionId);
 
-      if (
-        updatedCommunity &&
-        'error' in updatedCommunity &&
-        updatedCommunity.error === 'Community not found'
-      ) {
+      if ('error' in updatedCommunity && updatedCommunity.error === 'Community not found') {
         res.status(404).send('Community not found');
+        return;
+      }
+
+      if ('error' in updatedCommunity && updatedCommunity.error === 'Question not found') {
+        res.status(404).send('Question not found');
         return;
       }
 
