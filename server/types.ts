@@ -378,6 +378,18 @@ export interface EquippedRewardUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a points update socket event.
+ * - username - The user who's points were updated.
+ * - pointsAdded - The number of points added.
+ * - totalPoints - The user's total points.
+ */
+export interface PointsUpdatePayload {
+  username: string;
+  pointsAdded: number;
+  totalPoints: number;
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -393,6 +405,7 @@ export interface ServerToClientEvents {
   pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
   equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  pointsUpdate: (update: PointsUpdatePayload) => void;
 }
 
 /**
@@ -520,6 +533,26 @@ export interface GetCommunityMembersByObjectIdRequest extends Request {
  * Type representing the possible responses for a Community-related operation.
  */
 export type CommunityResponse = Community | { error: string };
+
+/**
+ * Type to represent a FrameReward with the frame image and the number of points needed to unlock.
+ * - name - The file name of the frame image.
+ * - pointsNeeded - The number of points needed to unlock the frame.
+ */
+export type FrameReward = {
+  name: string;
+  pointsNeeded: number;
+};
+
+/**
+ * A list of the available FrameRewards.
+ */
+export const FRAMES: FrameReward[] = [
+  { name: 'profile_frames-01.png', pointsNeeded: 500 },
+  { name: 'profile_frames-02.png', pointsNeeded: 1000 },
+  { name: 'profile_frames-03.png', pointsNeeded: 5000 },
+  { name: 'profile_frames-04.png', pointsNeeded: 10000 },
+];
 
 /**
  * Type representing the possible action options for a challenge's type.

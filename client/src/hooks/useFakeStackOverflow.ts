@@ -60,10 +60,31 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       }
     };
 
+    /**
+     * Function to handle user point updates from the socket.
+     *
+     * @param username - The user who's points were updated.
+     * @param pointsAdded - The number of points added.
+     * @param totalPoints - The user's total points.
+     */
+    const handlePointsUpdate = async ({
+      username,
+      totalPoints,
+    }: {
+      username: string;
+      pointsAdded: number;
+      totalPoints: number;
+    }) => {
+      if (user && user.username === username) {
+        setUser({ ...user, totalPoints });
+      }
+    };
+
     if (socket) {
       socket.on('notificationUpdate', handleNotificationUpdate);
       socket.on('singleNotifUpdate', handleSingleNotifUpdate);
       socket.on('equippedRewardUpdate', handleEquippedRewardUpdate);
+      socket.on('pointsUpdate', handlePointsUpdate);
     }
 
     return () => {
@@ -71,6 +92,7 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
         socket.off('notificationUpdate', handleNotificationUpdate);
         socket.off('singleNotifUpdate', handleSingleNotifUpdate);
         socket.off('equippedRewardUpdate', handleEquippedRewardUpdate);
+        socket.off('pointsUpdate', handlePointsUpdate);
       }
     };
   }, [socket, user]);

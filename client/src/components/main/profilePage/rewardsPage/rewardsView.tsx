@@ -1,6 +1,7 @@
 import React from 'react';
 import './rewardsView.css';
 import { equipReward } from '../../../../services/userService';
+import { FRAMES } from '../../../../types';
 
 /**
  * Interface representing the props for the RewardsView component.
@@ -46,29 +47,38 @@ const RewardsView = ({
 
   return (
     <div className='rewards_section'>
-      <h2>Unlocked Rewards:</h2>
+      <h2>Frames:</h2>
       <div>
-        <h3>Frames:</h3>
-        {unlockedFrames.length > 0 ? (
-          <ul className='reward_list'>
-            {unlockedFrames.map((frame, idx) => (
-              <li key={idx} className='reward_item'>
-                <img src={`/frames/${frame}`} alt={`${frame} frame`} className='frame_image' />
+        <ul className='reward_list'>
+          {FRAMES.map((frame, idx) => (
+            <li key={idx} className='reward_item'>
+              <img
+                className={
+                  unlockedFrames.includes(frame.name)
+                    ? 'frame_image-unlocked'
+                    : 'frame_image-locked'
+                }
+                src={`/frames/${frame.name}`}
+                alt={`${frame.name} frame`}
+              />
+              {unlockedFrames.includes(frame.name) ? (
                 <button
                   className='equip_button'
-                  onClick={() => handleEquip(frame, 'frame')}
-                  disabled={frame === equippedFrame}>
-                  {frame === equippedFrame ? 'Equipped' : 'Equip'}
+                  onClick={() => handleEquip(frame.name, 'frame')}
+                  disabled={frame.name === equippedFrame}>
+                  {frame.name === equippedFrame ? 'Equipped' : 'Equip'}
                 </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No frames unlocked yet.</p>
-        )}
+              ) : (
+                <button className='locked_button' onClick={() => () => {}}>
+                  Points: {frame.pointsNeeded}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
+      <h2>Titles:</h2>
       <div>
-        <h3>Titles:</h3>
         {unlockedTitles.length > 0 ? (
           <ul className='reward_list'>
             {unlockedTitles.map((title, idx) => (
