@@ -39,6 +39,8 @@ import {
   addSubscriberToQuestion,
   fetchPollById,
   equipReward,
+  incrementProgressForAskedByUser,
+  addVoteToPollOption,
 } from '../models/application';
 import {
   Answer,
@@ -54,6 +56,7 @@ import {
   UserChallenge,
   Challenge,
   CommunityObjectType,
+  PollOption,
 } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
@@ -2371,7 +2374,7 @@ describe('application module', () => {
         expect(userRewardsUpdateSpy).toHaveBeenCalledWith(
           { username: userA.username },
           {
-            $push: { unlockedTitles: challenge1.reward },
+            $addToSet: { unlockedTitles: challenge1.reward },
           },
         );
       });
@@ -2442,9 +2445,96 @@ describe('application module', () => {
         }
       });
     });
+
+    describe('incrementProgressForAskedByUser', () => {
+      let addPointsToUserSpy: jest.SpyInstance;
+      let fetchAndIncrementChallengesByUserAndTypeSpy: jest.SpyInstance;
+      beforeEach(() => {
+        addPointsToUserSpy = jest.spyOn(application, 'addPointsToUser');
+        fetchAndIncrementChallengesByUserAndTypeSpy = jest.spyOn(
+          application,
+          'fetchAndIncrementChallengesByUserAndType',
+        );
+      });
+      test('should add a point to the user who asked the question and increment their upvote-related challenges', async () => {
+        const mockQuestion = QUESTIONS[0];
+        const mockUser: User = {
+          username: mockQuestion.askedBy,
+          password: 'abc123',
+          totalPoints: 1,
+          unlockedFrames: [],
+          unlockedTitles: [],
+          equippedFrame: '',
+          equippedTitle: '',
+          notifications: [],
+        };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        addPointsToUserSpy.mockResolvedValueOnce(mockUser);
+        fetchAndIncrementChallengesByUserAndTypeSpy.mockResolvedValueOnce([userChallenge1]);
+
+        const response = (await incrementProgressForAskedByUser(
+          mockQuestion._id!.toString(),
+        )) as UserChallenge[];
+
+        expect(response.length).toBe(1);
+      });
+      test('should return an error if the question is not found', async () => {
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+
+        const response = await incrementProgressForAskedByUser(new ObjectId().toString());
+
+        if ('error' in response) {
+          expect(response.error).toBe('Question not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+      test('should return an error if adding points to the user fails', async () => {
+        const mockQuestion = QUESTIONS[0];
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        addPointsToUserSpy.mockResolvedValueOnce({ error: 'error' });
+
+        const response = await incrementProgressForAskedByUser(mockQuestion._id!.toString());
+        if ('error' in response) {
+          expect(response.error).toBe('Failed to add points to user for upvote');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+      test('should return an error if incrementing progress for the users challenges fails', async () => {
+        const mockQuestion = QUESTIONS[0];
+        const mockUser: User = {
+          username: mockQuestion.askedBy,
+          password: 'abc123',
+          totalPoints: 1,
+          unlockedFrames: [],
+          unlockedTitles: [],
+          equippedFrame: '',
+          equippedTitle: '',
+          notifications: [],
+        };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        addPointsToUserSpy.mockResolvedValueOnce(mockUser);
+        fetchAndIncrementChallengesByUserAndTypeSpy.mockResolvedValueOnce({
+          error: 'incrementChallengesError',
+        });
+
+        const response = await incrementProgressForAskedByUser(mockQuestion._id!.toString());
+        if ('error' in response) {
+          expect(response.error).toBe('incrementChallengesError');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
   });
 
   describe('Poll model', () => {
+    jest.mock('../models/polls');
+    jest.mock('../models/pollOptions');
     describe('fetchPollById', () => {
       test('should return the poll if the operation is successful', async () => {
         const mockPoll: Poll = {
@@ -2452,6 +2542,7 @@ describe('application module', () => {
           title: 'Poll',
           options: [
             {
+              _id: new ObjectId(),
               text: 'Option',
               usersVoted: ['me', 'you'],
             },
@@ -2462,16 +2553,16 @@ describe('application module', () => {
         };
 
         mockingoose(PollModel).toReturn(mockPoll, 'findOne');
-        mockingoose(PollModel).toReturn(mockPoll, 'populate');
 
         const response = (await fetchPollById(mockPoll._id!.toString())) as Poll;
 
-        expect(response._id).toBe(mockPoll._id);
+        expect(response._id?.toString()).toBe(mockPoll._id?.toString());
         expect(response.title).toBe(mockPoll.title);
         expect(response.createdBy).toBe(mockPoll.createdBy);
-        expect(response.pollDateTime).toBe(mockPoll.pollDateTime);
-        expect(response.pollDueDate).toBe(mockPoll.pollDueDate);
+        expect(response.pollDateTime).toEqual(mockPoll.pollDateTime);
+        expect(response.pollDueDate).toEqual(mockPoll.pollDueDate);
       });
+
       test('should return an error if findOne returns null', async () => {
         const mockPollID = new ObjectId();
 
@@ -2484,6 +2575,195 @@ describe('application module', () => {
         } else {
           expect(false).toBeTruthy();
         }
+      });
+    });
+    describe('addVoteToPollOption', () => {
+      let mockPollId: ObjectId;
+      let mockOptionId: ObjectId;
+      let mockUsername: string;
+      let mockPoll: Poll;
+      let mockOption: PollOption;
+      let updatedOption: PollOption;
+      let updatedPoll: Poll;
+
+      beforeEach(() => {
+        mockPollId = new ObjectId();
+        mockOptionId = new ObjectId();
+        mockUsername = 'testUser';
+
+        mockOption = {
+          _id: mockOptionId,
+          text: 'Option 1',
+          usersVoted: [],
+        };
+
+        mockPoll = {
+          _id: mockPollId,
+          title: 'Poll Title',
+          options: [mockOption],
+          createdBy: 'creatorUser',
+          pollDateTime: new Date(),
+          pollDueDate: new Date(),
+        };
+
+        updatedOption = {
+          ...mockOption,
+          usersVoted: [mockUsername],
+        };
+
+        updatedPoll = {
+          ...mockPoll,
+          options: [updatedOption],
+        };
+
+        jest.clearAllMocks();
+      });
+
+      test('should successfully add a vote to a poll option', async () => {
+        // Mock PollModel.findById().populate() to return mockPoll
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(mockPoll),
+            }) as any,
+        );
+
+        // Mock PollOptionModel.findOneAndUpdate to return updatedOption
+        jest.spyOn(PollOptionModel, 'findOneAndUpdate').mockResolvedValueOnce(updatedOption as any);
+
+        // Mock PollModel.findById().populate() to return updatedPoll
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(updatedPoll),
+            }) as any,
+        );
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toEqual(updatedPoll);
+      });
+
+      test('should return an error if the poll does not exist', async () => {
+        // Mock PollModel.findById().populate() to return null
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(null),
+            }) as any,
+        );
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'Poll not found');
+      });
+
+      test('should return an error if the user has already voted', async () => {
+        // Mock PollModel.findById().populate() to return a poll where user has already voted
+        const votedOption = {
+          ...mockOption,
+          usersVoted: [mockUsername],
+        };
+        const pollWithVote = {
+          ...mockPoll,
+          options: [votedOption],
+        };
+
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(pollWithVote),
+            }) as any,
+        );
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'User has already voted in this poll');
+      });
+
+      test('should return an error if the poll option does not exist', async () => {
+        // Mock PollModel.findById().populate() to return mockPoll
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(mockPoll),
+            }) as any,
+        );
+
+        // Mock PollOptionModel.findOneAndUpdate to return null
+        jest.spyOn(PollOptionModel, 'findOneAndUpdate').mockResolvedValueOnce(null);
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'Poll option not found');
+      });
+
+      test('should return an error if an exception occurs during database operation', async () => {
+        // Mock PollModel.findById().populate() to throw an error
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(() => {
+          throw new Error('Database error');
+        });
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'Error when adding vote to poll option');
+      });
+
+      test('should return an error if username is missing', async () => {
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          '',
+        );
+
+        expect(result).toHaveProperty('error', 'Invalid input data');
+      });
+      test('should return an error if the updated poll cannot be retrieved', async () => {
+        // Mock PollModel.findById().populate() to return mockPoll on the first call
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(mockPoll),
+            }) as any,
+        );
+
+        jest.spyOn(PollOptionModel, 'findOneAndUpdate').mockResolvedValueOnce(updatedOption as any);
+
+        // Mock PollModel.findById().populate() to return null on the second call
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(null),
+            }) as any,
+        );
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'Error retrieving updated poll');
       });
     });
   });

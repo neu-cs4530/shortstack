@@ -133,6 +133,7 @@ export interface AddQuestionRequest extends Request {
  * - unlockedTitles - The titles the user has unlocked
  * - equippedFrame - The filepath of the frame the user has equipped
  * - equippedTitle - The title the user has equipped
+ * - notifications - The notifications the user has
  */
 export interface User {
   _id?: ObjectId;
@@ -371,7 +372,7 @@ export interface SubscriberUpdatePayload {
  * - reward - The equipped reward.
  * - type - The type of the reward, either a frame or a title.
  */
-export interface EquippedRewardUpdatePayload {
+export interface RewardUpdatePayload {
   username: string;
   reward: string;
   type: 'frame' | 'title';
@@ -404,8 +405,10 @@ export interface ServerToClientEvents {
   articleUpdate: (article: ArticleResponse) => void;
   pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
-  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  equippedRewardUpdate: (update: RewardUpdatePayload) => void;
+  unlockedRewardUpdate: (update: RewardUpdatePayload) => void;
   pointsUpdate: (update: PointsUpdatePayload) => void;
+  upvoteReceived: (username: string) => void;
 }
 
 /**
@@ -557,7 +560,7 @@ export const FRAMES: FrameReward[] = [
 /**
  * Type representing the possible action options for a challenge's type.
  */
-export type ChallengeType = 'answer' | 'question';
+export type ChallengeType = 'answer' | 'question' | 'upvote';
 
 /**
  * Interface representing a Challenge, which contains:
@@ -653,3 +656,32 @@ export interface CreatePollRequest extends Request {
     poll: Poll,
   };
 }
+
+/**
+ * Interface for the request body for getting a poll by its ID.
+ * - pollId - The unique identifier of the poll.
+ */
+export interface GetPollByIdRequest extends Request {
+  params: {
+    pollId: string;
+  };
+};
+
+/**
+ * Interface for the request body when voting on a poll.
+ * - pollId - The ID of the poll.
+ * - optionId - The ID of the poll option being voted for.
+ * - username - The username of the user voting.
+ */
+export interface VoteOnPollRequest extends Request {
+  body: {
+    pollId: string;
+    optionId: string;
+    username: string;
+  };
+}
+
+/**
+ * Type representing the possible responses for a PollOption-related operation.
+ */
+export type PollOptionResponse = PollOption | { error: string };

@@ -1282,6 +1282,64 @@ export const fetchPollById = async (pollId: string): Promise<Poll | { error: str
 };
 
 /**
+ * Adds a user's vote to a poll option.
+ *
+ * @param {string} pollId - The ID of the poll containing the option.
+ * @param {string} optionId - The ID of the poll option being voted on.
+ * @param {string} username - The username of the user voting.
+ *
+ * @returns {Promise<PollResponse>} - The updated poll or an error message.
+ */
+export const addVoteToPollOption = async (
+  pollId: string,
+  optionId: string,
+  username: string,
+): Promise<PollResponse> => {
+  if (!pollId || !optionId || !username) {
+    return { error: 'Invalid input data' };
+  }
+  try {
+    const poll = await PollModel.findById(pollId).populate({
+      path: 'options',
+      model: PollOptionModel,
+    });
+
+    if (!poll) {
+      return { error: 'Poll not found' };
+    }
+
+    const hasVoted = poll.options.some(option => option.usersVoted.includes(username));
+
+    if (hasVoted) {
+      return { error: 'User has already voted in this poll' };
+    }
+
+    const updatedOption = await PollOptionModel.findOneAndUpdate(
+      { _id: optionId },
+      { $addToSet: { usersVoted: username } },
+      { new: true },
+    );
+
+    if (!updatedOption) {
+      return { error: 'Poll option not found' };
+    }
+
+    const updatedPoll = await PollModel.findById(pollId).populate({
+      path: 'options',
+      model: PollOptionModel,
+    });
+
+    if (!updatedPoll) {
+      return { error: 'Error retrieving updated poll' };
+    }
+
+    return updatedPoll;
+  } catch (error) {
+    return { error: 'Error when adding vote to poll option' };
+  }
+};
+
+/**
  * Adds a question ID to the specified community's question list.
  *
  * @param communityId - The ID of the community.
@@ -1438,7 +1496,7 @@ const distributeRewardsIfChallengeComplete = async (
       await UserModel.findOneAndUpdate(
         { username: uc.username },
         {
-          $push: { unlockedTitles: uc.challenge.reward },
+          $addToSet: { unlockedTitles: uc.challenge.reward },
         },
       );
     }
@@ -1584,6 +1642,46 @@ export const fetchAndIncrementChallengesByUserAndType = async (
     });
 
     const updatedUserChallenges: UserChallenge[] = await Promise.all(updatePromises);
+
+    return updatedUserChallenges;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Adds progress to upvote-related challenges for the user who asked the question with the question ID
+ * Adds points for the upvote to the user who asked the question with the question ID
+ *
+ * @param qid - The ID of the question to get the askedBy user from.
+ * @returns - A username of the user whose progress was updated, or an error if the operation failed
+ */
+export const incrementProgressForAskedByUser = async (
+  qid: string,
+): Promise<UserChallenge[] | { error: string }> => {
+  try {
+    const question = await QuestionModel.findOne({ _id: qid });
+
+    if (!question) {
+      throw new Error('Question not found');
+    }
+
+    // add points to user
+    const addPointsResponse = await addPointsToUser(question.askedBy, 1);
+
+    if ('error' in addPointsResponse) {
+      throw new Error('Failed to add points to user for upvote');
+    }
+
+    // increment upvote-related challenges for user
+    const updatedUserChallenges = await fetchAndIncrementChallengesByUserAndType(
+      question.askedBy,
+      'upvote',
+    );
+
+    if ('error' in updatedUserChallenges) {
+      throw new Error(updatedUserChallenges.error);
+    }
 
     return updatedUserChallenges;
   } catch (error) {

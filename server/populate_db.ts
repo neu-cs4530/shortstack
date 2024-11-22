@@ -69,6 +69,9 @@ import {
   CHAL3_AMT,
   CHAL4_AMT,
   CHAL4_REWARD,
+  CHAL6_DESCRIPTION,
+  CHAL6_AMT,
+  CHAL6_REWARD,
 } from './data/posts_strings';
 import CommentModel from './models/comments';
 import UserModel from './models/users';
@@ -595,6 +598,7 @@ const populate = async () => {
     const CHAL3 = await challengeCreate(CHAL3_DESCRIPTION, CHAL3_AMT, 'question', CHAL3_REWARD);
     const CHAL4 = await challengeCreate(CHAL4_DESCRIPTION, CHAL4_AMT, 'question', CHAL4_REWARD);
     const CHAL5 = await challengeCreate(CHAL5_DESCRIPTION, CHAL5_AMT, 'answer', CHAL5_REWARD, CHAL5_HRS);
+    const CHAL6 = await challengeCreate(CHAL6_DESCRIPTION, CHAL6_AMT, 'upvote', CHAL6_REWARD);
 
     // user challenge records
     const currentDate = new Date();
@@ -613,6 +617,7 @@ const populate = async () => {
     await userChallengeCreate(U2.username, CHAL3, [currentDate]); // completed (1/1)
     await userChallengeCreate(U2.username, CHAL4, [currentDate]); // in progress (1/5)
     await userChallengeCreate(U2.username, CHAL5, []); // in progress (0/10)
+    await userChallengeCreate(U2.username, CHAL6, [...tenDates, ...tenDates]) // in progress (20/25) (upvotes)
 
     console.log('Database populated');
   } catch (err) {

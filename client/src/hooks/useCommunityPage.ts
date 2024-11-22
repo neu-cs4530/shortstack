@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, KeyboardEvent, ChangeEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { Question, Poll, Article } from '../types';
 import { getCommunityDetails } from '../services/communityService';
@@ -16,6 +16,12 @@ import useUserContext from './useUserContext';
  * @returns isCreatingArticle - Is the user creating an article
  * @returns toggleCreateArticleForm - Function to toggle between the article creation form and the community page
  * @returns setArticles - Function to set the articles array
+ * @returns currentTab - The tab selected by the user indicating what community content they want to see.
+ * @returns setCurrentTab - Function to set the tab the user has selected
+ * @returns searchBarValue - the current input inside of the search bar.
+ * @returns handleInputChange - function to handle changes in the search bar's input field.
+ * @returns handleKeyDown - function to handle 'Enter' key press and trigger the search.
+ * @returns searchedArticles - the articles that match the entered search term.
  */
 const useCommunityPage = () => {
   const { user, socket } = useUserContext();
@@ -26,6 +32,9 @@ const useCommunityPage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [canEdit, setCanEdit] = useState<boolean>(false);
   const [isCreatingArticle, setIsCreatingArticle] = useState<boolean>(false);
+  const [currentTab, setCurrentTab] = useState<'Questions' | 'Articles' | 'Polls'>('Questions');
+  const [searchBarValue, setSearchBarValue] = useState<string>('');
+  const [searchedArticles, setSearchedArticles] = useState<Article[]>([]);
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -37,6 +46,7 @@ const useCommunityPage = () => {
           setPolls(communityData.polls || []);
           setArticles(communityData.articles || []);
           setCanEdit(communityData.members.some(m => m === user.username));
+          setSearchedArticles(communityData.articles || []);
         }
       } catch (error) {
         throw new Error('Failed to fetch community data');
@@ -93,6 +103,43 @@ const useCommunityPage = () => {
     };
   }, [polls, socket]);
 
+  /**
+   * Function to handle changes in the input field.
+   *
+   * @param e - the event object.
+   */
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchBarValue(e.target.value);
+  };
+
+  /**
+   * Function to filter the community's articles with the search term -- looking for the term in
+   * each article's title or body.
+   */
+  const filterArticlesBySearch = (): void =>
+    setSearchedArticles(
+      articles.filter(article => {
+        const upcaseTitle = article.title.toUpperCase();
+        const upcaseBody = article.body.toUpperCase();
+        const upcaseSearchTerm = searchBarValue.toUpperCase();
+
+        return upcaseTitle.includes(upcaseSearchTerm) || upcaseBody.includes(upcaseSearchTerm);
+      }),
+    );
+
+  /**
+   * Function to handle 'Enter' key press and trigger the search.
+   *
+   * @param e - the event object.
+   */
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+
+      filterArticlesBySearch();
+    }
+  };
+
   return {
     communityID,
     titleText,
@@ -103,6 +150,12 @@ const useCommunityPage = () => {
     isCreatingArticle,
     toggleCreateArticleForm,
     setArticles,
+    currentTab,
+    setCurrentTab,
+    searchBarValue,
+    handleInputChange,
+    handleKeyDown,
+    searchedArticles,
   };
 };
 

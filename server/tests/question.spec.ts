@@ -2,10 +2,11 @@ import supertest from 'supertest';
 import mongoose from 'mongoose';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Question } from '../types';
+import { Challenge, Question, UserChallenge } from '../types';
 
 const addVoteToQuestionSpy = jest.spyOn(util, 'addVoteToQuestion');
 const addSubscriberToQuestionSpy = jest.spyOn(util, 'addSubscriberToQuestion');
+const incrementProgressForAskedByUserSpy = jest.spyOn(util, 'incrementProgressForAskedByUser');
 
 interface MockResponse {
   msg: string;
@@ -99,6 +100,21 @@ const MOCK_QUESTIONS = [
   },
 ];
 
+const challenge1: Challenge = {
+  _id: new mongoose.Types.ObjectId(),
+  description: 'challenge1 description',
+  actionAmount: 3,
+  challengeType: 'question',
+  reward: 'some title 1',
+};
+
+const userChallenge1: UserChallenge = {
+  _id: new mongoose.Types.ObjectId(),
+  username: 'new-user',
+  challenge: challenge1,
+  progress: [],
+};
+
 describe('POST /upvoteQuestion', () => {
   afterEach(async () => {
     await mongoose.connection.close(); // Ensure the connection is properly closed
@@ -121,6 +137,7 @@ describe('POST /upvoteQuestion', () => {
     };
 
     addVoteToQuestionSpy.mockResolvedValueOnce(mockResponse);
+    incrementProgressForAskedByUserSpy.mockResolvedValueOnce([userChallenge1]);
 
     const response = await supertest(app).post('/question/upvoteQuestion').send(mockReqBody);
 
@@ -164,6 +181,7 @@ describe('POST /upvoteQuestion', () => {
     };
 
     addVoteToQuestionSpy.mockResolvedValueOnce(mockResponseWithBothVotes);
+    incrementProgressForAskedByUserSpy.mockResolvedValueOnce([userChallenge1]);
 
     let response = await supertest(app).post('/question/upvoteQuestion').send(mockReqBody);
 
@@ -228,6 +246,7 @@ describe('POST /downvoteQuestion', () => {
     };
 
     addVoteToQuestionSpy.mockResolvedValueOnce(mockResponse);
+    incrementProgressForAskedByUserSpy.mockResolvedValueOnce([userChallenge1]);
 
     const response = await supertest(app).post('/question/downvoteQuestion').send(mockReqBody);
 
@@ -271,6 +290,7 @@ describe('POST /downvoteQuestion', () => {
     };
 
     addVoteToQuestionSpy.mockResolvedValueOnce(mockResponse);
+    incrementProgressForAskedByUserSpy.mockResolvedValueOnce([userChallenge1]);
 
     let response = await supertest(app).post('/question/downvoteQuestion').send(mockReqBody);
 

@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
-import { User, FakeSOSocket, Notification } from '../types';
+import { User, FakeSOSocket, Notification, RewardUpdatePayload } from '../types';
 import { getUserNotifications } from '../services/userService';
 
+/**
+ * Custom hook to manage the state and logic of FakeStackOverflow.
+ *
+ * @param socket - the WebSocket connection associated with the current user.
+ * @returns user - the user currently logged in
+ * @returns setUser - function to set the currently logged in user
+ */
 const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
   const [user, setUser] = useState<User | null>(null);
 
@@ -42,20 +49,20 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
      * @param reward - The equipped reward.
      * @param type - The type of the reward, either a frame or a title.
      */
-    const handleEquippedRewardUpdate = async ({
-      username,
-      reward,
-      type,
-    }: {
-      username: string;
-      reward: string;
-      type: 'frame' | 'title';
-    }) => {
+    const handleEquippedRewardUpdate = async ({ username, reward, type }: RewardUpdatePayload) => {
       if (user && user.username === username) {
         if (type === 'frame') {
           setUser({ ...user, equippedFrame: reward });
         } else if (type === 'title') {
           setUser({ ...user, equippedTitle: reward });
+        }
+      }
+    };
+
+    const handleUnlockedRewardUpdate = async ({ username, reward, type }: RewardUpdatePayload) => {
+      if (user && user.username === username) {
+        if (type === 'title' && !user.unlockedTitles.some(t => t === reward)) {
+          setUser({ ...user, unlockedTitles: [...user.unlockedTitles, reward] });
         }
       }
     };
@@ -84,6 +91,7 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       socket.on('notificationUpdate', handleNotificationUpdate);
       socket.on('singleNotifUpdate', handleSingleNotifUpdate);
       socket.on('equippedRewardUpdate', handleEquippedRewardUpdate);
+      socket.on('unlockedRewardUpdate', handleUnlockedRewardUpdate);
       socket.on('pointsUpdate', handlePointsUpdate);
     }
 
@@ -92,6 +100,7 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
         socket.off('notificationUpdate', handleNotificationUpdate);
         socket.off('singleNotifUpdate', handleSingleNotifUpdate);
         socket.off('equippedRewardUpdate', handleEquippedRewardUpdate);
+        socket.off('unlockedRewardUpdate', handleUnlockedRewardUpdate);
         socket.off('pointsUpdate', handlePointsUpdate);
       }
     };
