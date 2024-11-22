@@ -21,15 +21,12 @@
   align-items: center;
 }
 
-.profile-container {
-  position: relative;
-  display: inline-block;
-}
-
-.profile-picture {
+.profile-pic-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100px;
   height: 100px;
-  border-radius: 50%;
   overflow: hidden;
 }
 
@@ -75,6 +72,10 @@
 
 .profile_content {
   padding: 32px;
+}
+
+.profile_content h2 {
+  margin-bottom: 16px;
 }
 
 .challenge {

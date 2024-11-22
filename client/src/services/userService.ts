@@ -142,6 +142,11 @@ const markAllNotifsAsRead = async (username: string): Promise<Notification[]> =>
   return res.data;
 };
 
+/**
+ * Fetches the user's equipped frame based on their username.
+ * @param username - the username of the whose frame we want to fetch.
+ * @returns the promise of a string containing the file name of the equipped frame.
+ */
 const getUserFrame = async (username: string): Promise<string> => {
   const res = await api.get(`${USER_API_URL}/getUserFrame/${username}`);
   if (res.status !== 200) {
