@@ -70,12 +70,13 @@
 }
 
 .lastActivity {
-  width: 30%;
+  width: 35%;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
   gap: 4px;
+  padding-left: 16px;
 }
 
 .question_author {

@@ -23,6 +23,7 @@ const useCommunityDetails = (communityId?: string) => {
         const data = await getCommunityDetails(communityId);
         setCommunity(data);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Failed to fetch details for community ID: ${communityId}`, error);
       }
     };

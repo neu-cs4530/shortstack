@@ -41,7 +41,6 @@ import {
   equipReward,
   incrementProgressForAskedByUser,
   addVoteToPollOption,
-  AddQuestionToCommunityModel,
 } from '../models/application';
 import {
   Answer,
