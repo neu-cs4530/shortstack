@@ -73,25 +73,21 @@ const QuestionView = ({ q }: QuestionProps) => {
             </button>
           ))}
         </div>
-      </div>
-      <div className='lastActivity'>
-        <div className='question_author'>{q.askedBy}</div>
-        <div>&nbsp;</div>
-        <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
-      </div>
-      {community && (
-        <div className='question_community'>
-          <span className='community_label'>Community:</span>{' '}
-          <span
-            className='community_link'
+        {community && (
+          <div
+            className='question_community'
             onClick={e => {
               e.stopPropagation();
               navigate(`/community/${community._id}`);
             }}>
-            {community.name}
-          </span>
-        </div>
-      )}
+            <span className='community_label'>Community:</span> {community.name}
+          </div>
+        )}
+      </div>
+      <div className='lastActivity'>
+        <div className='question_author'>{q.askedBy}</div>
+        <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
+      </div>
     </div>
   );
 };
