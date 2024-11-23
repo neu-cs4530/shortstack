@@ -69,9 +69,7 @@ const RewardsView = ({
                   {frame.name === equippedFrame ? 'Equipped' : 'Equip'}
                 </button>
               ) : (
-                <button className='locked_button' onClick={() => () => {}}>
-                  Points: {frame.pointsNeeded}
-                </button>
+                <div className='locked_text'>Points: {frame.pointsNeeded}</div>
               )}
             </li>
           ))}
