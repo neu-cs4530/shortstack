@@ -4,7 +4,7 @@ import useUserContext from '../../../hooks/useUserContext';
 import { Notification, NotificationType, Question } from '../../../types';
 import useVoteStatus from '../../../hooks/useVoteStatus';
 import SubscribeComponent from '../subscribeComponent';
-import { notifyUsers } from '../../../services/userService';
+import { addPoints, notifyUsers } from '../../../services/userService';
 
 /**
  * Interface represents the props for the VoteComponent.
@@ -34,6 +34,7 @@ const VoteComponent = ({ question }: VoteComponentProps) => {
       if (question._id) {
         if (type === 'upvote') {
           await upvoteQuestion(question._id, user.username);
+          await addPoints(question.askedBy, 1);
           const upvoteNotif: Notification = {
             notificationType: NotificationType.Upvote,
             sourceType: 'Question',
