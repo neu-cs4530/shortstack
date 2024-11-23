@@ -151,12 +151,34 @@ describe('Community', () => {
         views: ['user1', 'user2'],
         upVotes: ['user3'],
         downVotes: ['user4'],
-        comments: [new mongoose.Types.ObjectId()],
+        comments: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
         subscribers: ['user5', 'user6'],
         community: mockCommunity,
       };
 
+      const mockPopulatedQuestion = {
+        ...mockUpdatedQuestion,
+        tags: mockUpdatedQuestion.tags.map(tag => ({
+          _id: new mongoose.Types.ObjectId(tag._id),
+          name: tag.name,
+          description: tag.description,
+        })),
+        comments: mockUpdatedQuestion.comments.map(comment => new mongoose.Types.ObjectId(comment)),
+        askDateTime: mockUpdatedQuestion.askDateTime,
+        community: {
+          ...mockCommunity,
+          _id: mockCommunity._id!,
+          questions: mockCommunity.questions.map(q => new mongoose.Types.ObjectId(q._id)),
+          polls: mockCommunity.polls.map(p => new mongoose.Types.ObjectId(p._id)),
+          articles: mockCommunity.articles.map(a => new mongoose.Types.ObjectId(a._id)),
+        },
+      };
+
       addQuestionToCommunityModelSpy.mockResolvedValueOnce(mockUpdatedQuestion);
+
+      const populateDocumentSpy = jest
+        .spyOn(util, 'populateDocument')
+        .mockResolvedValueOnce(mockPopulatedQuestion);
 
       const response = await supertest(app)
         .put(`/community/addQuestionToCommunity/${mockCommunityId.toString()}`)
@@ -167,14 +189,15 @@ describe('Community', () => {
         ...mockUpdatedQuestion,
         _id: mockUpdatedQuestion._id.toString(),
         tags: mockUpdatedQuestion.tags.map(tag => ({
-          ...tag,
           _id: tag._id.toString(),
+          name: tag.name,
+          description: tag.description,
         })),
         comments: mockUpdatedQuestion.comments.map(comment => comment.toString()),
         askDateTime: mockUpdatedQuestion.askDateTime.toISOString(),
         community: {
           ...mockCommunity,
-          _id: mockCommunity._id?.toString(),
+          _id: mockCommunity._id!.toString(),
           questions: mockCommunity.questions.map(q => q.toString()),
           polls: mockCommunity.polls.map(p => p.toString()),
           articles: mockCommunity.articles.map(a => a.toString()),
@@ -184,6 +207,7 @@ describe('Community', () => {
         mockCommunityId.toString(),
         mockQuestionId.toString(),
       );
+      expect(populateDocumentSpy).toHaveBeenCalledWith(mockQuestionId.toString(), 'question');
     });
     it('should return 404 if the community is not found', async () => {
       const mockCommunityId = new mongoose.Types.ObjectId().toString();

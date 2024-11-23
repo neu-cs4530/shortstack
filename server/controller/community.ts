@@ -8,6 +8,7 @@ import {
   fetchCommunityMembersByObjectId,
   saveAndAddArticleToCommunity,
   saveAndAddPollToCommunity,
+  populateDocument,
 } from '../models/application';
 import {
   AddCommunityRequest,
@@ -20,6 +21,7 @@ import {
   Article,
   Poll,
   CreatePollRequest,
+  QuestionResponse,
 } from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
@@ -170,7 +172,16 @@ const communityController = (socket: FakeSOSocket) => {
         throw new Error(updatedQuestion.error);
       }
 
-      socket.emit('questionUpdate', updatedQuestion);
+      // populate tags for the updated question
+      const populatedQuestion = await populateDocument(updatedQuestion._id!.toString(), 'question');
+
+      if (!populatedQuestion || 'error' in populatedQuestion) {
+        throw new Error(
+          populatedQuestion?.error || 'Error populating question with tags and related fields',
+        );
+      }
+
+      socket.emit('questionUpdate', populatedQuestion as QuestionResponse);
       res.status(200).json(updatedQuestion);
     } catch (error) {
       res.status(500).send(`Error adding question to community: ${(error as Error).message}`);
