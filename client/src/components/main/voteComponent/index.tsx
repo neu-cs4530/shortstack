@@ -4,6 +4,7 @@ import useUserContext from '../../../hooks/useUserContext';
 import { Question } from '../../../types';
 import useVoteStatus from '../../../hooks/useVoteStatus';
 import SubscribeComponent from '../subscribeComponent';
+import { addPoints } from '../../../services/userService';
 
 /**
  * Interface represents the props for the VoteComponent.
@@ -33,6 +34,7 @@ const VoteComponent = ({ question }: VoteComponentProps) => {
       if (question._id) {
         if (type === 'upvote') {
           await upvoteQuestion(question._id, user.username);
+          await addPoints(question.askedBy, 1);
         } else if (type === 'downvote') {
           await downvoteQuestion(question._id, user.username);
         }

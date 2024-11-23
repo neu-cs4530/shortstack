@@ -28,6 +28,7 @@ const ProfilePage = () => {
           </div>
           <h3>{user.username}</h3>
           {user.equippedTitle && <p className='equipped-title'>{user.equippedTitle}</p>}
+          Points: {user.totalPoints}
         </div>
         <div className='profile_bar'>
           <button
