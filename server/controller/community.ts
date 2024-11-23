@@ -161,21 +161,24 @@ const communityController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const updatedCommunity = await AddQuestionToCommunityModel(communityId, questionId);
+      const updatedQuestion = await AddQuestionToCommunityModel(communityId, questionId);
 
-      if ('error' in updatedCommunity && updatedCommunity.error === 'Community not found') {
-        res.status(404).send('Community not found');
-        return;
+      if ('error' in updatedQuestion) {
+        if (updatedQuestion.error === 'Community not found') {
+          res.status(404).send('Community not found');
+          return;
+        }
+        if (updatedQuestion.error === 'Question not found') {
+          res.status(404).send('Question not found');
+          return;
+        }
+        throw new Error(updatedQuestion.error);
       }
 
-      if ('error' in updatedCommunity && updatedCommunity.error === 'Question not found') {
-        res.status(404).send('Question not found');
-        return;
-      }
-
-      res.status(200).send(updatedCommunity);
+      socket.emit('questionUpdate', updatedQuestion);
+      res.status(200).json(updatedQuestion);
     } catch (error) {
-      res.status(500).send('Error adding question to community');
+      res.status(500).send(`Error adding question to community: ${(error as Error).message}`);
     }
   };
 

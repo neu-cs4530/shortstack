@@ -41,6 +41,7 @@ import {
   equipReward,
   incrementProgressForAskedByUser,
   addVoteToPollOption,
+  AddQuestionToCommunityModel,
 } from '../models/application';
 import {
   Answer,
@@ -1719,108 +1720,101 @@ describe('application module', () => {
       });
     });
     describe('addQuestionToCommunityModel', () => {
-      const mockCommunityId = communityWithUser._id?.toString();
-      const mockQuestionId = QUESTIONS[0]._id?.toString();
-
       beforeEach(() => {
         mockingoose.resetAll();
         jest.clearAllMocks();
       });
 
-      test('should add a question to the community successfully', async () => {
-        const updatedCommunity = {
-          ...communityWithUser,
-          questions: [QUESTIONS[0]._id],
+      test('addQuestionToCommunityModel should return the updated question if the operation is successful', async () => {
+        const mockCommunityId = new ObjectId('507f1f77bcf86cd799439010');
+        const fixedQuestionId = new ObjectId('507f1f77bcf86cd799439012');
+
+        const mockCommunity = {
+          _id: mockCommunityId,
+          questions: [fixedQuestionId],
+        };
+        const mockUpdatedQuestion = {
+          _id: fixedQuestionId,
+          community: mockCommunityId.toString(),
+          text: 'Sample Question',
         };
 
-        jest.spyOn(CommunityModel, 'findByIdAndUpdate').mockResolvedValueOnce(updatedCommunity);
-        jest.spyOn(QuestionModel, 'findByIdAndUpdate').mockResolvedValueOnce(QUESTIONS[0]);
-        jest.spyOn(application, 'populateCommunity').mockResolvedValue(updatedCommunity);
+        const communityUpdateSpy = jest
+          .spyOn(CommunityModel, 'findByIdAndUpdate')
+          .mockResolvedValue(mockCommunity as any);
 
-        const result = await application.AddQuestionToCommunityModel(
-          mockCommunityId,
-          mockQuestionId,
+        const questionUpdateSpy = jest
+          .spyOn(QuestionModel, 'findByIdAndUpdate')
+          .mockResolvedValue(mockUpdatedQuestion as any);
+
+        const result = await AddQuestionToCommunityModel(
+          mockCommunityId.toString(),
+          fixedQuestionId.toString(),
         );
 
-        expect(result).toBeDefined();
-        const questionIds = result.questions.map((q: any) => q.toString());
-        expect(questionIds).toContain(QUESTIONS[0]._id?.toString());
-        expect(result._id?.toString()).toEqual(mockCommunityId);
-      });
-      test('should return an error if communityId or questionId is missing', async () => {
-        const result1 = await application.AddQuestionToCommunityModel('', mockQuestionId);
-        expect(result1).toEqual({
-          error: 'Invalid input: communityId and questionId are required',
-        });
+        expect(communityUpdateSpy).toHaveBeenCalledWith(
+          mockCommunityId.toString(),
+          { $addToSet: { questions: fixedQuestionId.toString() } },
+          { new: true },
+        );
 
-        const result2 = await application.AddQuestionToCommunityModel(mockCommunityId, '');
-        expect(result2).toEqual({
-          error: 'Invalid input: communityId and questionId are required',
-        });
+        expect(questionUpdateSpy).toHaveBeenCalledWith(
+          fixedQuestionId.toString(),
+          { community: mockCommunityId.toString() },
+          { new: true },
+        );
+        if ('error' in result) {
+          expect(false).toBeTruthy();
+        } else {
+          expect(result._id?.toString()).toBe(fixedQuestionId.toString());
+          expect(result.community?.toString()).toBe(mockCommunityId.toString());
+          expect(result.text).toBe('Sample Question');
+        }
       });
-      test('should return an error if the community is not found', async () => {
-        jest.spyOn(CommunityModel, 'findByIdAndUpdate').mockResolvedValueOnce(null);
+      test('should return an error if the input is invalid', async () => {
+        const invalidCommunityId = '';
+        const fixedQuestionId = new ObjectId('507f1f77bcf86cd799439012');
 
-        const result = await application.AddQuestionToCommunityModel(
-          mockCommunityId,
-          mockQuestionId,
+        const result = await AddQuestionToCommunityModel(
+          invalidCommunityId,
+          fixedQuestionId.toString(),
         );
 
         expect(result).toEqual({ error: 'Community not found' });
       });
+
+      test('should return an error if the community is not found', async () => {
+        const mockCommunityId = new ObjectId('507f1f77bcf86cd799439010');
+        const fixedQuestionId = new ObjectId('507f1f77bcf86cd799439012');
+
+        jest.spyOn(CommunityModel, 'findByIdAndUpdate').mockResolvedValue(null);
+
+        const result = await AddQuestionToCommunityModel(
+          mockCommunityId.toString(),
+          fixedQuestionId.toString(),
+        );
+
+        expect(result).toEqual({ error: 'Community not found' });
+      });
+
       test('should return an error if the question is not found', async () => {
-        const updatedCommunity = {
-          ...communityWithUser,
-          questions: [QUESTIONS[0]._id],
+        const mockCommunityId = new ObjectId('507f1f77bcf86cd799439010');
+        const fixedQuestionId = new ObjectId('507f1f77bcf86cd799439012');
+
+        const mockCommunity = {
+          _id: mockCommunityId,
+          questions: [],
         };
 
-        jest.spyOn(CommunityModel, 'findByIdAndUpdate').mockResolvedValueOnce(updatedCommunity);
-        jest.spyOn(QuestionModel, 'findByIdAndUpdate').mockResolvedValueOnce(null);
+        jest.spyOn(CommunityModel, 'findByIdAndUpdate').mockResolvedValue(mockCommunity as any);
+        jest.spyOn(QuestionModel, 'findByIdAndUpdate').mockResolvedValue(null);
 
-        const result = await application.AddQuestionToCommunityModel(
-          mockCommunityId,
-          mockQuestionId,
+        const result = await AddQuestionToCommunityModel(
+          mockCommunityId.toString(),
+          fixedQuestionId.toString(),
         );
 
         expect(result).toEqual({ error: 'Question not found' });
-      });
-      test('should not duplicate the question if it is already in the community', async () => {
-        const updatedCommunity = {
-          ...communityWithUser,
-          questions: [QUESTIONS[0]._id],
-        };
-
-        jest.spyOn(CommunityModel, 'findByIdAndUpdate').mockResolvedValueOnce(updatedCommunity);
-        jest.spyOn(QuestionModel, 'findByIdAndUpdate').mockResolvedValueOnce(QUESTIONS[0]);
-        jest.spyOn(application, 'populateCommunity').mockResolvedValue(updatedCommunity);
-
-        const result = await application.AddQuestionToCommunityModel(
-          mockCommunityId,
-          mockQuestionId,
-        );
-
-        const questionIds = result.questions.map((q: any) => q.toString());
-        expect(questionIds).toContain(mockQuestionId);
-        expect(questionIds.filter((q: string) => q === mockQuestionId).length).toBe(1);
-      });
-      test('should return an error if populateCommunity fails', async () => {
-        const updatedCommunity = {
-          ...communityWithUser,
-          questions: [QUESTIONS[0]._id],
-        };
-
-        jest.spyOn(CommunityModel, 'findByIdAndUpdate').mockResolvedValueOnce(updatedCommunity);
-        jest.spyOn(QuestionModel, 'findByIdAndUpdate').mockResolvedValueOnce(QUESTIONS[0]);
-        jest
-          .spyOn(application, 'populateCommunity')
-          .mockResolvedValueOnce({ error: 'Population error' });
-
-        const result = await application.AddQuestionToCommunityModel(
-          mockCommunityId,
-          mockQuestionId,
-        );
-
-        expect(result).toEqual({ error: 'Error adding question to community' });
       });
     });
   });

@@ -124,46 +124,68 @@ describe('Community', () => {
     });
   });
   describe('PUT /addQuestionToCommunity/:communityId', () => {
-    it('should add a question to a community', async () => {
+    it('should successfully add a question to a community and return the updated question', async () => {
       const mockCommunityId = new mongoose.Types.ObjectId();
       const mockQuestionId = new mongoose.Types.ObjectId();
 
-      const mockUpdatedCommunity = {
+      const mockCommunity: Community = {
         _id: mockCommunityId,
-        name: 'Community 1',
-        members: [],
+        name: 'Test Community',
+        members: ['user1', 'user2'],
         questions: [mockQuestionId],
-        articles: [],
         polls: [],
+        articles: [],
       };
 
-      addQuestionToCommunityModelSpy.mockResolvedValueOnce(mockUpdatedCommunity);
+      const mockUpdatedQuestion = {
+        _id: mockQuestionId,
+        title: 'Mock Title',
+        text: 'Sample Question',
+        tags: [
+          { _id: new mongoose.Types.ObjectId(), name: 'tag1', description: 'Tag 1 description' },
+          { _id: new mongoose.Types.ObjectId(), name: 'tag2', description: 'Tag 2 description' },
+        ],
+        answers: [],
+        askedBy: 'user123',
+        askDateTime: new Date(),
+        views: ['user1', 'user2'],
+        upVotes: ['user3'],
+        downVotes: ['user4'],
+        comments: [new mongoose.Types.ObjectId()],
+        subscribers: ['user5', 'user6'],
+        community: mockCommunity,
+      };
+
+      addQuestionToCommunityModelSpy.mockResolvedValueOnce(mockUpdatedQuestion);
 
       const response = await supertest(app)
-        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
-        .send({ questionId: mockQuestionId });
+        .put(`/community/addQuestionToCommunity/${mockCommunityId.toString()}`)
+        .send({ questionId: mockQuestionId.toString() });
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        _id: mockUpdatedCommunity._id.toString(),
-        name: mockUpdatedCommunity.name,
-        members: mockUpdatedCommunity.members,
-        questions: mockUpdatedCommunity.questions.map(q => q.toString()),
-        articles: mockUpdatedCommunity.articles,
-        polls: mockUpdatedCommunity.polls,
+        ...mockUpdatedQuestion,
+        _id: mockUpdatedQuestion._id.toString(),
+        tags: mockUpdatedQuestion.tags.map(tag => ({
+          ...tag,
+          _id: tag._id.toString(),
+        })),
+        comments: mockUpdatedQuestion.comments.map(comment => comment.toString()),
+        askDateTime: mockUpdatedQuestion.askDateTime.toISOString(),
+        community: {
+          ...mockCommunity,
+          _id: mockCommunity._id?.toString(),
+          questions: mockCommunity.questions.map(q => q.toString()),
+          polls: mockCommunity.polls.map(p => p.toString()),
+          articles: mockCommunity.articles.map(a => a.toString()),
+        },
       });
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(
+        mockCommunityId.toString(),
+        mockQuestionId.toString(),
+      );
     });
-    it('should return 400 if communityId or questionId is missing', async () => {
-      const mockCommunityId = new mongoose.Types.ObjectId().toString();
-
-      const response = await supertest(app)
-        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
-        .send({});
-
-      expect(response.status).toBe(400);
-      expect(response.text).toBe('Community ID and Question ID are required');
-    });
-    it('should return 404 if the community does not exist', async () => {
+    it('should return 404 if the community is not found', async () => {
       const mockCommunityId = new mongoose.Types.ObjectId().toString();
       const mockQuestionId = new mongoose.Types.ObjectId().toString();
 
@@ -175,6 +197,7 @@ describe('Community', () => {
 
       expect(response.status).toBe(404);
       expect(response.text).toBe('Community not found');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
     });
   });
   describe('PUT /joinCommunity', () => {

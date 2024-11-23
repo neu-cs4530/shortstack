@@ -57,6 +57,29 @@ const useCommunityPage = () => {
 
   useEffect(() => {
     /**
+     * Updates the question list when a new question is added.
+     * @param question - The newly added question
+     */
+    const handleQuestionAdded = (question: Question) => {
+      setQuestions(prevQuestions => {
+        // Check if the question already exists in the state
+        if (prevQuestions.some(q => q._id === question._id)) {
+          return prevQuestions; // If it exists, return the previous state
+        }
+        return [...prevQuestions, question];
+      });
+    };
+
+    // Use a clear and consistent event name
+    socket.on('questionUpdate', handleQuestionAdded);
+
+    return () => {
+      socket.off('questionUpdate', handleQuestionAdded);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    /**
      * Function to update the appropriate article in the list if an articleUpdate socket event is received.
      * @param article - The article from the event
      */
