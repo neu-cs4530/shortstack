@@ -155,11 +155,6 @@ const communityController = (socket: FakeSOSocket) => {
     const { communityId } = req.params;
     const { questionId } = req.body;
 
-    if (!communityId || !questionId) {
-      res.status(400).send('Community ID and Question ID are required');
-      return;
-    }
-
     try {
       const updatedQuestion = await AddQuestionToCommunityModel(communityId, questionId);
 

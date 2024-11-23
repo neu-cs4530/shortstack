@@ -199,6 +199,50 @@ describe('Community', () => {
       expect(response.text).toBe('Community not found');
       expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
     });
+    it('should return 404 if the community is not found', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+      const mockQuestionId = new mongoose.Types.ObjectId().toString();
+
+      addQuestionToCommunityModelSpy.mockResolvedValueOnce({ error: 'Community not found' });
+
+      const response = await supertest(app)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .send({ questionId: mockQuestionId });
+
+      expect(response.status).toBe(404);
+      expect(response.text).toBe('Community not found');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
+    });
+
+    it('should return 404 if the question is not found', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+      const mockQuestionId = new mongoose.Types.ObjectId().toString();
+
+      addQuestionToCommunityModelSpy.mockResolvedValueOnce({ error: 'Question not found' });
+
+      const response = await supertest(app)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .send({ questionId: mockQuestionId });
+
+      expect(response.status).toBe(404);
+      expect(response.text).toBe('Question not found');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
+    });
+
+    it('should return 500 if an unexpected error occurs', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+      const mockQuestionId = new mongoose.Types.ObjectId().toString();
+
+      addQuestionToCommunityModelSpy.mockRejectedValueOnce(new Error('Unexpected error'));
+
+      const response = await supertest(app)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .send({ questionId: mockQuestionId });
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('Error adding question to community: Unexpected error');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
+    });
   });
   describe('PUT /joinCommunity', () => {
     it('should return 200 status if the user is successfully added to the community', async () => {
