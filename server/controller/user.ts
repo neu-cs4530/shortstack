@@ -4,9 +4,11 @@ import {
   AddUserRequest,
   EquipRewardRequest,
   FakeSOSocket,
+  FRAMES,
   NewNotificationRequest,
   Notification,
   User,
+  UserResponse,
 } from '../types';
 import {
   findUser,
@@ -18,6 +20,7 @@ import {
   usersToNotify,
   updateUserNotifsAsRead,
   equipReward,
+  updateUsersUnlockedFrames,
 } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
@@ -115,7 +118,8 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Adds points to a user to the database.
+   * Adds points to a user to the database. If a user has reached the threshold to unlock
+   * a new frame, the frame is added to the user's unlockedFrames.
    * If there is an error, the HTTP response's status is updated.
    *
    * @param req The AddPointsRequest object containing user data and number of points to add.
@@ -132,11 +136,41 @@ const userController = (socket: FakeSOSocket) => {
     const { username, numPoints } = req.body;
 
     try {
-      const updatedUser = await addPointsToUser(username, numPoints);
-      if (updatedUser && 'error' in updatedUser) {
+      const updatedPoints = await addPointsToUser(username, numPoints);
+      if ('error' in updatedPoints) {
+        throw new Error(updatedPoints.error as string);
+      }
+
+      // check if the user has unlocked a new frame, update user's frames if they have.
+      const newUnlockedFrames = FRAMES.filter(
+        frame =>
+          frame.pointsNeeded <= updatedPoints.totalPoints &&
+          !updatedPoints.unlockedFrames.includes(frame.name),
+      ).map(frame => frame.name);
+
+      let updatedUser: UserResponse;
+      if (newUnlockedFrames.length) {
+        updatedUser = await updateUsersUnlockedFrames(username, newUnlockedFrames);
+      } else {
+        updatedUser = updatedPoints;
+      }
+      if ('error' in updatedUser) {
         throw new Error(updatedUser.error as string);
       }
 
+      if (newUnlockedFrames.length) {
+        socket.emit('unlockedRewardUpdate', {
+          username,
+          rewards: newUnlockedFrames,
+          type: 'frame',
+        });
+      }
+
+      socket.emit('pointsUpdate', {
+        username,
+        pointsAdded: numPoints,
+        totalPoints: updatedUser.totalPoints,
+      });
       res.json(updatedUser);
     } catch (error) {
       res.status(500).send('Error when adding points to user');

@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { User, FakeSOSocket, Notification, RewardUpdatePayload, NotificationType } from '../types';
+import {
+  User,
+  FakeSOSocket,
+  Notification,
+  NotificationType,
+  EquippedRewardUpdatePayload,
+  UnlockedRewardUpdatePayload,
+} from '../types';
 import { getUserNotifications, notifyUsers } from '../services/userService';
 
 /**
@@ -49,7 +56,11 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
      * @param reward - The equipped reward.
      * @param type - The type of the reward, either a frame or a title.
      */
-    const handleEquippedRewardUpdate = async ({ username, reward, type }: RewardUpdatePayload) => {
+    const handleEquippedRewardUpdate = async ({
+      username,
+      reward,
+      type,
+    }: EquippedRewardUpdatePayload) => {
       if (user && user.username === username) {
         if (type === 'frame') {
           setUser({ ...user, equippedFrame: reward });
@@ -59,10 +70,17 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       }
     };
 
-    const handleUnlockedRewardUpdate = async ({ username, reward, type }: RewardUpdatePayload) => {
+    const handleUnlockedRewardUpdate = async ({
+      username,
+      rewards,
+      type,
+    }: UnlockedRewardUpdatePayload) => {
       if (user && user.username === username) {
-        if (type === 'title' && !user.unlockedTitles.some(t => t === reward)) {
-          setUser({ ...user, unlockedTitles: [...user.unlockedTitles, reward] });
+        if (type === 'title' && !user.unlockedTitles.some(t => rewards.includes(t))) {
+          setUser({ ...user, unlockedTitles: [...user.unlockedTitles, ...rewards] });
+        }
+        if (type === 'frame' && !user.unlockedFrames.some(t => rewards.includes(t))) {
+          setUser({ ...user, unlockedFrames: [...user.unlockedFrames, ...rewards] });
         }
         const notif: Notification = {
           notificationType: NotificationType.NewReward,
@@ -74,11 +92,32 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       }
     };
 
+    /**
+     * Function to handle user point updates from the socket.
+     *
+     * @param username - The user who's points were updated.
+     * @param pointsAdded - The number of points added.
+     * @param totalPoints - The user's total points.
+     */
+    const handlePointsUpdate = async ({
+      username,
+      totalPoints,
+    }: {
+      username: string;
+      pointsAdded: number;
+      totalPoints: number;
+    }) => {
+      if (user && user.username === username) {
+        setUser({ ...user, totalPoints });
+      }
+    };
+
     if (socket) {
       socket.on('notificationUpdate', handleNotificationUpdate);
       socket.on('singleNotifUpdate', handleSingleNotifUpdate);
       socket.on('equippedRewardUpdate', handleEquippedRewardUpdate);
       socket.on('unlockedRewardUpdate', handleUnlockedRewardUpdate);
+      socket.on('pointsUpdate', handlePointsUpdate);
     }
 
     return () => {
@@ -87,6 +126,7 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
         socket.off('singleNotifUpdate', handleSingleNotifUpdate);
         socket.off('equippedRewardUpdate', handleEquippedRewardUpdate);
         socket.off('unlockedRewardUpdate', handleUnlockedRewardUpdate);
+        socket.off('pointsUpdate', handlePointsUpdate);
       }
     };
   }, [socket, user]);

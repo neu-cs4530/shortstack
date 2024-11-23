@@ -206,7 +206,7 @@ const questionController = (socket: FakeSOSocket) => {
             if (uc.progress.length >= uc.challenge.actionAmount) {
               socket.emit('unlockedRewardUpdate', {
                 username: incrementProgressResponse[0].username,
-                reward: uc.challenge.reward,
+                rewards: [uc.challenge.reward],
                 type: 'title', // all challenge rewards are titles
               });
             }
