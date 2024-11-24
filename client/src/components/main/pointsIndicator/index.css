@@ -4,18 +4,10 @@
   gap: 16px;
   align-items: center;
   justify-content: center;
-  background-color: white;
-  border: 1px solid #e0e0e0;
+  background-color: #9a5e1a;
   border-radius: 8px;
   width: fit-content;
   padding: 0px 40px 0px 40px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.indicator-container h5 {
-  color: green;
-}
-
-.indicator-container .medal-icon {
-  color: green;
+  color: white;
 }
