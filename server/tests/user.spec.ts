@@ -64,6 +64,18 @@ const mockNewUserWithNotif: User = {
   notifications: [mockRewardNotif],
 };
 
+const mockUserWithEquippedFrame: User = {
+  _id: new mongoose.Types.ObjectId(),
+  username: 'UserA',
+  password: 'abc123',
+  totalPoints: 0,
+  unlockedFrames: ['profile_frames-01.png', 'profile_frames-02.png'],
+  unlockedTitles: [],
+  equippedFrame: 'profile_frames-02.png',
+  equippedTitle: '',
+  notifications: [],
+};
+
 describe('User API', () => {
   afterEach(async () => {
     await mongoose.connection.close(); // Ensure the connection is properly closed
@@ -612,6 +624,26 @@ describe('User API', () => {
 
       expect(response.status).toBe(500);
       expect(response.text).toEqual('Error while marking all notifs of user as read');
+    });
+  });
+
+  describe('GET /getUserFrame/:username', () => {
+    it(`should return a String with the user's equipped frame when given a valid username`, async () => {
+      findUserSpy.mockResolvedValueOnce(mockUserWithEquippedFrame);
+      const response = await supertest(app).get(
+        `/user/getUserFrame/${mockUserWithEquippedFrame.username}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual('profile_frames-02.png');
+    });
+
+    it('should return a 500 error when findUser returns null', async () => {
+      findUserSpy.mockResolvedValueOnce(null);
+      const response = await supertest(app).get(`/user/getUserFrame/invalidusername`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toEqual('Error when fetching equipped frame for user: invalidusername');
     });
   });
 });
