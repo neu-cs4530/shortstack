@@ -19,6 +19,7 @@ import {
   populateDocument,
   saveQuestion,
   addSubscriberToQuestion,
+  incrementProgressForAskedByUser,
 } from '../models/application';
 
 const questionController = (socket: FakeSOSocket) => {
@@ -184,15 +185,33 @@ const questionController = (socket: FakeSOSocket) => {
     const { qid, username } = req.body;
 
     try {
-      let status;
-      if (type === 'upvote') {
-        status = await addVoteToQuestion(qid, username, type);
-      } else {
-        status = await addVoteToQuestion(qid, username, type);
-      }
+      const status = await addVoteToQuestion(qid, username, type);
 
       if (status && 'error' in status) {
         throw new Error(status.error as string);
+      }
+
+      if (status.msg === 'Question upvoted successfully') {
+        const incrementProgressResponse = await incrementProgressForAskedByUser(qid);
+        if ('error' in incrementProgressResponse) {
+          throw new Error(incrementProgressResponse.error);
+        }
+
+        if (incrementProgressResponse.length > 0) {
+          // emit socket event telling user they received an upvote
+          socket.emit('upvoteReceived', incrementProgressResponse[0].username);
+          // emit socket event with rewards of completed challenges
+          incrementProgressResponse.forEach(uc => {
+            // TODO: if a challenge is completed, send a notification to the user
+            if (uc.progress.length >= uc.challenge.actionAmount) {
+              socket.emit('unlockedRewardUpdate', {
+                username: incrementProgressResponse[0].username,
+                rewards: [uc.challenge.reward],
+                type: 'title', // all challenge rewards are titles
+              });
+            }
+          });
+        }
       }
 
       // Emit the updated vote counts to all connected clients

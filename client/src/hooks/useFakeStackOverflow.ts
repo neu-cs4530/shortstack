@@ -1,7 +1,20 @@
 import { useEffect, useState } from 'react';
-import { User, FakeSOSocket, Notification } from '../types';
+import {
+  User,
+  FakeSOSocket,
+  Notification,
+  EquippedRewardUpdatePayload,
+  UnlockedRewardUpdatePayload,
+} from '../types';
 import { getUserNotifications } from '../services/userService';
 
+/**
+ * Custom hook to manage the state and logic of FakeStackOverflow.
+ *
+ * @param socket - the WebSocket connection associated with the current user.
+ * @returns user - the user currently logged in
+ * @returns setUser - function to set the currently logged in user
+ */
 const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
   const [user, setUser] = useState<User | null>(null);
 
@@ -46,11 +59,7 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       username,
       reward,
       type,
-    }: {
-      username: string;
-      reward: string;
-      type: 'frame' | 'title';
-    }) => {
+    }: EquippedRewardUpdatePayload) => {
       if (user && user.username === username) {
         if (type === 'frame') {
           setUser({ ...user, equippedFrame: reward });
@@ -60,10 +69,47 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       }
     };
 
+    const handleUnlockedRewardUpdate = async ({
+      username,
+      rewards,
+      type,
+    }: UnlockedRewardUpdatePayload) => {
+      if (user && user.username === username) {
+        if (type === 'title' && !user.unlockedTitles.some(t => rewards.includes(t))) {
+          setUser({ ...user, unlockedTitles: [...user.unlockedTitles, ...rewards] });
+        }
+        if (type === 'frame' && !user.unlockedFrames.some(t => rewards.includes(t))) {
+          setUser({ ...user, unlockedFrames: [...user.unlockedFrames, ...rewards] });
+        }
+      }
+    };
+
+    /**
+     * Function to handle user point updates from the socket.
+     *
+     * @param username - The user who's points were updated.
+     * @param pointsAdded - The number of points added.
+     * @param totalPoints - The user's total points.
+     */
+    const handlePointsUpdate = async ({
+      username,
+      totalPoints,
+    }: {
+      username: string;
+      pointsAdded: number;
+      totalPoints: number;
+    }) => {
+      if (user && user.username === username) {
+        setUser({ ...user, totalPoints });
+      }
+    };
+
     if (socket) {
       socket.on('notificationUpdate', handleNotificationUpdate);
       socket.on('singleNotifUpdate', handleSingleNotifUpdate);
       socket.on('equippedRewardUpdate', handleEquippedRewardUpdate);
+      socket.on('unlockedRewardUpdate', handleUnlockedRewardUpdate);
+      socket.on('pointsUpdate', handlePointsUpdate);
     }
 
     return () => {
@@ -71,6 +117,8 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
         socket.off('notificationUpdate', handleNotificationUpdate);
         socket.off('singleNotifUpdate', handleSingleNotifUpdate);
         socket.off('equippedRewardUpdate', handleEquippedRewardUpdate);
+        socket.off('unlockedRewardUpdate', handleUnlockedRewardUpdate);
+        socket.off('pointsUpdate', handlePointsUpdate);
       }
     };
   }, [socket, user]);

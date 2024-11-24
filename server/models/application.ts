@@ -632,6 +632,34 @@ export const addPointsToUser = async (
   }
 };
 
+/**
+ * Updates a user's unlocked frames by adding the given list of frames to the
+ * user's unlockedFrames.
+ *
+ * @param {string} username - The username of the user.
+ * @param {number} frames - The unlocked frames to add.
+ *
+ * @returns {Promise<UserResponse>} - The updated user, or an error message if the update failed
+ */
+export const updateUsersUnlockedFrames = async (
+  username: string,
+  frames: string[],
+): Promise<UserResponse> => {
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $push: { unlockedFrames: { $each: frames } } },
+      { new: true },
+    );
+    if (!result) {
+      return { error: 'User not found' };
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding unlocked frame to a user' };
+  }
+};
+
 // Given answered Question ID, notify question.askedBy and question subscribers
 const usersToNotifyOnNewAnswer = async (qid: string): Promise<string[]> => {
   const question = await QuestionModel.findOne({ _id: qid });
@@ -1468,7 +1496,7 @@ const distributeRewardsIfChallengeComplete = async (
       await UserModel.findOneAndUpdate(
         { username: uc.username },
         {
-          $push: { unlockedTitles: uc.challenge.reward },
+          $addToSet: { unlockedTitles: uc.challenge.reward },
         },
       );
     }
@@ -1614,6 +1642,38 @@ export const fetchAndIncrementChallengesByUserAndType = async (
     });
 
     const updatedUserChallenges: UserChallenge[] = await Promise.all(updatePromises);
+
+    return updatedUserChallenges;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+};
+
+/**
+ * Adds progress to upvote-related challenges for the user who asked the question with the question ID
+ *
+ * @param qid - The ID of the question to get the askedBy user from.
+ * @returns - A username of the user whose progress was updated, or an error if the operation failed
+ */
+export const incrementProgressForAskedByUser = async (
+  qid: string,
+): Promise<UserChallenge[] | { error: string }> => {
+  try {
+    const question = await QuestionModel.findOne({ _id: qid });
+
+    if (!question) {
+      throw new Error('Question not found');
+    }
+
+    // increment upvote-related challenges for user
+    const updatedUserChallenges = await fetchAndIncrementChallengesByUserAndType(
+      question.askedBy,
+      'upvote',
+    );
+
+    if ('error' in updatedUserChallenges) {
+      throw new Error(updatedUserChallenges.error);
+    }
 
     return updatedUserChallenges;
   } catch (error) {

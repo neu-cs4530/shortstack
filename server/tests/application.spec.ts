@@ -39,7 +39,9 @@ import {
   addSubscriberToQuestion,
   fetchPollById,
   equipReward,
+  incrementProgressForAskedByUser,
   addVoteToPollOption,
+  updateUsersUnlockedFrames,
 } from '../models/application';
 import {
   Answer,
@@ -1264,6 +1266,61 @@ describe('application module', () => {
       });
     });
 
+    describe('updateUsersUnlockedFrames', () => {
+      test('updateUsersUnlockedFrames should return the updated user', async () => {
+        mockingoose(UserModel).toReturn(
+          { ...newUser, unlockedFrames: ['frame1'] },
+          'findOneAndUpdate',
+        );
+        const result = (await updateUsersUnlockedFrames('ValidUserId', ['frame1'])) as User;
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.unlockedFrames).toEqual(['frame1']);
+      });
+
+      test('updateUsersUnlockedFrames with more than one frame adds all to user', async () => {
+        // more of an insurance test as mongoose's $push and $each takes care of adding items from list
+        mockingoose(UserModel).toReturn(
+          { ...newUser, unlockedFrames: ['frame1', 'frame2', 'frame3'] },
+          'findOneAndUpdate',
+        );
+        const result = (await updateUsersUnlockedFrames('ValidUserId', [
+          'frame1',
+          'frame2',
+          'frame3',
+        ])) as User;
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.unlockedFrames).toContain('frame1');
+        expect(result.unlockedFrames).toContain('frame2');
+        expect(result.unlockedFrames).toContain('frame3');
+      });
+
+      test('updateUsersUnlockedFrames should return an object with error if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+        const result = await updateUsersUnlockedFrames('ValidUserId', ['frame1']);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('updateUsersUnlockedFrames should return an object with error if findOneAndUpdate returns an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
+        const result = await updateUsersUnlockedFrames('ValidUserId', ['frame1']);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+
     describe('equipReward', () => {
       test('equipReward with type frame should update user reward and return username, reward type, and equipped reward', async () => {
         mockingoose(UserModel).toReturn(
@@ -2373,7 +2430,7 @@ describe('application module', () => {
         expect(userRewardsUpdateSpy).toHaveBeenCalledWith(
           { username: userA.username },
           {
-            $push: { unlockedTitles: challenge1.reward },
+            $addToSet: { unlockedTitles: challenge1.reward },
           },
         );
       });
@@ -2439,6 +2496,54 @@ describe('application module', () => {
 
         if ('error' in result) {
           expect(result.error).toBe('User not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+
+    describe('incrementProgressForAskedByUser', () => {
+      let fetchAndIncrementChallengesByUserAndTypeSpy: jest.SpyInstance;
+      beforeEach(() => {
+        fetchAndIncrementChallengesByUserAndTypeSpy = jest.spyOn(
+          application,
+          'fetchAndIncrementChallengesByUserAndType',
+        );
+      });
+      test('should increment a users upvote-related challenges', async () => {
+        const mockQuestion = QUESTIONS[0];
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        fetchAndIncrementChallengesByUserAndTypeSpy.mockResolvedValueOnce([userChallenge1]);
+
+        const response = (await incrementProgressForAskedByUser(
+          mockQuestion._id!.toString(),
+        )) as UserChallenge[];
+
+        expect(response.length).toBe(1);
+      });
+      test('should return an error if the question is not found', async () => {
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+
+        const response = await incrementProgressForAskedByUser(new ObjectId().toString());
+
+        if ('error' in response) {
+          expect(response.error).toBe('Question not found');
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+      test('should return an error if incrementing progress for the users challenges fails', async () => {
+        const mockQuestion = QUESTIONS[0];
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        fetchAndIncrementChallengesByUserAndTypeSpy.mockResolvedValueOnce({
+          error: 'incrementChallengesError',
+        });
+
+        const response = await incrementProgressForAskedByUser(mockQuestion._id!.toString());
+        if ('error' in response) {
+          expect(response.error).toBe('incrementChallengesError');
         } else {
           expect(false).toBeTruthy();
         }
