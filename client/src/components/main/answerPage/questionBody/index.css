@@ -1,7 +1,7 @@
 .questionBody {
   display: flex;
   flex-direction: row;
-  /* justify-content: space-between;  */
+  gap: 24px;
   margin-top: 5%;
   border-bottom: #000000 1px dashed;
 }
