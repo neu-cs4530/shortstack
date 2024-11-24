@@ -3,11 +3,12 @@ import supertest from 'supertest';
 import { ObjectId } from 'mongodb';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Article, Notification, NotificationType, Poll, User } from '../types';
+import { Article, FRAMES, Notification, NotificationType, Poll, User } from '../types';
 
 const saveUserSpy = jest.spyOn(util, 'saveUser');
 const findUserSpy = jest.spyOn(util, 'findUser');
 const addPointsToUserSpy = jest.spyOn(util, 'addPointsToUser');
+const updateUsersUnlockedFramesSpy = jest.spyOn(util, 'updateUsersUnlockedFrames');
 const equipRewardSpy = jest.spyOn(util, 'equipReward');
 const usersToNotifySpy = jest.spyOn(util, 'usersToNotify');
 const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
@@ -185,12 +186,12 @@ describe('User API', () => {
       await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
     });
 
-    it('should return the user with points added', async () => {
+    it('should return the user with points added when no frame is unlocked', async () => {
       const mockReqBody = {
         username: 'UserA',
-        numPoints: 10,
+        numPoints: 5,
       };
-      addPointsToUserSpy.mockResolvedValueOnce({ ...mockNewUser, totalPoints: 10 });
+      addPointsToUserSpy.mockResolvedValueOnce({ ...mockNewUser, totalPoints: 5 });
       // Making the request
       const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
 
@@ -199,7 +200,37 @@ describe('User API', () => {
       expect(response.body).toEqual({
         _id: mockNewUser._id?.toString(),
         ...newUser,
-        totalPoints: 10,
+        totalPoints: 5,
+      });
+    });
+
+    it('should return the user with points and updated unlocked frames when frame is unlocked', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        numPoints: FRAMES[0].pointsNeeded,
+      };
+
+      addPointsToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        totalPoints: FRAMES[0].pointsNeeded,
+      });
+      updateUsersUnlockedFramesSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        totalPoints: FRAMES[0].pointsNeeded,
+        unlockedFrames: [FRAMES[0].name],
+      });
+
+      // Making the request
+      const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(updateUsersUnlockedFramesSpy).toHaveBeenCalledWith('UserA', [FRAMES[0].name]);
+      expect(response.body).toEqual({
+        _id: mockNewUser._id?.toString(),
+        ...newUser,
+        totalPoints: FRAMES[0].pointsNeeded,
+        unlockedFrames: [FRAMES[0].name],
       });
     });
 
@@ -231,6 +262,25 @@ describe('User API', () => {
         numPoints: 10,
       };
       addPointsToUserSpy.mockResolvedValueOnce({ error: 'Error when adding points to a user' });
+      // Making the request
+      const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
+    });
+
+    it('should return 500 if error object returned by `updateUsersUnlockedFrames`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        numPoints: FRAMES[0].pointsNeeded,
+      };
+
+      addPointsToUserSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        totalPoints: FRAMES[0].pointsNeeded,
+      });
+      updateUsersUnlockedFramesSpy.mockResolvedValueOnce({ error: 'error updating frames' });
+
       // Making the request
       const response = await supertest(app).post('/user/addPoints').send(mockReqBody);
 

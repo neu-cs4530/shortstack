@@ -632,6 +632,34 @@ export const addPointsToUser = async (
   }
 };
 
+/**
+ * Updates a user's unlocked frames by adding the given list of frames to the
+ * user's unlockedFrames.
+ *
+ * @param {string} username - The username of the user.
+ * @param {number} frames - The unlocked frames to add.
+ *
+ * @returns {Promise<UserResponse>} - The updated user, or an error message if the update failed
+ */
+export const updateUsersUnlockedFrames = async (
+  username: string,
+  frames: string[],
+): Promise<UserResponse> => {
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $push: { unlockedFrames: { $each: frames } } },
+      { new: true },
+    );
+    if (!result) {
+      return { error: 'User not found' };
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding unlocked frame to a user' };
+  }
+};
+
 // Given answered Question ID, notify question.askedBy and question subscribers
 const usersToNotifyOnNewAnswer = async (qid: string): Promise<string[]> => {
   const question = await QuestionModel.findOne({ _id: qid });
@@ -1630,7 +1658,6 @@ export const fetchAndIncrementChallengesByUserAndType = async (
 
 /**
  * Adds progress to upvote-related challenges for the user who asked the question with the question ID
- * Adds points for the upvote to the user who asked the question with the question ID
  *
  * @param qid - The ID of the question to get the askedBy user from.
  * @returns - A username of the user whose progress was updated, or an error if the operation failed
@@ -1643,13 +1670,6 @@ export const incrementProgressForAskedByUser = async (
 
     if (!question) {
       throw new Error('Question not found');
-    }
-
-    // add points to user
-    const addPointsResponse = await addPointsToUser(question.askedBy, 1);
-
-    if ('error' in addPointsResponse) {
-      throw new Error('Failed to add points to user for upvote');
     }
 
     // increment upvote-related challenges for user
