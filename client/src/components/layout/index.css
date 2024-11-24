@@ -64,4 +64,5 @@
   position: absolute;
   right: 40px;
   margin-top: 24px;
+  z-index: 1;
 }

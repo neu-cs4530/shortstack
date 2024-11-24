@@ -40,7 +40,7 @@ const useLayout = () => {
         socket.off('pointsUpdate', handlePointsUpdate);
       }
     };
-  }, [socket]);
+  }, [socket, user]);
 
   return { points };
 };
