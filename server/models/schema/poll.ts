@@ -10,6 +10,7 @@ import { Schema } from 'mongoose';
  * - `createdBy`: The username of the user that created the poll.
  * - `pollDateTime`: The date and time when the poll was posted.
  * - `pollDueDate` : The date and time when the poll stops accepting votes.
+ * - `isClosed` : Whether or not the poll has been closed.
  */
 const pollSchema: Schema = new Schema(
   {
@@ -28,6 +29,9 @@ const pollSchema: Schema = new Schema(
     },
     pollDueDate: {
       type: Date,
+    },
+    isClosed: {
+      type: Boolean,
     },
   },
   { collection: 'Poll' },

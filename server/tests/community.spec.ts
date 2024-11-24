@@ -467,6 +467,7 @@ describe('Community', () => {
         createdBy: 'user123',
         pollDateTime: new Date(),
         pollDueDate: new Date(),
+        isClosed: false,
       };
 
       saveAndAddPollToCommunitySpy.mockResolvedValueOnce(expectedPoll);

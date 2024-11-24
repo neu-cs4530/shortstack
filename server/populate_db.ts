@@ -279,6 +279,7 @@ async function pollOptionCreate(
  * @param createdBy
  * @param pollDateTime
  * @param pollDueDate
+ * @param isClosed
  * @returns A Promise that resolves to the created Poll document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -288,6 +289,7 @@ async function pollCreate(
   createdBy: string,
   pollDateTime: Date,
   pollDueDate: Date,
+  isClosed: boolean,
 ): Promise<Poll> {
   if (
     title === '' ||
@@ -303,6 +305,7 @@ async function pollCreate(
     createdBy: createdBy,
     pollDateTime: pollDateTime,
     pollDueDate: pollDueDate,
+    isClosed: isClosed,
   };
   return await PollModel.create(pollDetail);
 }
@@ -572,9 +575,9 @@ const populate = async () => {
     ];
     const p3_options = await Promise.all(po3_promise);
 
-    const P1 = await pollCreate(P1_TITLE, p1_options, U1.username, new Date('2024-10-30'), new Date('2024-11-26'));
-    const P2 = await pollCreate(P2_TITLE, p2_options, U2.username, new Date(), new Date('2024-11-26'));
-    const P3 = await pollCreate(P3_TITLE, p3_options, U3.username, new Date(), new Date('2024-11-11'));
+    const P1 = await pollCreate(P1_TITLE, p1_options, U1.username, new Date('2024-10-30'), new Date('2024-11-26'), false);
+    const P2 = await pollCreate(P2_TITLE, p2_options, U2.username, new Date(), new Date('2024-11-23'), false);
+    const P3 = await pollCreate(P3_TITLE, p3_options, U3.username, new Date(), new Date('2024-11-11'), true);
 
     const ART1 = await articleCreate(ART1_TITLE, ART1_BODY);
     const ART2 = await articleCreate(ART2_TITLE, ART2_BODY);

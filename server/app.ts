@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import { Server } from 'socket.io';
 import * as http from 'http';
+import cron from 'node-cron';
 
 import answerController from './controller/answer';
 import questionController from './controller/question';
@@ -20,6 +21,7 @@ import articleController from './controller/article';
 import challengeController from './controller/challenge';
 import notificationController from './controller/notification';
 import pollController from './controller/poll';
+import scheduledPollClosure from './jobs/scheduledPollClosure';
 
 dotenv.config();
 
@@ -36,6 +38,19 @@ const server = http.createServer(app);
 const socket: FakeSOSocket = new Server(server, {
   cors: { origin: '*' },
 });
+
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+if (!isTestEnvironment) {
+  // cron job to check for and close any expired polls every 5 minutes
+  cron.schedule('*/5 * * * *', async () => {
+    console.log('Closing polls ...');
+    try {
+      await scheduledPollClosure(socket);
+    } catch (err) {
+      console.log(`Error during scheduled poll closing: ${(err as Error).message}`);
+    }
+  });
+}
 
 function startServer() {
   server.listen(port, () => {

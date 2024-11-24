@@ -51,6 +51,7 @@ const useCreatePoll = () => {
       createdBy: user.username,
       pollDateTime: new Date(),
       pollDueDate: new Date(dueDate),
+      isClosed: false,
     };
 
     try {

@@ -43,6 +43,8 @@ import {
   addVoteToPollOption,
   AddQuestionToCommunityModel,
   updateUsersUnlockedFrames,
+  notifyUsers,
+  closeExpiredPolls,
 } from '../models/application';
 import {
   Answer,
@@ -1723,6 +1725,7 @@ describe('application module', () => {
           createdBy: 'user123',
           pollDateTime: new Date(),
           pollDueDate: new Date(),
+          isClosed: false,
         };
         const mockSavedPoll = {
           _id: fixedPollId,
@@ -1760,6 +1763,7 @@ describe('application module', () => {
           createdBy: 'user123',
           pollDateTime: new Date(),
           pollDueDate: new Date(),
+          isClosed: false,
         };
         const mockSavedPoll = { ...mockPoll, _id: new ObjectId() };
 
@@ -2016,7 +2020,7 @@ describe('application module', () => {
         }
       });
 
-      test('populateCommunity should return an error when findOne returns null', async () => {
+      test('populateNotification should return an error when findOne returns null', async () => {
         mockingoose(NotificationModel).toReturn(null, 'findOne');
         const result = await populateNotification('672e29e54e42e9c421fc2f7c', 'Question');
 
@@ -2027,7 +2031,7 @@ describe('application module', () => {
         }
       });
 
-      test('populateCommunity should return an error when findOne returns null', async () => {
+      test('populateNotification should return an error when findOne returns null', async () => {
         mockingoose(NotificationModel).toReturn(null, 'findOne');
         const result = await populateNotification('672e29e54e42e9c421fc2f7c', 'Question');
 
@@ -2067,6 +2071,143 @@ describe('application module', () => {
         const result = await updateNotifAsRead(rewardNotif._id?.toString());
 
         expect(result).toEqual({ error: 'Database error' });
+      });
+    });
+
+    describe('notifyUsers', () => {
+      let usersToNotifySpy: jest.SpyInstance;
+      let saveNotificationSpy: jest.SpyInstance;
+      let addNotificationToUserSpy: jest.SpyInstance;
+
+      beforeEach(() => {
+        jest.clearAllMocks();
+        usersToNotifySpy = jest.spyOn(application, 'usersToNotify');
+        saveNotificationSpy = jest.spyOn(application, 'saveNotification');
+        addNotificationToUserSpy = jest.spyOn(application, 'addNotificationToUser');
+      });
+
+      test('notifyUsers should add notifications to one user in the database and return list of notified usernames', async () => {
+        usersToNotifySpy.mockResolvedValueOnce(['UserA']);
+        saveNotificationSpy.mockResolvedValueOnce(questionNotif);
+        addNotificationToUserSpy.mockResolvedValueOnce({
+          ...userA,
+          notifications: [questionNotif],
+        });
+
+        const result = (await notifyUsers('validID', questionNotif)) as string[];
+
+        expect(result.length).toEqual(1);
+        expect(result[0]).toEqual('UserA');
+      });
+
+      test('notifyUsers should add notifications to multiple users in the database and return list of notified usernames', async () => {
+        usersToNotifySpy.mockResolvedValueOnce(['UserA', 'UserB']);
+        saveNotificationSpy.mockResolvedValueOnce(rewardNotif);
+        saveNotificationSpy.mockResolvedValueOnce(rewardNotif);
+        addNotificationToUserSpy.mockResolvedValueOnce({
+          ...userA,
+          notifications: [rewardNotif],
+        });
+        addNotificationToUserSpy.mockResolvedValueOnce({
+          ...userA,
+          username: 'UserB',
+          notifications: [rewardNotif],
+        });
+
+        const result = (await notifyUsers('validID', questionNotif)) as string[];
+
+        expect(result.length).toEqual(2);
+        expect(result).toContain('UserA');
+        expect(result).toContain('UserB');
+        expect(saveNotificationSpy).toHaveBeenCalledTimes(2);
+        expect(addNotificationToUserSpy).toHaveBeenCalledTimes(2);
+      });
+
+      test('notifyUsers should return error object if object id is undefined', async () => {
+        const result = await notifyUsers(undefined, questionNotif);
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('notifyUsers should return error object if `usersToNotify` returns empty list', async () => {
+        usersToNotifySpy.mockResolvedValueOnce([]);
+        const result = await notifyUsers('validID', questionNotif);
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('notifyUsers should return error object if `usersToNotify` returns error', async () => {
+        usersToNotifySpy.mockResolvedValueOnce({ error: 'error' });
+        const result = await notifyUsers('validID', questionNotif);
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('notifyUsers should return error object if `saveNotification` returns error', async () => {
+        usersToNotifySpy.mockResolvedValueOnce(['UserA']);
+        saveNotificationSpy.mockResolvedValueOnce({ error: 'error' });
+        const result = await notifyUsers('validID', questionNotif);
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('notifyUsers should return error object if any call to `saveNotification` returns error', async () => {
+        usersToNotifySpy.mockResolvedValueOnce(['UserA', 'UserB']);
+        saveNotificationSpy.mockResolvedValueOnce(questionNotif);
+        saveNotificationSpy.mockResolvedValueOnce({ error: 'error' });
+        const result = await notifyUsers('validID', questionNotif);
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('notifyUsers should return error object if `addNotificationToUser` returns error', async () => {
+        usersToNotifySpy.mockResolvedValueOnce(['UserA']);
+        saveNotificationSpy.mockResolvedValueOnce(questionNotif);
+        addNotificationToUserSpy.mockResolvedValueOnce({ error: 'error' });
+        const result = await notifyUsers('validID', questionNotif);
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('notifyUsers should return error object if any call to `addNotificationToUser` returns error', async () => {
+        usersToNotifySpy.mockResolvedValueOnce(['UserA', 'UserB']);
+        saveNotificationSpy.mockResolvedValueOnce(questionNotif);
+        addNotificationToUserSpy.mockResolvedValueOnce({
+          ...userA,
+          notifications: [rewardNotif],
+        });
+        addNotificationToUserSpy.mockResolvedValueOnce({ error: 'error' });
+        const result = await notifyUsers('validID', questionNotif);
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
       });
     });
   });
@@ -2211,6 +2352,7 @@ describe('application module', () => {
         createdBy: 'test_user',
         pollDateTime: new Date(),
         pollDueDate: new Date(),
+        isClosed: false,
       };
       mockingoose(PollModel).toReturn(mockPoll, 'findOne');
       mockingoose(PollOptionModel).toReturn(mockPoll, 'populate');
@@ -2230,7 +2372,7 @@ describe('application module', () => {
       }
     });
 
-    test('usersToNotify with NotificationType.NewReward should throw an error if question not found', async () => {
+    test('usersToNotify with NotificationType.NewReward should throw an error if user not found', async () => {
       mockingoose(UserModel).toReturn(null, 'findOne');
       try {
         await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
@@ -2238,6 +2380,14 @@ describe('application module', () => {
       } catch (error) {
         expect(true).toBeTruthy();
       }
+    });
+
+    test('usersToNotify with NotificationType.NewReward should return username of objectIDs user', async () => {
+      mockingoose(UserModel).toReturn(userA, 'findOne');
+
+      const result = await usersToNotify('6722970923044fb140958284', NotificationType.NewReward);
+
+      expect(result).toEqual(['UserA']);
     });
 
     test('usersToNotify with invalid notification type should return an empty array', async () => {
@@ -2668,6 +2818,7 @@ describe('application module', () => {
           createdBy: 'us',
           pollDateTime: new Date(),
           pollDueDate: new Date(),
+          isClosed: false,
         };
 
         mockingoose(PollModel).toReturn(mockPoll, 'findOne');
@@ -2722,6 +2873,7 @@ describe('application module', () => {
           createdBy: 'creatorUser',
           pollDateTime: new Date(),
           pollDueDate: new Date(),
+          isClosed: false,
         };
 
         updatedOption = {
@@ -2882,6 +3034,113 @@ describe('application module', () => {
         );
 
         expect(result).toHaveProperty('error', 'Error retrieving updated poll');
+      });
+    });
+
+    describe('closeExpiredPolls', () => {
+      test('should find an expired poll and return the poll with isClosed updated', async () => {
+        const expiredPoll: Poll = {
+          _id: new ObjectId(),
+          title: 'Test Title',
+          options: [],
+          createdBy: 'testUser',
+          pollDateTime: new Date('01-01-2023'),
+          pollDueDate: new Date('01-01-2023'),
+          isClosed: false,
+        };
+        jest.spyOn(PollModel, 'find').mockResolvedValueOnce([expiredPoll]);
+        jest
+          .spyOn(PollModel, 'findOneAndUpdate')
+          .mockResolvedValueOnce({ ...expiredPoll, isClosed: true });
+
+        const result = (await closeExpiredPolls()) as Poll[];
+
+        expect(result.length).toEqual(1);
+        expect(result[0]._id?.toString()).toEqual(expiredPoll._id?.toString());
+        expect(result[0].isClosed).toBeTruthy();
+      });
+
+      test('should find multiple expired poll and return all polls with isClosed updated', async () => {
+        const expiredPoll1: Poll = {
+          _id: new ObjectId(),
+          title: 'Test Title',
+          options: [],
+          createdBy: 'testUser',
+          pollDateTime: new Date('01-01-2023'),
+          pollDueDate: new Date('01-01-2023'),
+          isClosed: false,
+        };
+        const expiredPoll2: Poll = {
+          _id: new ObjectId(),
+          title: 'Test Title',
+          options: [],
+          createdBy: 'testUser',
+          pollDateTime: new Date('01-01-2023'),
+          pollDueDate: new Date('01-01-2023'),
+          isClosed: false,
+        };
+
+        jest.spyOn(PollModel, 'find').mockResolvedValueOnce([expiredPoll1, expiredPoll2]);
+        jest
+          .spyOn(PollModel, 'findOneAndUpdate')
+          .mockResolvedValueOnce({ ...expiredPoll1, isClosed: true });
+        jest
+          .spyOn(PollModel, 'findOneAndUpdate')
+          .mockResolvedValueOnce({ ...expiredPoll2, isClosed: true });
+
+        const result = (await closeExpiredPolls()) as Poll[];
+
+        expect(result.length).toEqual(2);
+        expect(result[0]._id?.toString()).toEqual(expiredPoll1._id?.toString());
+        expect(result[0].isClosed).toBeTruthy();
+        expect(result[1]._id?.toString()).toEqual(expiredPoll2._id?.toString());
+        expect(result[1].isClosed).toBeTruthy();
+      });
+
+      test('should return error object if error thrown by `find`', async () => {
+        jest.spyOn(PollModel, 'find').mockResolvedValueOnce(new Error('database error') as any);
+
+        const result = await closeExpiredPolls();
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('should return error object if unable to find any of the polls to update', async () => {
+        const expiredPoll1: Poll = {
+          _id: new ObjectId(),
+          title: 'Test Title',
+          options: [],
+          createdBy: 'testUser',
+          pollDateTime: new Date('01-01-2023'),
+          pollDueDate: new Date('01-01-2023'),
+          isClosed: false,
+        };
+        const expiredPoll2: Poll = {
+          _id: new ObjectId(),
+          title: 'Test Title',
+          options: [],
+          createdBy: 'testUser',
+          pollDateTime: new Date('01-01-2023'),
+          pollDueDate: new Date('01-01-2023'),
+          isClosed: false,
+        };
+        jest.spyOn(PollModel, 'find').mockResolvedValueOnce([expiredPoll1, expiredPoll2]);
+        jest
+          .spyOn(PollModel, 'findOneAndUpdate')
+          .mockResolvedValueOnce({ ...expiredPoll1, isClosed: true });
+        jest.spyOn(PollModel, 'findOneAndUpdate').mockResolvedValueOnce(null);
+
+        const result = await closeExpiredPolls();
+
+        if ('error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
       });
     });
   });
