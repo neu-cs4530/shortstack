@@ -72,11 +72,26 @@
 .lastActivity {
   width: 35%;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
   padding-right: 20px;
+}
+
+.lastActivity .profile-pic-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  height: auto;
+  width: 40px;
+  margin-right: 16px;
+}
+
+.askedByText {
+  display: inline-block;
+  text-align: right;
 }
 
 .question_author {
@@ -97,6 +112,7 @@
   cursor: pointer;
   text-decoration: none;
   transition: color 0.3s ease, text-decoration 0.3s ease;
+  width: fit-content;
 }
 
 .question_community:hover {

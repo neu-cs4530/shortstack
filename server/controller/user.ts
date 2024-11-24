@@ -270,7 +270,8 @@ const userController = (socket: FakeSOSocket) => {
    * Updates all of the isRead statuses of all notifications for a user to be read.
    *
    * @param req - The Request object containing the username as a parameter.
-   * @param res - The HTTP Response object used to send back the status showing the updates were successful.
+   * @param res - The HTTP Response object used to send back the frame's file name.
+   *
    */
   const markAllNotifsAsRead = async (req: Request, res: Response): Promise<void> => {
     const { username } = req.params;
@@ -293,6 +294,30 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Gets a user's equipped frame based on their username
+   * @param req - The request object containing the username as a parameter.
+   * @param res - The HTTP Response object used to send back the status showing the updates were successful.
+   *
+   * @returns - A Promise that resolves to void.
+   */
+  const getUserFrame = async (req: Request, res: Response): Promise<void> => {
+    const { username } = req.params;
+    try {
+      const user = await findUser(username);
+
+      if (!user) {
+        throw new Error('Could not find user with the given username');
+      }
+
+      res.status(200).json(user.equippedFrame);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching equipped frame for user: ${username}`);
+      }
+    }
+  };
+
   router.post('/addUser', addUser);
   router.post('/login', loginUser);
   router.post('/addPoints', addPoints);
@@ -300,6 +325,7 @@ const userController = (socket: FakeSOSocket) => {
   router.get('/getUserNotifications/:username', getUserNotifications);
   router.put('/markAllNotifsAsRead/:username', markAllNotifsAsRead);
   router.put('/updateEquippedReward', equipRewardToUser);
+  router.get('/getUserFrame/:username', getUserFrame);
 
   return router;
 };

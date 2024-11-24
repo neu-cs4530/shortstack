@@ -21,12 +21,7 @@
   align-items: center;
 }
 
-.profile-container {
-  position: relative;
-  display: inline-block;
-}
-
-.profile-picture {
+.profile-pic-container {
   width: 100px;
   height: 100px;
   border-radius: 50%;

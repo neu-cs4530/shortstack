@@ -4,6 +4,7 @@ import usePoll from '../../../hooks/usePoll';
 import { getMetaData } from '../../../tool';
 import './index.css';
 import CommunityBreadcrumb from '../communityPage/community/breadcrumb/communityBreadcrumb';
+import ProfilePicture from '../profilePicture';
 
 /**
  * PollPage component that displays the poll title and the PollVoting or PollResults component.
@@ -27,8 +28,15 @@ const PollPage = () => {
           <div className='pollContent'>
             <div className='pollTitleSection'>
               <h2>{poll?.title}</h2>
+              <div className='createdByText'>
+                <div className='profile-pic-container'>
+                  <ProfilePicture username={poll.createdBy} />
+                </div>
+                <h5>Created by:</h5>
+                <h5 className='usernameText'>{poll.createdBy}</h5>
+              </div>
               <h5 className='greyText'>
-                Created: {getMetaData(new Date(poll.pollDateTime))}, End{pollIsClosed ? 'ed' : 's'}:{' '}
+                Created on: {getMetaData(new Date(poll.pollDateTime))}, End{pollIsClosed ? 'ed' : 's'}:{' '}
                 {getMetaData(new Date(poll.pollDueDate))}
               </h5>
             </div>
