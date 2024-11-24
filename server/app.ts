@@ -39,6 +39,7 @@ const socket: FakeSOSocket = new Server(server, {
   cors: { origin: '*' },
 });
 
+// prevent the cron job from attempting to execute if we're runing the test suite.
 const isTestEnvironment = process.env.NODE_ENV === 'test';
 if (!isTestEnvironment) {
   // cron job to check for and close any expired polls every 5 minutes
