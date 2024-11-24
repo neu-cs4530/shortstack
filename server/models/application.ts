@@ -1518,6 +1518,7 @@ export const saveAndAddPollToCommunity = async (
       createdBy: poll.createdBy,
       pollDateTime: poll.pollDateTime,
       pollDueDate: poll.pollDueDate,
+      isClosed: poll.isClosed,
     });
 
     const updatedCommunity = await CommunityModel.findOneAndUpdate(

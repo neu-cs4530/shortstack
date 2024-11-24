@@ -454,6 +454,7 @@ describe('Community', () => {
         poll: {
           title: 'Poll Title',
           options: [{ text: 'Option 1' }, { text: 'Option 2' }],
+          isClosed: false,
         },
       };
       const expectedPoll = {
@@ -505,6 +506,7 @@ describe('Community', () => {
         poll: {
           title: 'Poll Title',
           options: [{ text: 'Option 1' }, { text: 'Option 2' }],
+          isClosed: false,
         },
       };
 

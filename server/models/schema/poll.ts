@@ -32,6 +32,7 @@ const pollSchema: Schema = new Schema(
     },
     isClosed: {
       type: Boolean,
+      required: true,
     },
   },
   { collection: 'Poll' },
