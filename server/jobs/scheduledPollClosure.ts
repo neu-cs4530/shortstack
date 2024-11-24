@@ -15,6 +15,8 @@ const scheduledPollClosure = async (socket: FakeSOSocket): Promise<void> => {
     if ('error' in newlyClosedPolls) {
       throw new Error(newlyClosedPolls.error);
     }
+    // emit poll update message so any users viewing a poll that closes are navigated to the results
+    newlyClosedPolls.forEach(poll => socket.emit('pollUpdate', poll));
 
     const promiseNotifications = newlyClosedPolls.map(poll => {
       const notif: Notification = {

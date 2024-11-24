@@ -1355,6 +1355,10 @@ export const addVoteToPollOption = async (
       return { error: 'Poll not found' };
     }
 
+    if (poll.isClosed || new Date(poll.pollDueDate) <= new Date()) {
+      return { error: 'Unable to vote in closed poll' };
+    }
+
     const hasVoted = poll.options.some(option => option.usersVoted.includes(username));
 
     if (hasVoted) {
@@ -1399,7 +1403,16 @@ export const closeExpiredPolls = async (): Promise<Poll[] | { error: string }> =
     });
 
     const promiseClosedPolls = pollsToClose.map(poll =>
-      PollModel.findOneAndUpdate({ _id: poll._id }, { $set: { isClosed: true } }, { new: true }),
+      PollModel.findOneAndUpdate(
+        { _id: poll._id },
+        { $set: { isClosed: true } },
+        { new: true },
+      ).populate([
+        {
+          path: 'options',
+          model: PollOptionModel,
+        },
+      ]),
     );
     const closedPolls = (await Promise.all(promiseClosedPolls)).map(poll => {
       if (!poll) {

@@ -2872,7 +2872,7 @@ describe('application module', () => {
           options: [mockOption],
           createdBy: 'creatorUser',
           pollDateTime: new Date(),
-          pollDueDate: new Date(),
+          pollDueDate: new Date('2100-01-01'),
           isClosed: false,
         };
 
@@ -2963,6 +2963,51 @@ describe('application module', () => {
         expect(result).toHaveProperty('error', 'User has already voted in this poll');
       });
 
+      test('should return an error if the poll is closed', async () => {
+        const closedPoll = {
+          ...mockPoll,
+          isClosed: true,
+        };
+
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(closedPoll),
+            }) as any,
+        );
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'Unable to vote in closed poll');
+      });
+
+      test('should return an error if the poll hasnt been closed but the due date has passed', async () => {
+        const closedPoll = {
+          ...mockPoll,
+          pollDueDate: new Date('2023-01-01'),
+          isClosed: false,
+        };
+
+        jest.spyOn(PollModel, 'findById').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve(closedPoll),
+            }) as any,
+        );
+
+        const result = await addVoteToPollOption(
+          mockPollId.toString(),
+          mockOptionId.toString(),
+          mockUsername,
+        );
+
+        expect(result).toHaveProperty('error', 'Unable to vote in closed poll');
+      });
+
       test('should return an error if the poll option does not exist', async () => {
         // Mock PollModel.findById().populate() to return mockPoll
         jest.spyOn(PollModel, 'findById').mockImplementationOnce(
@@ -3049,9 +3094,12 @@ describe('application module', () => {
           isClosed: false,
         };
         jest.spyOn(PollModel, 'find').mockResolvedValueOnce([expiredPoll]);
-        jest
-          .spyOn(PollModel, 'findOneAndUpdate')
-          .mockResolvedValueOnce({ ...expiredPoll, isClosed: true });
+        jest.spyOn(PollModel, 'findOneAndUpdate').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve({ ...expiredPoll, isClosed: true }),
+            }) as any,
+        );
 
         const result = (await closeExpiredPolls()) as Poll[];
 
@@ -3081,12 +3129,18 @@ describe('application module', () => {
         };
 
         jest.spyOn(PollModel, 'find').mockResolvedValueOnce([expiredPoll1, expiredPoll2]);
-        jest
-          .spyOn(PollModel, 'findOneAndUpdate')
-          .mockResolvedValueOnce({ ...expiredPoll1, isClosed: true });
-        jest
-          .spyOn(PollModel, 'findOneAndUpdate')
-          .mockResolvedValueOnce({ ...expiredPoll2, isClosed: true });
+        jest.spyOn(PollModel, 'findOneAndUpdate').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve({ ...expiredPoll1, isClosed: true }),
+            }) as any,
+        );
+        jest.spyOn(PollModel, 'findOneAndUpdate').mockImplementationOnce(
+          () =>
+            ({
+              populate: () => Promise.resolve({ ...expiredPoll2, isClosed: true }),
+            }) as any,
+        );
 
         const result = (await closeExpiredPolls()) as Poll[];
 
