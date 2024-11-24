@@ -32,7 +32,6 @@ import {
   fetchAndIncrementChallengesByUserAndType,
   updateNotifAsRead,
   updateUserNotifsAsRead,
-  fetchCommunityMembersByObjectId,
   updateArticleById,
   saveAndAddArticleToCommunity,
   saveAndAddPollToCommunity,
@@ -41,6 +40,7 @@ import {
   equipReward,
   incrementProgressForAskedByUser,
   addVoteToPollOption,
+  fetchCommunityByObjectId,
   AddQuestionToCommunityModel,
   updateUsersUnlockedFrames,
   notifyUsers,
@@ -2395,46 +2395,43 @@ describe('application module', () => {
       expect(result).toEqual([]);
     });
 
-    test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Question', async () => {
+    test('fetchCommunityByObjectId should return the community that owns the Question', async () => {
       const oid: string = new ObjectId().toString();
       const objectType: CommunityObjectType = 'Question';
       mockingoose(CommunityModel).toReturn(communityWithUser, 'findOne');
 
-      const response: string[] = await fetchCommunityMembersByObjectId(oid, objectType);
+      const response: Community = await fetchCommunityByObjectId(oid, objectType);
 
-      expect(response.length).toBe(1);
-      expect(response[0]).toBe(userA.username);
+      expect(response._id).toBe(communityWithUser._id);
     });
 
-    test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Article', async () => {
+    test('fetchCommunityByObjectId should return the community that owns the Article', async () => {
       const oid: string = new ObjectId().toString();
       const objectType: CommunityObjectType = 'Article';
       mockingoose(CommunityModel).toReturn(communityWithUser, 'findOne');
 
-      const response: string[] = await fetchCommunityMembersByObjectId(oid, objectType);
+      const response: Community = await fetchCommunityByObjectId(oid, objectType);
 
-      expect(response.length).toBe(1);
-      expect(response[0]).toBe(userA.username);
+      expect(response._id).toBe(communityWithUser._id);
     });
 
-    test('fetchCommunityMembersByObjectId should return usernames of members of the community that owns the Poll', async () => {
+    test('fetchCommunityByObjectId should return the community that owns the Poll', async () => {
       const oid: string = new ObjectId().toString();
       const objectType: CommunityObjectType = 'Poll';
       mockingoose(CommunityModel).toReturn(communityWithUser, 'findOne');
 
-      const response: string[] = await fetchCommunityMembersByObjectId(oid, objectType);
+      const response: Community = await fetchCommunityByObjectId(oid, objectType);
 
-      expect(response.length).toBe(1);
-      expect(response[0]).toBe(userA.username);
+      expect(response._id).toBe(communityWithUser._id);
     });
 
-    test('fetchCommunityMembersByObjectId should throw an error if findOne returns null', async () => {
+    test('fetchCommunityByObjectId should throw an error if findOne returns null', async () => {
       const oid: string = new ObjectId().toString();
       const objectType: CommunityObjectType = 'Question';
       mockingoose(CommunityModel).toReturn(null, 'findOne');
 
       try {
-        await fetchCommunityMembersByObjectId(oid, objectType);
+        await fetchCommunityByObjectId(oid, objectType);
         expect(false).toBeTruthy();
       } catch (error) {
         expect(true).toBeTruthy();

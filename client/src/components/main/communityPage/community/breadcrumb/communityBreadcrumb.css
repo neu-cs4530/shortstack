@@ -1,0 +1,28 @@
+.breadcrumb-container {
+  display: flex;
+  width: 100%;
+  align-content: center;
+  padding: 32px;
+}
+
+.breadcrumb-container > * {
+  margin: 0;
+  margin-right: 16px;
+}
+
+.breadcrumb-link, .breadcrumb-label {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.breadcrumb-link {
+  color: #007bff;
+  cursor: pointer;
+}
+
+.breadcrumb-label {
+  max-width: 296px;
+}

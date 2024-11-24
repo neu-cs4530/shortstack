@@ -85,6 +85,7 @@ const useCreatePoll = () => {
     dueDate,
     options,
     error,
+    communityID,
     setError,
     handleTitleChange,
     handleDueDateChange,

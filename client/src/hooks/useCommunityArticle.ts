@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Article } from '../types';
-import { getCommunityMembersByObjectId } from '../services/communityService';
+import { getCommunityByObjectId } from '../services/communityService';
 import useUserContext from './useUserContext';
 import { getArticleById } from '../services/articleService';
 
@@ -40,8 +40,8 @@ const useCommunityArticle = () => {
 
     const fetchCommunityMembers = async (oid: string) => {
       try {
-        const communityMembers = await getCommunityMembersByObjectId(oid, 'Article');
-        setCanEdit(communityMembers.some(member => member === user.username));
+        const community = await getCommunityByObjectId(oid, 'Article');
+        setCanEdit(community.members.some(member => member === user.username));
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error((error as Error).message);

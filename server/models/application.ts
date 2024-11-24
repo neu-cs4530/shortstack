@@ -688,16 +688,16 @@ const userToNotifyOnAnswerComment = async (answerID: string): Promise<string[]> 
 };
 
 /**
- * Given a CommunityObjectType, get all members of the community object is in.
+ * Given a CommunityObjectType, get the community the object is in.
  * @param oid - The ID of the community object
  * @param type - The type of the object
- * @returns A list of the usernames of the members of the community
+ * @returns The community the object is in.
  * @throws An error if no community has the given object.
  */
-export const fetchCommunityMembersByObjectId = async (
+export const fetchCommunityByObjectId = async (
   oid: string,
   type: CommunityObjectType,
-): Promise<string[]> => {
+): Promise<Community> => {
   let community;
   if (type === 'Question') {
     community = await CommunityModel.findOne({ questions: oid });
@@ -707,10 +707,10 @@ export const fetchCommunityMembersByObjectId = async (
     community = await CommunityModel.findOne({ articles: oid });
   }
   if (!community) {
-    throw new Error('Error retrieving users in community');
+    throw new Error('Error retrieving community by object id');
   }
-  const communityUsernames = community.members;
-  return communityUsernames;
+
+  return community;
 };
 
 // Given ID of closed Poll, notify poll.createdBy and all users who voted in the poll.
@@ -775,19 +775,19 @@ export const usersToNotify = async (
         return await questionAskerToNotify(oid);
 
       case NotificationType.NewQuestion:
-        return await fetchCommunityMembersByObjectId(oid, 'Question');
+        return (await fetchCommunityByObjectId(oid, 'Question')).members;
 
       case NotificationType.NewPoll:
-        return await fetchCommunityMembersByObjectId(oid, 'Poll');
+        return (await fetchCommunityByObjectId(oid, 'Poll')).members;
 
       case NotificationType.PollClosed:
         return await usersToNotifyPollClosed(oid);
 
       case NotificationType.NewArticle:
-        return await fetchCommunityMembersByObjectId(oid, 'Article');
+        return (await fetchCommunityByObjectId(oid, 'Article')).members;
 
       case NotificationType.ArticleUpdate:
-        return await fetchCommunityMembersByObjectId(oid, 'Article');
+        return (await fetchCommunityByObjectId(oid, 'Article')).members;
 
       case NotificationType.NewReward:
         return await userToNotifyForReward(oid);

@@ -8,9 +8,28 @@ const fetchAllCommunitiesSpy = jest.spyOn(util, 'fetchAllCommunities');
 const addQuestionToCommunityModelSpy = jest.spyOn(util, 'AddQuestionToCommunityModel');
 const addUserToCommunitySpy = jest.spyOn(util, 'addUserToCommunity');
 const populateCommunitySpy = jest.spyOn(util, 'populateCommunity');
-const fetchCommunityMembersByObjectIdSpy = jest.spyOn(util, 'fetchCommunityMembersByObjectId');
+const fetchCommunityByObjectIdSpy = jest.spyOn(util, 'fetchCommunityByObjectId');
 const saveAndAddArticleToCommunitySpy = jest.spyOn(util, 'saveAndAddArticleToCommunity');
 const saveAndAddPollToCommunitySpy = jest.spyOn(util, 'saveAndAddPollToCommunity');
+
+const MOCK_COMMUNITIES = [
+  {
+    _id: new mongoose.Types.ObjectId('6740f13649f77c7d0e17547c'),
+    name: 'Community 1',
+    members: [],
+    questions: [],
+    articles: [],
+    polls: [],
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    name: 'Community 2',
+    members: [],
+    questions: [],
+    articles: [],
+    polls: [],
+  },
+];
 
 describe('Community', () => {
   afterEach(async () => {
@@ -22,32 +41,13 @@ describe('Community', () => {
   });
   describe('GET /communities', () => {
     it('should return a list of communities', async () => {
-      const mockCommunities = [
-        {
-          _id: new mongoose.Types.ObjectId(),
-          name: 'Community 1',
-          members: [],
-          questions: [],
-          articles: [],
-          polls: [],
-        },
-        {
-          _id: new mongoose.Types.ObjectId(),
-          name: 'Community 2',
-          members: [],
-          questions: [],
-          articles: [],
-          polls: [],
-        },
-      ];
-
-      fetchAllCommunitiesSpy.mockResolvedValueOnce(mockCommunities);
+      fetchAllCommunitiesSpy.mockResolvedValueOnce(MOCK_COMMUNITIES);
 
       const response = await supertest(app).get('/community/getCommunity');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(
-        mockCommunities.map(community => ({
+        MOCK_COMMUNITIES.map(community => ({
           _id: community._id.toString(),
           name: community.name,
           members: community.members,
@@ -357,31 +357,30 @@ describe('Community', () => {
     });
   });
 
-  describe('GET /getMembers', () => {
-    it('should return a list of usernames if fetchCommunityMembersByObjectId is successful', async () => {
+  describe('GET /getCommunityByObjectId', () => {
+    it('should return the community if fetchCommunityByObjectId is successful', async () => {
       const oid: string = new mongoose.Types.ObjectId().toString();
       const objectType: CommunityObjectType = 'Question';
 
-      fetchCommunityMembersByObjectIdSpy.mockResolvedValueOnce([
-        'user1',
-        'user2',
-        'user3',
-        'user4',
-      ]);
+      fetchCommunityByObjectIdSpy.mockResolvedValueOnce(MOCK_COMMUNITIES[0]);
 
-      const response = await supertest(app).get(`/community/getMembers/${oid}/${objectType}`);
+      const response = await supertest(app).get(
+        `/community/getCommunityByObjectId/${oid}/${objectType}`,
+      );
 
       expect(response.status).toBe(200);
-      expect(response.body.length).toBe(4);
+      expect(response.body._id).toBe(MOCK_COMMUNITIES[0]._id.toString());
     });
 
-    it('should return a 500 status if fetchCommunityMembersByObjectId throws an error', async () => {
+    it('should return a 500 status if fetchCommunityByObjectId throws an error', async () => {
       const oid: string = new mongoose.Types.ObjectId().toString();
       const objectType: CommunityObjectType = 'Question';
 
-      fetchCommunityMembersByObjectIdSpy.mockRejectedValueOnce(new Error('error'));
+      fetchCommunityByObjectIdSpy.mockRejectedValueOnce(new Error('error'));
 
-      const response = await supertest(app).get(`/community/getMembers/${oid}/${objectType}`);
+      const response = await supertest(app).get(
+        `/community/getCommunityByObjectId/${oid}/${objectType}`,
+      );
 
       expect(response.status).toBe(500);
       expect(response.text).toBe('error');

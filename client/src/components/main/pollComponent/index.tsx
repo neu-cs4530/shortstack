@@ -3,6 +3,7 @@ import PollResults from './pollResults';
 import usePoll from '../../../hooks/usePoll';
 import { getMetaData } from '../../../tool';
 import './index.css';
+import CommunityBreadcrumb from '../communityPage/community/breadcrumb/communityBreadcrumb';
 
 /**
  * PollPage component that displays the poll title and the PollVoting or PollResults component.
@@ -16,27 +17,34 @@ const PollPage = () => {
 
   return (
     poll && (
-      <div className='pollContainer'>
-        <div className='pollContent'>
-          <div className='pollTitleSection'>
-            <h2>{poll?.title}</h2>
-            <h5 className='greyText'>
-              Created: {getMetaData(new Date(poll.pollDateTime))}, End{pollIsClosed ? 'ed' : 's'}:{' '}
-              {getMetaData(new Date(poll.pollDueDate))}
-            </h5>
+      <>
+        <CommunityBreadcrumb
+          objectID={poll?._id}
+          subPageType='Poll'
+          currentPageTitle={poll?.title}
+        />
+        <div className='pollContainer'>
+          <div className='pollContent'>
+            <div className='pollTitleSection'>
+              <h2>{poll?.title}</h2>
+              <h5 className='greyText'>
+                Created: {getMetaData(new Date(poll.pollDateTime))}, End{pollIsClosed ? 'ed' : 's'}:{' '}
+                {getMetaData(new Date(poll.pollDueDate))}
+              </h5>
+            </div>
+            {!voted && !pollIsClosed ? (
+              <PollVoting
+                selectedOption={selectedOption}
+                voteButtonClick={voteButtonClick}
+                onOptionChange={onOptionChange}
+                poll={poll}
+              />
+            ) : (
+              <PollResults poll={poll} />
+            )}
           </div>
-          {!voted && !pollIsClosed ? (
-            <PollVoting
-              selectedOption={selectedOption}
-              voteButtonClick={voteButtonClick}
-              onOptionChange={onOptionChange}
-              poll={poll}
-            />
-          ) : (
-            <PollResults poll={poll} />
-          )}
         </div>
-      </div>
+      </>
     )
   );
 };

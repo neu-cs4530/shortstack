@@ -486,7 +486,7 @@ const populate = async () => {
       [a1, a2],
       'Joji John',
       new Date('2022-01-20T03:00:00'),
-      ['sana', 'abaya', 'alia'],
+      ['abaya', 'alia'],
       [c9],
       [],
     );
@@ -510,7 +510,7 @@ const populate = async () => {
       new Date('2023-02-18T01:02:15'),
       ['monkeyABC', 'elephantCDE'],
       [c11],
-      ['sana', 'abaya', 'Joji John', 'alia'],
+      ['abaya', 'Joji John', 'alia'],
     );
     const Q4 = await questionCreate(
       Q4_DESC,
