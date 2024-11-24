@@ -8,7 +8,7 @@ import useUserContext from './useUserContext';
  */
 const useLayout = () => {
   const [points, setPoints] = useState<number>(0);
-  const { socket } = useUserContext();
+  const { user, socket } = useUserContext();
 
   const showIndicator = () => {
     (document.querySelector('.points-indicator') as HTMLElement).style.display = 'block';
@@ -20,14 +20,17 @@ const useLayout = () => {
 
   useEffect(() => {
     const handlePointsUpdate = async ({
+      username,
       pointsAdded,
     }: {
       username: string;
       pointsAdded: number;
       totalPoints: number;
     }) => {
-      setPoints(pointsAdded);
-      showIndicator();
+      if (username === user.username) {
+        setPoints(pointsAdded);
+        showIndicator();
+      }
     };
 
     socket.on('pointsUpdate', handlePointsUpdate);
