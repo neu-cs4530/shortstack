@@ -254,9 +254,9 @@ async function questionCreate(
  * Associate a community with a Question by updating the Question.
  */
 async function associateQuestionWithCommunity(question: Question, community: Community) {
-  return await QuestionModel.updateOne(
-    { title: question.title }, // Match by a unique field like title
-    { community },
+  return await QuestionModel.findByIdAndUpdate(
+    { _id: question._id },
+    { community: community },
     { new: true },
   );
 }
