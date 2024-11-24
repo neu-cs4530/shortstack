@@ -3,10 +3,11 @@ import {
   User,
   FakeSOSocket,
   Notification,
+  NotificationType,
   EquippedRewardUpdatePayload,
   UnlockedRewardUpdatePayload,
 } from '../types';
-import { getUserNotifications } from '../services/userService';
+import { getUserNotifications, notifyUsers } from '../services/userService';
 
 /**
  * Custom hook to manage the state and logic of FakeStackOverflow.
@@ -80,6 +81,13 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
         }
         if (type === 'frame' && !user.unlockedFrames.some(t => rewards.includes(t))) {
           setUser({ ...user, unlockedFrames: [...user.unlockedFrames, ...rewards] });
+        }
+        const notif: Notification = {
+          notificationType: NotificationType.NewReward,
+          isRead: false,
+        };
+        if (user._id) {
+          await notifyUsers(user._id, notif);
         }
       }
     };
