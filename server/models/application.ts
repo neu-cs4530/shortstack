@@ -1344,29 +1344,36 @@ export const addVoteToPollOption = async (
  *
  * @param communityId - The ID of the community.
  * @param questionId - The ID of the question to add.
- * @returns The updated community document or an error object.
+ * @returns The updated question document or an error object.
  */
-export const AddQuestionToCommunityModel = async (communityId: string, questionId: string) => {
+export const AddQuestionToCommunityModel = async (
+  communityId: string,
+  questionId: string,
+): Promise<QuestionResponse> => {
   try {
     const updatedCommunity = await CommunityModel.findByIdAndUpdate(
       communityId,
-      { $push: { questions: questionId } },
+      { $addToSet: { questions: questionId } },
       { new: true },
     );
 
     if (!updatedCommunity) {
-      return { error: 'Community not found' };
+      throw new Error('Community not found');
     }
 
-    const populatedCommunity = await populateCommunity(communityId);
+    const updatedQuestion = await QuestionModel.findByIdAndUpdate(
+      questionId,
+      { community: communityId },
+      { new: true },
+    );
 
-    if (populatedCommunity && 'error' in populatedCommunity) {
-      throw new Error(populatedCommunity.error);
+    if (!updatedQuestion) {
+      throw new Error('Question not found');
     }
 
-    return populatedCommunity;
+    return updatedQuestion;
   } catch (error) {
-    return { error: 'Error adding question to community' };
+    return { error: (error as Error).message };
   }
 };
 

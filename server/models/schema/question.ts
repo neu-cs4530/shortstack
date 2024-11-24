@@ -15,6 +15,7 @@ import { Schema } from 'mongoose';
  * - `downVotes`: An array of usernames that have downvoted the question.
  * - `comments`: Comments that have been added to the question by users.
  * - `subscribers`: Usernames of users who have subscribed to get notifications about the question.
+ * - `community`: A reference to the `Community` that the question belongs to.
  */
 const questionSchema: Schema = new Schema(
   {
@@ -37,6 +38,7 @@ const questionSchema: Schema = new Schema(
     downVotes: [{ type: String }],
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     subscribers: [{ type: String }],
+    community: { type: Schema.Types.ObjectId, ref: 'Community' },
   },
   { collection: 'Question' },
 );
