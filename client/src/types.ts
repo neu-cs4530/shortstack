@@ -263,6 +263,17 @@ export interface Community {
 export type CommunityObjectType = 'Question' | 'Poll' | 'Article';
 
 /**
+ * Type representing all types of pages that a user can be in within a community.
+ */
+export type CommunitySubpageType =
+  | 'Community'
+  | 'Question'
+  | 'Article'
+  | 'New Article'
+  | 'Poll'
+  | 'New Poll';
+
+/**
  * Interface representing a PollOption, which contains:
  * - _id - The unique identifier for the poll. Optional field
  * - text - The description of the poll option

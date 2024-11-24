@@ -79,17 +79,17 @@ const joinCommunity = async (userId: string, communityID: string): Promise<void>
 };
 
 /**
- * Function to get members of the community that owns the object.
+ * Function to get the community that owns the object.
  *
  * @param oid - The ID of the object
  * @param objectType - The type of the object
- * @returns A list of usernames of the members of the community.
+ * @returns The community that owns the object.
  */
-const getCommunityMembersByObjectId = async (
+const getCommunityByObjectId = async (
   oid: string,
   objectType: CommunityObjectType,
-): Promise<string[]> => {
-  const res = await api.get(`${COMMUNITY_API_URL}/getMembers/${oid}/${objectType}`);
+): Promise<Community> => {
+  const res = await api.get(`${COMMUNITY_API_URL}/getCommunityByObjectId/${oid}/${objectType}`);
 
   if (res.status !== 200) {
     throw new Error(res.data);
@@ -149,7 +149,7 @@ export {
   getCommunities,
   addQuestionToCommunity,
   joinCommunity,
-  getCommunityMembersByObjectId,
+  getCommunityByObjectId,
   addArticleToCommunity,
   addPollToCommunity,
 };

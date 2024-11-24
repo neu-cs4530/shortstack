@@ -539,7 +539,7 @@ export interface AddCommunityRequest extends Request {
   };
 }
 
-export interface GetCommunityMembersByObjectIdRequest extends Request {
+export interface GetCommunityByObjectIdRequest extends Request {
   params: {
     oid: string;
     objectType: CommunityObjectType;
