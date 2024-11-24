@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
 import { Question } from '../../../../types';
+import useCommunityDetails from '../../../../hooks/useCommunityDetails';
 import ProfilePicture from '../../profilePicture';
 
 /**
@@ -23,6 +24,7 @@ interface QuestionProps {
  */
 const QuestionView = ({ q }: QuestionProps) => {
   const navigate = useNavigate();
+  const community = useCommunityDetails(q.community);
 
   /**
    * Function to navigate to the home page with the specified tag as a search parameter.
@@ -72,14 +74,24 @@ const QuestionView = ({ q }: QuestionProps) => {
             </button>
           ))}
         </div>
+        {community && (
+          <div
+            className='question_community'
+            onClick={e => {
+              e.stopPropagation();
+              navigate(`/community/${community._id}`);
+            }}>
+            <span className='community_label'>Community:</span> {community.name}
+          </div>
+        )}
       </div>
       <div className='lastActivity'>
-        <div className='profile-pic-container'>
-          <ProfilePicture username={q.askedBy} />
-        </div>
         <div className='askedByText'>
           <div className='question_author'>{q.askedBy}</div>
           <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
+        </div>
+        <div className='profile-pic-container'>
+          <ProfilePicture username={q.askedBy} />
         </div>
       </div>
     </div>

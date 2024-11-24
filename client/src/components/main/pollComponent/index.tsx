@@ -3,6 +3,7 @@ import PollResults from './pollResults';
 import usePoll from '../../../hooks/usePoll';
 import { getMetaData } from '../../../tool';
 import './index.css';
+import CommunityBreadcrumb from '../communityPage/community/breadcrumb/communityBreadcrumb';
 import ProfilePicture from '../profilePicture';
 
 /**
@@ -15,34 +16,41 @@ const PollPage = () => {
 
   return (
     poll && (
-      <div className='pollContainer'>
-        <div className='pollContent'>
-          <div className='pollTitleSection'>
-            <h2>{poll?.title}</h2>
-            <div className='createdByText'>
-              <div className='profile-pic-container'>
-                <ProfilePicture username={poll.createdBy} />
+      <>
+        <CommunityBreadcrumb
+          objectID={poll?._id}
+          subPageType='Poll'
+          currentPageTitle={poll?.title}
+        />
+        <div className='pollContainer'>
+          <div className='pollContent'>
+            <div className='pollTitleSection'>
+              <h2>{poll?.title}</h2>
+              <div className='createdByText'>
+                <div className='profile-pic-container'>
+                  <ProfilePicture username={poll.createdBy} />
+                </div>
+                <h5>Created by:</h5>
+                <h5 className='usernameText'>{poll.createdBy}</h5>
               </div>
-              <h5>Created by:</h5>
-              <h5 className='usernameText'>{poll.createdBy}</h5>
+              <h5 className='greyText'>
+                Created on: {getMetaData(new Date(poll.pollDateTime))}, Ends:{' '}
+                {getMetaData(new Date(poll.pollDueDate))}
+              </h5>
             </div>
-            <h5 className='greyText'>
-              Created on: {getMetaData(new Date(poll.pollDateTime))}, Ends:{' '}
-              {getMetaData(new Date(poll.pollDueDate))}
-            </h5>
+            {!voted ? (
+              <PollVoting
+                selectedOption={selectedOption}
+                voteButtonClick={voteButtonClick}
+                onOptionChange={onOptionChange}
+                poll={poll}
+              />
+            ) : (
+              <PollResults poll={poll} />
+            )}
           </div>
-          {!voted ? (
-            <PollVoting
-              selectedOption={selectedOption}
-              voteButtonClick={voteButtonClick}
-              onOptionChange={onOptionChange}
-              poll={poll}
-            />
-          ) : (
-            <PollResults poll={poll} />
-          )}
         </div>
-      </div>
+      </>
     )
   );
 };

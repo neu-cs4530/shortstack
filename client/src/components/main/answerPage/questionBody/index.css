@@ -17,7 +17,9 @@
 .answer_question_right {
   display: flex;
   flex-direction: row;
+  justify-content: flex-end;
   align-items: center;
+  gap: 16px;
 }
 
 .answer_question_right .profile-pic-container {

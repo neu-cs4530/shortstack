@@ -13,6 +13,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 16px;
+  margin-right: 16px;
 }
 
 .answerAuthor .profile-pic-container {
@@ -21,11 +23,10 @@
   align-items: center;
   height: auto;
   width: 56px;
-  margin-right: 16px;
 }
 
 .answerAuthor .answeredByText {
-  width: 100%;
+  text-align: right;
 }
 
 .answer_author {

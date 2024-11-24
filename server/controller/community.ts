@@ -5,9 +5,10 @@ import {
   fetchAllCommunities,
   AddQuestionToCommunityModel,
   addUserToCommunity,
-  fetchCommunityMembersByObjectId,
   saveAndAddArticleToCommunity,
   saveAndAddPollToCommunity,
+  fetchCommunityByObjectId,
+  populateDocument,
 } from '../models/application';
 import {
   AddCommunityRequest,
@@ -15,11 +16,12 @@ import {
   CommunityResponse,
   Community,
   FakeSOSocket,
-  GetCommunityMembersByObjectIdRequest,
+  GetCommunityByObjectIdRequest,
   CreateArticleRequest,
   Article,
   Poll,
   CreatePollRequest,
+  QuestionResponse,
 } from '../types';
 
 const communityController = (socket: FakeSOSocket) => {
@@ -155,26 +157,34 @@ const communityController = (socket: FakeSOSocket) => {
     const { communityId } = req.params;
     const { questionId } = req.body;
 
-    if (!communityId || !questionId) {
-      res.status(400).send('Community ID and Question ID are required');
-      return;
-    }
-
     try {
-      const updatedCommunity = await AddQuestionToCommunityModel(communityId, questionId);
+      const updatedQuestion = await AddQuestionToCommunityModel(communityId, questionId);
 
-      if (
-        updatedCommunity &&
-        'error' in updatedCommunity &&
-        updatedCommunity.error === 'Community not found'
-      ) {
-        res.status(404).send('Community not found');
-        return;
+      if ('error' in updatedQuestion) {
+        if (updatedQuestion.error === 'Community not found') {
+          res.status(404).send('Community not found');
+          return;
+        }
+        if (updatedQuestion.error === 'Question not found') {
+          res.status(404).send('Question not found');
+          return;
+        }
+        throw new Error(updatedQuestion.error);
       }
 
-      res.status(200).send(updatedCommunity);
+      // populate tags for the updated question
+      const populatedQuestion = await populateDocument(updatedQuestion._id!.toString(), 'question');
+
+      if (!populatedQuestion || 'error' in populatedQuestion) {
+        throw new Error(
+          populatedQuestion?.error || 'Error populating question with tags and related fields',
+        );
+      }
+
+      socket.emit('questionUpdate', populatedQuestion as QuestionResponse);
+      res.status(200).json(updatedQuestion);
     } catch (error) {
-      res.status(500).send('Error adding question to community');
+      res.status(500).send(`Error adding question to community: ${(error as Error).message}`);
     }
   };
 
@@ -214,21 +224,21 @@ const communityController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Gets the usernames of the members of the community that owns the object.
+   * Gets the community that owns the object.
    * @param req The HTTP request object containing the object ID and object type as parameters.
    * @param res The HTTP response object used to send back the status, or an error message
    *            if the operation failed.
    */
-  const getCommunityMembersByObjectId = async (
-    req: GetCommunityMembersByObjectIdRequest,
+  const getCommunityByObjectId = async (
+    req: GetCommunityByObjectIdRequest,
     res: Response,
   ): Promise<void> => {
     const { oid, objectType } = req.params;
 
     try {
-      const usernames = await fetchCommunityMembersByObjectId(oid, objectType);
+      const community = await fetchCommunityByObjectId(oid, objectType);
 
-      res.json(usernames);
+      res.json(community);
     } catch (error) {
       res.status(500).send((error as Error).message);
     }
@@ -305,7 +315,7 @@ const communityController = (socket: FakeSOSocket) => {
   router.get('/getCommunityById/:communityId', getCommunityById);
   router.put('/joinCommunity/:communityId/:userId', joinCommunity);
   router.put('/addQuestionToCommunity/:communityId', addQuestionToCommunity);
-  router.get('/getMembers/:oid/:objectType', getCommunityMembersByObjectId);
+  router.get('/getCommunityByObjectId/:oid/:objectType', getCommunityByObjectId);
   router.post('/addArticle/:communityId', addArticleToCommunity);
   router.post('/addPoll/:communityId', addPollToCommunity);
 

@@ -115,6 +115,7 @@ export interface Answer {
  * - downVotes - An array of usernames who downvoted the question.
  * - comments - Comments associated with the question.
  * - subscribers - The usernames of subscribed users
+ * - community - The id of the community that the question belongs to.
  */
 export interface Question {
   _id?: string;
@@ -129,6 +130,7 @@ export interface Question {
   downVotes: string[];
   comments: Comment[];
   subscribers: string[];
+  community?: string;
 }
 
 /**
@@ -259,6 +261,17 @@ export interface Community {
  * Type representing all types of objects that can be owned by a community.
  */
 export type CommunityObjectType = 'Question' | 'Poll' | 'Article';
+
+/**
+ * Type representing all types of pages that a user can be in within a community.
+ */
+export type CommunitySubpageType =
+  | 'Community'
+  | 'Question'
+  | 'Article'
+  | 'New Article'
+  | 'Poll'
+  | 'New Poll';
 
 /**
  * Interface representing a PollOption, which contains:

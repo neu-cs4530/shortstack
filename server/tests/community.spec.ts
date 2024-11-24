@@ -8,9 +8,28 @@ const fetchAllCommunitiesSpy = jest.spyOn(util, 'fetchAllCommunities');
 const addQuestionToCommunityModelSpy = jest.spyOn(util, 'AddQuestionToCommunityModel');
 const addUserToCommunitySpy = jest.spyOn(util, 'addUserToCommunity');
 const populateCommunitySpy = jest.spyOn(util, 'populateCommunity');
-const fetchCommunityMembersByObjectIdSpy = jest.spyOn(util, 'fetchCommunityMembersByObjectId');
+const fetchCommunityByObjectIdSpy = jest.spyOn(util, 'fetchCommunityByObjectId');
 const saveAndAddArticleToCommunitySpy = jest.spyOn(util, 'saveAndAddArticleToCommunity');
 const saveAndAddPollToCommunitySpy = jest.spyOn(util, 'saveAndAddPollToCommunity');
+
+const MOCK_COMMUNITIES = [
+  {
+    _id: new mongoose.Types.ObjectId('6740f13649f77c7d0e17547c'),
+    name: 'Community 1',
+    members: [],
+    questions: [],
+    articles: [],
+    polls: [],
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    name: 'Community 2',
+    members: [],
+    questions: [],
+    articles: [],
+    polls: [],
+  },
+];
 
 describe('Community', () => {
   afterEach(async () => {
@@ -22,32 +41,13 @@ describe('Community', () => {
   });
   describe('GET /communities', () => {
     it('should return a list of communities', async () => {
-      const mockCommunities = [
-        {
-          _id: new mongoose.Types.ObjectId(),
-          name: 'Community 1',
-          members: [],
-          questions: [],
-          articles: [],
-          polls: [],
-        },
-        {
-          _id: new mongoose.Types.ObjectId(),
-          name: 'Community 2',
-          members: [],
-          questions: [],
-          articles: [],
-          polls: [],
-        },
-      ];
-
-      fetchAllCommunitiesSpy.mockResolvedValueOnce(mockCommunities);
+      fetchAllCommunitiesSpy.mockResolvedValueOnce(MOCK_COMMUNITIES);
 
       const response = await supertest(app).get('/community/getCommunity');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(
-        mockCommunities.map(community => ({
+        MOCK_COMMUNITIES.map(community => ({
           _id: community._id.toString(),
           name: community.name,
           members: community.members,
@@ -124,46 +124,92 @@ describe('Community', () => {
     });
   });
   describe('PUT /addQuestionToCommunity/:communityId', () => {
-    it('should add a question to a community', async () => {
+    it('should successfully add a question to a community and return the updated question', async () => {
       const mockCommunityId = new mongoose.Types.ObjectId();
       const mockQuestionId = new mongoose.Types.ObjectId();
 
-      const mockUpdatedCommunity = {
+      const mockCommunity: Community = {
         _id: mockCommunityId,
-        name: 'Community 1',
-        members: [],
+        name: 'Test Community',
+        members: ['user1', 'user2'],
         questions: [mockQuestionId],
-        articles: [],
         polls: [],
+        articles: [],
       };
 
-      addQuestionToCommunityModelSpy.mockResolvedValueOnce(mockUpdatedCommunity);
+      const mockUpdatedQuestion = {
+        _id: mockQuestionId,
+        title: 'Mock Title',
+        text: 'Sample Question',
+        tags: [
+          { _id: new mongoose.Types.ObjectId(), name: 'tag1', description: 'Tag 1 description' },
+          { _id: new mongoose.Types.ObjectId(), name: 'tag2', description: 'Tag 2 description' },
+        ],
+        answers: [],
+        askedBy: 'user123',
+        askDateTime: new Date(),
+        views: ['user1', 'user2'],
+        upVotes: ['user3'],
+        downVotes: ['user4'],
+        comments: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
+        subscribers: ['user5', 'user6'],
+        community: mockCommunity,
+      };
+
+      const mockPopulatedQuestion = {
+        ...mockUpdatedQuestion,
+        tags: mockUpdatedQuestion.tags.map(tag => ({
+          _id: new mongoose.Types.ObjectId(tag._id),
+          name: tag.name,
+          description: tag.description,
+        })),
+        comments: mockUpdatedQuestion.comments.map(comment => new mongoose.Types.ObjectId(comment)),
+        askDateTime: mockUpdatedQuestion.askDateTime,
+        community: {
+          ...mockCommunity,
+          _id: mockCommunity._id!,
+          questions: mockCommunity.questions.map(q => new mongoose.Types.ObjectId(q._id)),
+          polls: mockCommunity.polls.map(p => new mongoose.Types.ObjectId(p._id)),
+          articles: mockCommunity.articles.map(a => new mongoose.Types.ObjectId(a._id)),
+        },
+      };
+
+      addQuestionToCommunityModelSpy.mockResolvedValueOnce(mockUpdatedQuestion);
+
+      const populateDocumentSpy = jest
+        .spyOn(util, 'populateDocument')
+        .mockResolvedValueOnce(mockPopulatedQuestion);
 
       const response = await supertest(app)
-        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
-        .send({ questionId: mockQuestionId });
+        .put(`/community/addQuestionToCommunity/${mockCommunityId.toString()}`)
+        .send({ questionId: mockQuestionId.toString() });
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        _id: mockUpdatedCommunity._id.toString(),
-        name: mockUpdatedCommunity.name,
-        members: mockUpdatedCommunity.members,
-        questions: mockUpdatedCommunity.questions.map(q => q.toString()),
-        articles: mockUpdatedCommunity.articles,
-        polls: mockUpdatedCommunity.polls,
+        ...mockUpdatedQuestion,
+        _id: mockUpdatedQuestion._id.toString(),
+        tags: mockUpdatedQuestion.tags.map(tag => ({
+          _id: tag._id.toString(),
+          name: tag.name,
+          description: tag.description,
+        })),
+        comments: mockUpdatedQuestion.comments.map(comment => comment.toString()),
+        askDateTime: mockUpdatedQuestion.askDateTime.toISOString(),
+        community: {
+          ...mockCommunity,
+          _id: mockCommunity._id!.toString(),
+          questions: mockCommunity.questions.map(q => q.toString()),
+          polls: mockCommunity.polls.map(p => p.toString()),
+          articles: mockCommunity.articles.map(a => a.toString()),
+        },
       });
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(
+        mockCommunityId.toString(),
+        mockQuestionId.toString(),
+      );
+      expect(populateDocumentSpy).toHaveBeenCalledWith(mockQuestionId.toString(), 'question');
     });
-    it('should return 400 if communityId or questionId is missing', async () => {
-      const mockCommunityId = new mongoose.Types.ObjectId().toString();
-
-      const response = await supertest(app)
-        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
-        .send({});
-
-      expect(response.status).toBe(400);
-      expect(response.text).toBe('Community ID and Question ID are required');
-    });
-    it('should return 404 if the community does not exist', async () => {
+    it('should return 404 if the community is not found', async () => {
       const mockCommunityId = new mongoose.Types.ObjectId().toString();
       const mockQuestionId = new mongoose.Types.ObjectId().toString();
 
@@ -175,6 +221,51 @@ describe('Community', () => {
 
       expect(response.status).toBe(404);
       expect(response.text).toBe('Community not found');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
+    });
+    it('should return 404 if the community is not found', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+      const mockQuestionId = new mongoose.Types.ObjectId().toString();
+
+      addQuestionToCommunityModelSpy.mockResolvedValueOnce({ error: 'Community not found' });
+
+      const response = await supertest(app)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .send({ questionId: mockQuestionId });
+
+      expect(response.status).toBe(404);
+      expect(response.text).toBe('Community not found');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
+    });
+
+    it('should return 404 if the question is not found', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+      const mockQuestionId = new mongoose.Types.ObjectId().toString();
+
+      addQuestionToCommunityModelSpy.mockResolvedValueOnce({ error: 'Question not found' });
+
+      const response = await supertest(app)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .send({ questionId: mockQuestionId });
+
+      expect(response.status).toBe(404);
+      expect(response.text).toBe('Question not found');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
+    });
+
+    it('should return 500 if an unexpected error occurs', async () => {
+      const mockCommunityId = new mongoose.Types.ObjectId().toString();
+      const mockQuestionId = new mongoose.Types.ObjectId().toString();
+
+      addQuestionToCommunityModelSpy.mockRejectedValueOnce(new Error('Unexpected error'));
+
+      const response = await supertest(app)
+        .put(`/community/addQuestionToCommunity/${mockCommunityId}`)
+        .send({ questionId: mockQuestionId });
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('Error adding question to community: Unexpected error');
+      expect(addQuestionToCommunityModelSpy).toHaveBeenCalledWith(mockCommunityId, mockQuestionId);
     });
   });
   describe('PUT /joinCommunity', () => {
@@ -266,31 +357,30 @@ describe('Community', () => {
     });
   });
 
-  describe('GET /getMembers', () => {
-    it('should return a list of usernames if fetchCommunityMembersByObjectId is successful', async () => {
+  describe('GET /getCommunityByObjectId', () => {
+    it('should return the community if fetchCommunityByObjectId is successful', async () => {
       const oid: string = new mongoose.Types.ObjectId().toString();
       const objectType: CommunityObjectType = 'Question';
 
-      fetchCommunityMembersByObjectIdSpy.mockResolvedValueOnce([
-        'user1',
-        'user2',
-        'user3',
-        'user4',
-      ]);
+      fetchCommunityByObjectIdSpy.mockResolvedValueOnce(MOCK_COMMUNITIES[0]);
 
-      const response = await supertest(app).get(`/community/getMembers/${oid}/${objectType}`);
+      const response = await supertest(app).get(
+        `/community/getCommunityByObjectId/${oid}/${objectType}`,
+      );
 
       expect(response.status).toBe(200);
-      expect(response.body.length).toBe(4);
+      expect(response.body._id).toBe(MOCK_COMMUNITIES[0]._id.toString());
     });
 
-    it('should return a 500 status if fetchCommunityMembersByObjectId throws an error', async () => {
+    it('should return a 500 status if fetchCommunityByObjectId throws an error', async () => {
       const oid: string = new mongoose.Types.ObjectId().toString();
       const objectType: CommunityObjectType = 'Question';
 
-      fetchCommunityMembersByObjectIdSpy.mockRejectedValueOnce(new Error('error'));
+      fetchCommunityByObjectIdSpy.mockRejectedValueOnce(new Error('error'));
 
-      const response = await supertest(app).get(`/community/getMembers/${oid}/${objectType}`);
+      const response = await supertest(app).get(
+        `/community/getCommunityByObjectId/${oid}/${objectType}`,
+      );
 
       expect(response.status).toBe(500);
       expect(response.text).toBe('error');

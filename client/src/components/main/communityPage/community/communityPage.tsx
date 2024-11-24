@@ -4,6 +4,8 @@ import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
 import useCommunityPage from '../../../../hooks/useCommunityPage';
 import CommunityArticleForm from './article/communityArticleForm';
+import CommunityBreadcrumb from './breadcrumb/communityBreadcrumb';
+import QuestionView from '../../questionPage/question';
 
 /**
  * Represents the community page component. Displays the questions, articles, and polls of a community.
@@ -57,16 +59,11 @@ const CommunityPage = () => {
           </div>
           <hr />
           {questions.length > 0 ? (
-            <ul>
+            <>
               {questions.map((question: Question) => (
-                <li
-                  key={question._id}
-                  className='question-item'
-                  onClick={() => handleQuestionClick(question._id!)}>
-                  {question.title} - Asked by {question.askedBy}
-                </li>
+                <QuestionView q={question} key={question._id} />
               ))}
-            </ul>
+            </>
           ) : (
             <p>No questions found.</p>
           )}
@@ -141,21 +138,31 @@ const CommunityPage = () => {
   };
 
   return isCreatingArticle ? (
-    <div className='article-form-container'>
-      <CommunityArticleForm
-        communityId={communityID}
-        toggleEditMode={toggleCreateArticleForm}
-        submitCallback={(newArticle: Article) => {
-          setArticles([...articles, newArticle]);
-          toggleCreateArticleForm();
-        }}
-      />
-    </div>
+    <>
+      <CommunityBreadcrumb communityID={communityID} subPageType={'New Article'} />
+      <div className='article-form-container'>
+        <CommunityArticleForm
+          communityId={communityID}
+          toggleEditMode={toggleCreateArticleForm}
+          submitCallback={(newArticle: Article) => {
+            setArticles([...articles, newArticle]);
+            toggleCreateArticleForm();
+          }}
+        />
+      </div>
+    </>
   ) : (
     <div className='community-page'>
       <div className='community-title'>
-        <h5>Community:</h5>
-        <h1>{titleText}</h1>
+        <CommunityBreadcrumb
+          communityID={communityID}
+          subPageType={'Community'}
+          styleOverride={{ paddingLeft: '0' }}
+        />
+        <div>
+          <h5>Community:</h5>
+          <h1>{titleText}</h1>
+        </div>
       </div>
 
       <div className='tab-bar'>
