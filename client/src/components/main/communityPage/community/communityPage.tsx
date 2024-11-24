@@ -30,10 +30,6 @@ const CommunityPage = () => {
   } = useCommunityPage();
   const navigate = useNavigate();
 
-  const handleQuestionClick = (questionID: string) => {
-    navigate(`/question/${questionID}`);
-  };
-
   const handleArticleClick = (articleID: string) => {
     navigate(`/community/article/${articleID}`);
   };
