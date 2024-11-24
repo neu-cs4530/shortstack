@@ -251,6 +251,17 @@ async function questionCreate(
 }
 
 /**
+ * Associate a community with a Question by updating the Question.
+ */
+async function associateQuestionWithCommunity(question: Question, community: Community) {
+  return await QuestionModel.findByIdAndUpdate(
+    { _id: question._id },
+    { community: community },
+    { new: true },
+  );
+}
+
+/**
  * Creates a new PollOption document in the database.
  *
  * @param text
@@ -588,9 +599,9 @@ const populate = async () => {
 
     const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10]);
 
-    await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2]);
-    await communityCreate('CS Majors', [U4, U5, U6, U7, U9].map(u => u.username), [Q1, Q2, Q3], [P2, P3], [ART3]);
-    await communityCreate('Northeastern CS4950', [U8, U4].map(u => u.username), [], [], []);
+    const COM1 = await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2]);
+    const COM2 = await communityCreate('CS Majors', [U4, U5, U6, U7, U9].map(u => u.username), [Q1, Q2, Q3], [P2, P3], [ART3]);
+    const COM3 = await communityCreate('Northeastern CS4950', [U8, U4].map(u => u.username), [], [], []);
 
     // challenges
     const CHAL1 = await challengeCreate(CHAL1_DESCRIPTION, CHAL1_AMT, 'answer', CHAL1_REWARD);
@@ -618,6 +629,11 @@ const populate = async () => {
     await userChallengeCreate(U2.username, CHAL4, [currentDate]); // in progress (1/5)
     await userChallengeCreate(U2.username, CHAL5, []); // in progress (0/10)
     await userChallengeCreate(U2.username, CHAL6, [...tenDates, ...tenDates]) // in progress (20/25) (upvotes)
+
+    await associateQuestionWithCommunity(Q4, COM1);
+    await associateQuestionWithCommunity(Q1, COM2);
+    await associateQuestionWithCommunity(Q2, COM2);
+    await associateQuestionWithCommunity(Q3, COM2);
 
     console.log('Database populated');
   } catch (err) {
