@@ -67,6 +67,7 @@ export interface Tag {
  * - downVotes - An array of usernames that have downvoted the question.
  * - comments - Object IDs of comments that have been added to the question by users, or comments themselves if populated.
  * - subscribers - The usernames of subscribed users
+ * - community - The community the question belongs to
  */
 export interface Question {
   _id?: ObjectId;
@@ -81,6 +82,7 @@ export interface Question {
   downVotes: string[];
   comments: Comment[] | ObjectId[];
   subscribers: string[];
+  community?: Community;
 }
 
 /**
@@ -372,10 +374,34 @@ export interface SubscriberUpdatePayload {
  * - reward - The equipped reward.
  * - type - The type of the reward, either a frame or a title.
  */
-export interface RewardUpdatePayload {
+export interface EquippedRewardUpdatePayload {
   username: string;
   reward: string;
   type: 'frame' | 'title';
+}
+
+/**
+ * Interface representing the payload for an unlocked reward(s) update socket event.
+ * - username - The user who's equipped reward was updated.
+ * - rewards - The unlocked reward(s).
+ * - type - The type of the reward(s), either a frame or a title.
+ */
+export interface UnlockedRewardUpdatePayload {
+  username: string;
+  rewards: string[];
+  type: 'frame' | 'title';
+}
+
+/**
+ * Interface representing the payload for a points update socket event.
+ * - username - The user who's points were updated.
+ * - pointsAdded - The number of points added.
+ * - totalPoints - The user's total points.
+ */
+export interface PointsUpdatePayload {
+  username: string;
+  pointsAdded: number;
+  totalPoints: number;
 }
 
 /**
@@ -393,8 +419,9 @@ export interface ServerToClientEvents {
   articleUpdate: (article: ArticleResponse) => void;
   pollUpdate: (poll: PollResponse) => void;
   subscriberUpdate: (update: SubscriberUpdatePayload) => void;
-  equippedRewardUpdate: (update: RewardUpdatePayload) => void;
-  unlockedRewardUpdate: (update: RewardUpdatePayload) => void;
+  equippedRewardUpdate: (update: EquippedRewardUpdatePayload) => void;
+  unlockedRewardUpdate: (update: UnlockedRewardUpdatePayload) => void;
+  pointsUpdate: (update: PointsUpdatePayload) => void;
   upvoteReceived: (username: string) => void;
 }
 
@@ -523,6 +550,26 @@ export interface GetCommunityByObjectIdRequest extends Request {
  * Type representing the possible responses for a Community-related operation.
  */
 export type CommunityResponse = Community | { error: string };
+
+/**
+ * Type to represent a FrameReward with the frame image and the number of points needed to unlock.
+ * - name - The file name of the frame image.
+ * - pointsNeeded - The number of points needed to unlock the frame.
+ */
+export type FrameReward = {
+  name: string;
+  pointsNeeded: number;
+};
+
+/**
+ * A list of the available FrameRewards.
+ */
+export const FRAMES: FrameReward[] = [
+  { name: 'profile_frames-01.png', pointsNeeded: 500 },
+  { name: 'profile_frames-02.png', pointsNeeded: 1000 },
+  { name: 'profile_frames-03.png', pointsNeeded: 5000 },
+  { name: 'profile_frames-04.png', pointsNeeded: 10000 },
+];
 
 /**
  * Type representing the possible action options for a challenge's type.
