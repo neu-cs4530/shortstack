@@ -36,7 +36,7 @@ const PollPage = () => {
                 <h5 className='usernameText'>{poll.createdBy}</h5>
               </div>
               <h5 className='greyText'>
-                Created on: {getMetaData(new Date(poll.pollDateTime))}, End{pollIsClosed ? 'ed' : 's'}:{' '}
+                Created: {getMetaData(new Date(poll.pollDateTime))}, End{pollIsClosed ? 'ed' : 's'}:{' '}
                 {getMetaData(new Date(poll.pollDueDate))}
               </h5>
             </div>
