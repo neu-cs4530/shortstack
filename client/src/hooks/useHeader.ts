@@ -10,6 +10,7 @@ import useUserContext from './useUserContext';
  * @returns setVal - function to update the value of the input.
  * @returns handleInputChange - function to handle changes in the input field.
  * @returns handleKeyDown - function to handle 'Enter' key press and trigger the search.
+ * @returns user - the user logged into the site.
  */
 const useHeader = () => {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ const useHeader = () => {
     handleInputChange,
     handleKeyDown,
     userHasUnreadNotifs,
+    user,
   };
 };
 

@@ -9,7 +9,7 @@ import useUserChallenges from './useUserChallenge';
  *
  * @returns user - the user that is currently logged in
  * @returns userQuestions - the questions that were asked by the user
- * @returns userChallenges - the challengess the user has earned
+ * @returns userChallenges - the challenges the user has earned
  */
 const useProfilePage = () => {
   const { user } = useUserContext();

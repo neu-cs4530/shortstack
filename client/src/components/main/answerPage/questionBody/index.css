@@ -1,7 +1,7 @@
 .questionBody {
   display: flex;
   flex-direction: row;
-  /* justify-content: space-between;  */
+  gap: 24px;
   margin-top: 5%;
   border-bottom: #000000 1px dashed;
 }
@@ -16,6 +16,21 @@
 
 .answer_question_right {
   display: flex;
-  flex-direction: column;
-  margin-left: 5%;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+.answer_question_right .profile-pic-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 56px;
+  width: auto;
+  margin-right: 16px;
+}
+
+.askedByText {
+  display: inline-block;
 }

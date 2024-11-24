@@ -3,6 +3,7 @@ import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
 import { Comment } from '../../../../types';
+import ProfilePicture from '../../profilePicture';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -37,8 +38,13 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerPro
       {handleHyperlink(text)}
     </div>
     <div className='answerAuthor'>
-      <div className='answer_author'>{ansBy}</div>
-      <div className='answer_question_meta'>{meta}</div>
+      <div className='answeredByText'>
+        <div className='answer_author'>{ansBy}</div>
+        <div className='answer_question_meta'>{meta}</div>
+      </div>
+      <div className='profile-pic-container'>
+        <ProfilePicture username={ansBy} />
+      </div>
     </div>
     <CommentSection comments={comments} handleAddComment={handleAddComment} />
   </div>

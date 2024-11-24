@@ -27,10 +27,32 @@
 .pollTitleSection {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .greyText {
   color: grey;
   font-weight: 300;
+}
+
+.createdByText {
+  display: inline-flex;
+  align-items: center;
+}
+
+.createdByText h5 {
+  font-weight: 300;
+}
+
+.usernameText {
+  color: red;
+}
+
+.pollContainer .profile-pic-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  width: 24px;
+  height: auto;
 }
