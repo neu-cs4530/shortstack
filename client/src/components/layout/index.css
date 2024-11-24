@@ -58,3 +58,10 @@
   color: red;
   margin-top: 10px;
 }
+
+.points-indicator {
+  display: none;
+  position: absolute;
+  right: 40px;
+  margin-top: 24px;
+}
