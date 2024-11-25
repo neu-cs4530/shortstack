@@ -202,7 +202,6 @@ const questionController = (socket: FakeSOSocket) => {
           socket.emit('upvoteReceived', incrementProgressResponse[0].username);
           // emit socket event with rewards of completed challenges
           incrementProgressResponse.forEach(uc => {
-            // TODO: if a challenge is completed, send a notification to the user
             if (uc.progress.length >= uc.challenge.actionAmount) {
               socket.emit('unlockedRewardUpdate', {
                 username: incrementProgressResponse[0].username,
