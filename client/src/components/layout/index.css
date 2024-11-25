@@ -6,7 +6,8 @@
 
 .right_main {
   width: 85%;
-  overflow: auto;
+  overflow:auto;
+  padding-bottom: 24px;
 }
 
 .space_between {

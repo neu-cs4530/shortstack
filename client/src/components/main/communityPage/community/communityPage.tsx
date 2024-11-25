@@ -76,7 +76,7 @@ const CommunityPage = () => {
             <h2 style={{ marginBottom: '0' }}>Community Articles</h2>
             <div className='header-buttons'>
               {canEdit && (
-                <button className='article-button' onClick={toggleCreateArticleForm}>
+                <button className='new-article-button' onClick={toggleCreateArticleForm}>
                   <PiNotePencil style={{ marginRight: '5px' }} /> New Article
                 </button>
               )}

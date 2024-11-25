@@ -2,9 +2,10 @@
   display: flex;
   flex-direction: column;
   width: 15%;
-  border-right: dashed;
   padding: 4% 0 4% 0;
   align-items: center;
+  box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.1);
+  background-color: #E3B892;
 }
 
 .menu_button:first-child {
@@ -16,11 +17,23 @@
   width: 80%;
   margin-top: 20px;
   border-radius: 5px;
-  text-align: center;
+  padding-left: 8px;
+  text-align: left;
   line-height: 40px;
-  color: cornflowerblue;
+  color: #603615;
+  text-decoration: none;
+}
+
+.menu_button:hover {
+  background-color: #f0c29a;
 }
 
 .menu_selected {
-  background: #cccccc;
+  background: #f7caa2;
+  color: #532c0e;
+  font-weight: bold;
+}
+
+.menu_selected:hover {
+  background: #f7caa2;
 }
