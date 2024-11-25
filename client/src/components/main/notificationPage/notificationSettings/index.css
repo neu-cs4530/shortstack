@@ -1,6 +1,5 @@
 .settings_section {
-  margin-bottom: 1rem;
-  margin-left: 1rem;
+  margin: 0 1rem 1rem 1rem;
   padding: 0.5rem 0rem 0rem 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -19,4 +18,8 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+
+.notif_settings_header {
+  padding: 1rem 0rem 1rem 1.2rem;
 }

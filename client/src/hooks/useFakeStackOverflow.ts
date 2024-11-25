@@ -6,6 +6,7 @@ import {
   NotificationType,
   EquippedRewardUpdatePayload,
   UnlockedRewardUpdatePayload,
+  NotificationSettingsUpdatePayload,
 } from '../types';
 import { getUserNotifications, notifyUsers } from '../services/userService';
 
@@ -112,12 +113,40 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
       }
     };
 
+    /**
+     * Function to handle notification settings updates from the socket.
+     *
+     * @param username - The user who's notification settings were updated.
+     * @param notificationType - The notification type that was toggled
+     * @param isBlocked - Whether the setting was turned off or on.
+     */
+    const handleNotificationSettingsUpdate = async ({
+      username,
+      notificationType,
+      isBlocked,
+    }: NotificationSettingsUpdatePayload) => {
+      if (user && user.username === username) {
+        if (isBlocked) {
+          setUser({
+            ...user,
+            blockedNotifications: [...user.blockedNotifications, notificationType],
+          });
+        } else {
+          setUser({
+            ...user,
+            blockedNotifications: user.blockedNotifications.filter(nt => nt !== notificationType),
+          });
+        }
+      }
+    };
+
     if (socket) {
       socket.on('notificationUpdate', handleNotificationUpdate);
       socket.on('singleNotifUpdate', handleSingleNotifUpdate);
       socket.on('equippedRewardUpdate', handleEquippedRewardUpdate);
       socket.on('unlockedRewardUpdate', handleUnlockedRewardUpdate);
       socket.on('pointsUpdate', handlePointsUpdate);
+      socket.on('notificationSettingsUpdate', handleNotificationSettingsUpdate);
     }
 
     return () => {
@@ -127,6 +156,7 @@ const useFakeStackOverflow = (socket: FakeSOSocket | null) => {
         socket.off('equippedRewardUpdate', handleEquippedRewardUpdate);
         socket.off('unlockedRewardUpdate', handleUnlockedRewardUpdate);
         socket.off('pointsUpdate', handlePointsUpdate);
+        socket.off('notificationSettingsUpdate', handleNotificationSettingsUpdate);
       }
     };
   }, [socket, user]);

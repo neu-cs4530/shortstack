@@ -344,6 +344,11 @@ const userController = (socket: FakeSOSocket) => {
         throw new Error(status.error as string);
       }
 
+      socket.emit('notificationSettingsUpdate', {
+        username: status.username,
+        notificationType: type,
+        isBlocked: status.blockedNotifications.some(n => n === type),
+      });
       res.json(status.blockedNotifications);
     } catch (error) {
       res.status(500).send('Error when updating blocked notification types');

@@ -1,4 +1,3 @@
-import useUserContext from '../../../../hooks/useUserContext';
 import { NotificationType } from '../../../../types';
 import './index.css';
 import SettingView from './settingView';
@@ -7,8 +6,6 @@ import SettingView from './settingView';
  * NotificationSettingsPage component that displays a user's notification settings.
  */
 const NotificationSettingsPage = () => {
-  const { user } = useUserContext();
-
   const questionSettings = [
     NotificationType.Answer,
     NotificationType.Comment,
@@ -26,18 +23,14 @@ const NotificationSettingsPage = () => {
 
   return (
     <div>
-      <div className='space_between right_padding'>
+      <div className='notif_settings_header'>
         <div className='bold_title'>Notification Settings</div>
       </div>
       <div className='settings_section'>
         <h2>Question and Answer Notifications</h2>
         <div className='notification_list'>
           {questionSettings.map((type, idx) => (
-            <SettingView
-              notificationType={type}
-              username={user.username}
-              blockedNotifications={user.blockedNotifications}
-              key={idx}></SettingView>
+            <SettingView notificationType={type} key={idx}></SettingView>
           ))}
         </div>
       </div>
@@ -45,11 +38,7 @@ const NotificationSettingsPage = () => {
         <h2>Reward Notifications</h2>
         <div className='notification_list'>
           {rewardSettings.map((type, idx) => (
-            <SettingView
-              notificationType={type}
-              username={user.username}
-              blockedNotifications={user.blockedNotifications}
-              key={idx}></SettingView>
+            <SettingView notificationType={type} key={idx}></SettingView>
           ))}
         </div>
       </div>
@@ -57,11 +46,7 @@ const NotificationSettingsPage = () => {
         <h2>Community Notifications</h2>
         <div className='notification_list'>
           {communitySettings.map((type, idx) => (
-            <SettingView
-              notificationType={type}
-              username={user.username}
-              blockedNotifications={user.blockedNotifications}
-              key={idx}></SettingView>
+            <SettingView notificationType={type} key={idx}></SettingView>
           ))}
         </div>
       </div>
