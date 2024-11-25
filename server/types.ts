@@ -136,6 +136,7 @@ export interface AddQuestionRequest extends Request {
  * - equippedFrame - The filepath of the frame the user has equipped
  * - equippedTitle - The title the user has equipped
  * - notifications - The notifications the user has
+ * - blockedNotifications - The NotificationTypes the user does not want to recieve notifications for
  */
 export interface User {
   _id?: ObjectId;
@@ -147,6 +148,7 @@ export interface User {
   equippedFrame: string;
   equippedTitle: string;
   notifications: Notification[];
+  blockedNotifications: NotificationType[];
 }
 
 /**
@@ -198,6 +200,19 @@ export type EquipRewardResponse = {
   reward: string,
   type: 'frame' | 'title',
 } | { error: string };
+
+/**
+ * Interface for the request body when blocking/unblocking a NotificationType for a user.
+ * - body - The username and the number of points to add.
+ *  - username - The unique username of the user.
+ *  - type - The notification type to block/unblock
+ */
+export interface ToggleBlockedTypeRequest extends Request {
+  body: {
+    username: string,
+    type: NotificationType,
+  };
+}
 
 /**
  * Interface for the request body when creating a new notification.

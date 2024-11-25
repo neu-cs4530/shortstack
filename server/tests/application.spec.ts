@@ -43,6 +43,7 @@ import {
   fetchCommunityByObjectId,
   AddQuestionToCommunityModel,
   updateUsersUnlockedFrames,
+  updateBlockedTypes,
 } from '../models/application';
 import {
   Answer,
@@ -85,6 +86,7 @@ const newUser: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const userA: User = {
@@ -97,6 +99,7 @@ const userA: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const tag1: Tag = {
@@ -281,6 +284,7 @@ const userAWithNotifs: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [rewardNotif, pollNotif],
+  blockedNotifications: [],
 };
 
 const challenge1: Challenge = {
@@ -1369,6 +1373,91 @@ describe('application module', () => {
       test('equipReward should return an object with error if findOneAndUpdate returns an error', async () => {
         mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
         const result = await equipReward('UserA', 'Rookie Responder', 'title');
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
+
+    describe('updateBlockedTypes', () => {
+      test('updateBlockedTypes with not blocked type return the updated user with the type blocked', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(UserModel).toReturn(
+          { ...userA, blockedNotifications: [NotificationType.AnswerComment] },
+          'findOneAndUpdate',
+        );
+        const result = (await updateBlockedTypes('UserA', NotificationType.AnswerComment)) as User;
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.blockedNotifications).toEqual([NotificationType.AnswerComment]);
+      });
+
+      test('updateBlockedTypes with already blocked type return the updated user with the type unblocked', async () => {
+        mockingoose(UserModel).toReturn(
+          {
+            ...userA,
+            blockedNotifications: [NotificationType.Upvote, NotificationType.ArticleUpdate],
+          },
+          'findOne',
+        );
+        mockingoose(UserModel).toReturn(
+          {
+            ...userA,
+            blockedNotifications: [NotificationType.Upvote],
+          },
+          'findOneAndUpdate',
+        );
+        const result = (await updateBlockedTypes('UserA', NotificationType.ArticleUpdate)) as User;
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.blockedNotifications).toEqual([NotificationType.Upvote]);
+      });
+
+      test('updateBlockedTypes should return an error object if findOne returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('updateBlockedTypes should return an error object if findOne returns an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOne');
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('updateBlockedTypes should return an error object if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('updateBlockedTypes should return an error object if findOneAndUpdate returns an error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
 
         if (result && 'error' in result) {
           expect(true).toBeTruthy();

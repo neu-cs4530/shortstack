@@ -107,6 +107,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
  * @param equippedFrame
  * @param equippedTitle
  * @param notifications
+ * @param blockedNotifications
  * @returns A Promise that resolves to the created User document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -119,6 +120,7 @@ async function userCreate(
   equippedFrame: string,
   equippedTitle: string,
   notifications: Notification[],
+  blockedNotifications: NotificationType[],
 ): Promise<User> {
   if (username === '' || password === '')
     throw new Error('Invalid User Format');
@@ -131,6 +133,7 @@ async function userCreate(
     equippedFrame: equippedFrame,
     equippedTitle: equippedTitle,
     notifications: notifications,
+    blockedNotifications: blockedNotifications,
   };
   return await UserModel.create(userDetail);
 }
@@ -539,14 +542,14 @@ const populate = async () => {
     const N6_3 = await notificationCreate(NotificationType.NewReward, true);
 
     // TODO: add profile frames once filepaths are available
-    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [CHAL1_REWARD, CHAL2_REWARD], '', CHAL1_REWARD, [N1_1, N2_1]);
-    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [CHAL1_REWARD, CHAL3_REWARD], '', CHAL3_REWARD, [N3_1, N4_1, N1_2, N2_2]);
-    const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5_1, N6_1]);
-    const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', []);
-    const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1_3, N5_2]);
-    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4000, [], [], '', '', [N6_2, N1_4, N4_2, N6_3]);
-    const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2_3]);
-    const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3_2]);
+    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [CHAL1_REWARD, CHAL2_REWARD], '', CHAL1_REWARD, [N1_1, N2_1], []);
+    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [CHAL1_REWARD, CHAL3_REWARD], '', CHAL3_REWARD, [N3_1, N4_1, N1_2, N2_2], []);
+    const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5_1, N6_1], []);
+    const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', [], []);
+    const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1_3, N5_2], []);
+    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4000, [], [], '', '', [N6_2, N1_4, N4_2, N6_3], []);
+    const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2_3], []);
+    const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3_2], []);
 
     const po1_promise = [
       pollOptionCreate('Windows', [U2.username, U3.username]), 
@@ -586,7 +589,7 @@ const populate = async () => {
     const N9 = await notificationCreate(NotificationType.NewArticle, false, 'Article', ART3);
     const N10 = await notificationCreate(NotificationType.ArticleUpdate, true, 'Article', ART2);
 
-    const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10]);
+    const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10], []);
 
     await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2]);
     await communityCreate('CS Majors', [U4, U5, U6, U7, U9].map(u => u.username), [Q1, Q2, Q3], [P2, P3], [ART3]);

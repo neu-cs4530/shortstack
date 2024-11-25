@@ -16,6 +16,7 @@ export interface User {
   equippedFrame: string;
   equippedTitle: string;
   notifications: Notification[];
+  blockedNotifications: NotificationType[];
 }
 
 /**

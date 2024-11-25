@@ -849,6 +849,40 @@ export const addNotificationToUser = async (
 };
 
 /**
+ * Toggles whether a NotificationType is blocked for a user.
+ *
+ * @param {string} username - The username of the user to block/unblock the type
+ * @param {Notification} type - The NotificationType to block/unblock
+ *
+ * @returns {Promise<UserResponse>} - The updated user or an error message
+ */
+export const updateBlockedTypes = async (
+  username: string,
+  type: NotificationType,
+): Promise<UserResponse> => {
+  try {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    const operation = user.blockedNotifications.includes(type)
+      ? { $pull: { blockedNotifications: type } }
+      : { $push: { blockedNotifications: type } };
+
+    const result = await UserModel.findOneAndUpdate({ username }, operation, { new: true });
+
+    if (!result) {
+      return { error: 'Error when updating blocked notification types' };
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error updating blocked notification types' };
+  }
+};
+
+/**
  * Update the notification to indicate that it has been read.
  * @param nid - The id of the notification to update
  * @returns {Promise<NotificationResponse>} - The updated notification that has been marked as read.

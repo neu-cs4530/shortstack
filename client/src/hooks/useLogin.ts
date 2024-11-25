@@ -92,6 +92,7 @@ const useLogin = () => {
         equippedFrame: '',
         equippedTitle: '',
         notifications: [],
+        blockedNotifications: [],
       });
       setUser(newUser);
       navigate('/home');
