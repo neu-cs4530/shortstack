@@ -246,12 +246,21 @@ export interface ServerToClientEvents {
  * - _id - The unique identifier for the article. Optional field
  * - title - The title of the article.
  * - body - The content of the article.
+ * - createdDate - The date the article was created. Optional field
+ * - latestEditDate - The date the article was most recently edited. Optional field
  */
 export interface Article {
   _id?: string;
   title: string;
   body: string;
+  createdDate?: Date;
+  latestEditDate?: Date;
 }
+
+/**
+ * Type representing options for sorting articles.
+ */
+export type ArticleSortOption = 'Newest' | 'Oldest' | 'Recently Edited';
 
 /**
  * Interface representing a Community, which contains:

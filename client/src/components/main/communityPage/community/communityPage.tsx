@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { PiNotePencil } from 'react-icons/pi';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { Question, Poll, Article } from '../../../../types';
 import './communityPage.css';
 import useCommunityPage from '../../../../hooks/useCommunityPage';
@@ -25,8 +26,9 @@ const CommunityPage = () => {
     setCurrentTab,
     searchBarValue,
     handleInputChange,
-    handleKeyDown,
-    searchedArticles,
+    searchedAndSortedArticles,
+    articleSortOption,
+    handleChangeArticleSortOption,
   } = useCommunityPage();
   const navigate = useNavigate();
 
@@ -74,7 +76,7 @@ const CommunityPage = () => {
             <h2 style={{ marginBottom: '0' }}>Community Articles</h2>
             <div className='header-buttons'>
               {canEdit && (
-                <button className='new-article-button' onClick={toggleCreateArticleForm}>
+                <button className='article-button' onClick={toggleCreateArticleForm}>
                   <PiNotePencil style={{ marginRight: '5px' }} /> New Article
                 </button>
               )}
@@ -84,14 +86,24 @@ const CommunityPage = () => {
                 type='text'
                 value={searchBarValue}
                 onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
               />
+              <FormControl className='sort-dropdown' size='small' sx={{ m: 1, minWidth: 160 }}>
+                <InputLabel>Sort by:</InputLabel>
+                <Select
+                  label='Sort by:'
+                  value={articleSortOption}
+                  onChange={handleChangeArticleSortOption}>
+                  <MenuItem value='Newest'>Newest</MenuItem>
+                  <MenuItem value='Oldest'>Oldest</MenuItem>
+                  <MenuItem value='Recently Edited'>Recently Edited</MenuItem>
+                </Select>
+              </FormControl>
             </div>
           </div>
           <hr></hr>
-          {searchedArticles.length > 0 ? (
+          {searchedAndSortedArticles.length > 0 ? (
             <ul>
-              {searchedArticles.map((article: Article) => (
+              {searchedAndSortedArticles.map((article: Article) => (
                 <li
                   key={article._id}
                   className='article-item'
