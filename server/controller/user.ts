@@ -7,6 +7,7 @@ import {
   FRAMES,
   NewNotificationRequest,
   Notification,
+  ToggleBlockedTypeRequest,
   User,
   UserResponse,
 } from '../types';
@@ -18,6 +19,7 @@ import {
   equipReward,
   updateUsersUnlockedFrames,
   notifyUsers,
+  updateBlockedTypes,
 } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
@@ -318,6 +320,36 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Updates a users blocked NotificationTypes. Adds the notification type to the users blockedNotifications
+   * if not already blocked. Otherwise, removes the type from the users blockedNotifications.
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The ToggleBlockedTypeRequest object containing username and type to block/unblock.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateBlockedNotifications = async (req: ToggleBlockedTypeRequest, res: Response) => {
+    if (!req.body.username || !req.body.type) {
+      res.status(400).send('Invalid request');
+      return;
+    }
+
+    const { username, type } = req.body;
+
+    try {
+      const status = await updateBlockedTypes(username, type);
+      if ('error' in status) {
+        throw new Error(status.error as string);
+      }
+
+      res.json(status.blockedNotifications);
+    } catch (error) {
+      res.status(500).send('Error when updating blocked notification types');
+    }
+  };
+
   router.post('/addUser', addUser);
   router.post('/login', loginUser);
   router.post('/addPoints', addPoints);
@@ -326,6 +358,7 @@ const userController = (socket: FakeSOSocket) => {
   router.put('/markAllNotifsAsRead/:username', markAllNotifsAsRead);
   router.put('/updateEquippedReward', equipRewardToUser);
   router.get('/getUserFrame/:username', getUserFrame);
+  router.put('/updateBlockedNotifications', updateBlockedNotifications);
 
   return router;
 };

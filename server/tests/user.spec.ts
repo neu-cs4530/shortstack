@@ -15,6 +15,7 @@ const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
 const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
 const notifyUsersSpy = jest.spyOn(util, 'notifyUsers');
 const updateUserNotifsAsReadSpy = jest.spyOn(util, 'updateUserNotifsAsRead');
+const updateBlockedTypesSpy = jest.spyOn(util, 'updateBlockedTypes');
 
 const newUser: User = {
   username: 'UserA',
@@ -25,6 +26,7 @@ const newUser: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const mockNewUser: User = {
@@ -37,6 +39,7 @@ const mockNewUser: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const mockRewardNotif: Notification = {
@@ -63,6 +66,7 @@ const mockNewUserWithNotif: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [mockRewardNotif],
+  blockedNotifications: [],
 };
 
 const mockUserWithEquippedFrame: User = {
@@ -75,6 +79,7 @@ const mockUserWithEquippedFrame: User = {
   equippedFrame: 'profile_frames-02.png',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 describe('User API', () => {
@@ -685,6 +690,76 @@ describe('User API', () => {
 
       expect(response.status).toBe(500);
       expect(response.text).toEqual('Error when fetching equipped frame for user: invalidusername');
+    });
+  });
+
+  describe('PUT /updateBlockedNotifications', () => {
+    afterEach(async () => {
+      await mongoose.connection.close(); // Ensure the connection is properly closed
+    });
+
+    afterAll(async () => {
+      await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+    });
+
+    it('should return the updated blocked notification types', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        type: NotificationType.ArticleUpdate,
+      };
+      updateBlockedTypesSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        blockedNotifications: [NotificationType.ArticleUpdate],
+      });
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual([NotificationType.ArticleUpdate]);
+    });
+
+    it('should return bad request if missing username', async () => {
+      const mockReqBody = {
+        type: NotificationType.ArticleUpdate,
+      };
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if missing type to block', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+      };
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 500 if error object returned by `updateBlockedTypes`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        type: NotificationType.NewPoll,
+      };
+      updateBlockedTypesSpy.mockResolvedValueOnce({ error: 'Error updating blocked types' });
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
     });
   });
 });
