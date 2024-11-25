@@ -1385,7 +1385,7 @@ describe('application module', () => {
     });
 
     describe('updateBlockedTypes', () => {
-      test('updateBlockedTypes with not blocked type return the updated user with the type blocked', async () => {
+      test('updateBlockedTypes with an initially unblocked type should return the updated user with the type blocked', async () => {
         mockingoose(UserModel).toReturn(userA, 'findOne');
         mockingoose(UserModel).toReturn(
           { ...userA, blockedNotifications: [NotificationType.AnswerComment] },
