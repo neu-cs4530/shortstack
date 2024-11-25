@@ -107,6 +107,7 @@ hr {
   align-items: center;
   height: 100%;
   width: fit-content;
+  padding-right: 24px;
 }
 
 .community-page #searchBar {

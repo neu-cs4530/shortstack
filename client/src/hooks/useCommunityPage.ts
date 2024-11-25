@@ -1,6 +1,7 @@
-import { useEffect, useState, KeyboardEvent, ChangeEvent } from 'react';
+import { useEffect, useState, ChangeEvent } from 'react';
 import { useParams } from 'react-router-dom';
-import { Question, Poll, Article } from '../types';
+import { SelectChangeEvent } from '@mui/material';
+import { Question, Poll, Article, ArticleSortOption } from '../types';
 import { getCommunityDetails } from '../services/communityService';
 import useUserContext from './useUserContext';
 
@@ -20,8 +21,9 @@ import useUserContext from './useUserContext';
  * @returns setCurrentTab - Function to set the tab the user has selected
  * @returns searchBarValue - the current input inside of the search bar.
  * @returns handleInputChange - function to handle changes in the search bar's input field.
- * @returns handleKeyDown - function to handle 'Enter' key press and trigger the search.
- * @returns searchedArticles - the articles that match the entered search term.
+ * @returns searchedAndSortedArticles - the articles filtered by the search term and sorted by the sort value.
+ * @returns articleSortOption - the option to sort the articles by.
+ * @returns handleChangeArticleSortOption - Function to handle changes to the article sort option.
  */
 const useCommunityPage = () => {
   const { user, socket } = useUserContext();
@@ -34,7 +36,8 @@ const useCommunityPage = () => {
   const [isCreatingArticle, setIsCreatingArticle] = useState<boolean>(false);
   const [currentTab, setCurrentTab] = useState<'Questions' | 'Articles' | 'Polls'>('Questions');
   const [searchBarValue, setSearchBarValue] = useState<string>('');
-  const [searchedArticles, setSearchedArticles] = useState<Article[]>([]);
+  const [searchedAndSortedArticles, setSearchedAndSortedArticles] = useState<Article[]>([]);
+  const [articleSortOption, setArticleSortOption] = useState<ArticleSortOption>('Newest');
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -46,7 +49,7 @@ const useCommunityPage = () => {
           setPolls(communityData.polls || []);
           setArticles(communityData.articles || []);
           setCanEdit(communityData.members.some(m => m === user.username));
-          setSearchedArticles(communityData.articles || []);
+          setSearchedAndSortedArticles(communityData.articles || []);
         }
       } catch (error) {
         throw new Error('Failed to fetch community data');
@@ -126,6 +129,47 @@ const useCommunityPage = () => {
     };
   }, [polls, socket]);
 
+  useEffect(() => {
+    let updatedArticles = [...articles];
+
+    // filter the articles according to the search bar value
+    if (searchBarValue) {
+      updatedArticles = articles.filter(article => {
+        const upcaseTitle = article.title.toUpperCase();
+        const upcaseBody = article.body.toUpperCase();
+        const upcaseSearchTerm = searchBarValue.toUpperCase();
+
+        return upcaseTitle.includes(upcaseSearchTerm) || upcaseBody.includes(upcaseSearchTerm);
+      });
+    }
+
+    // sort the articles according to the sort option
+    switch (articleSortOption) {
+      case 'Newest':
+        updatedArticles.sort(
+          (a: Article, b: Article) =>
+            new Date(b.createdDate!).getTime() - new Date(a.createdDate!).getTime(),
+        );
+        break;
+      case 'Oldest':
+        updatedArticles.sort(
+          (a: Article, b: Article) =>
+            new Date(a.createdDate!).getTime() - new Date(b.createdDate!).getTime(),
+        );
+        break;
+      case 'Recently Edited':
+        updatedArticles.sort(
+          (a: Article, b: Article) =>
+            new Date(b.latestEditDate!).getTime() - new Date(a.latestEditDate!).getTime(),
+        );
+        break;
+      default:
+        break;
+    }
+
+    setSearchedAndSortedArticles(updatedArticles);
+  }, [articles, articleSortOption, searchedAndSortedArticles, searchBarValue]);
+
   /**
    * Function to handle changes in the input field.
    *
@@ -136,31 +180,12 @@ const useCommunityPage = () => {
   };
 
   /**
-   * Function to filter the community's articles with the search term -- looking for the term in
-   * each article's title or body.
-   */
-  const filterArticlesBySearch = (): void =>
-    setSearchedArticles(
-      articles.filter(article => {
-        const upcaseTitle = article.title.toUpperCase();
-        const upcaseBody = article.body.toUpperCase();
-        const upcaseSearchTerm = searchBarValue.toUpperCase();
-
-        return upcaseTitle.includes(upcaseSearchTerm) || upcaseBody.includes(upcaseSearchTerm);
-      }),
-    );
-
-  /**
-   * Function to handle 'Enter' key press and trigger the search.
+   * Function to handle changes to the article sort option.
    *
    * @param e - the event object.
    */
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-
-      filterArticlesBySearch();
-    }
+  const handleChangeArticleSortOption = (e: SelectChangeEvent) => {
+    setArticleSortOption(e.target.value as ArticleSortOption);
   };
 
   return {
@@ -177,8 +202,9 @@ const useCommunityPage = () => {
     setCurrentTab,
     searchBarValue,
     handleInputChange,
-    handleKeyDown,
-    searchedArticles,
+    searchedAndSortedArticles,
+    articleSortOption,
+    handleChangeArticleSortOption,
   };
 };
 

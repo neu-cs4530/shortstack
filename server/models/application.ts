@@ -1309,13 +1309,13 @@ export const updateArticleById = async (
   article: Article,
 ): Promise<ArticleResponse> => {
   try {
-    const newArticle: Article = {
-      ...article,
-      _id: new ObjectId(articleID),
-    };
-    const updatedArticle = await ArticleModel.findOneAndReplace({ _id: articleID }, newArticle, {
-      new: true,
-    });
+    const updatedArticle = await ArticleModel.findOneAndUpdate(
+      { _id: articleID },
+      {
+        $set: { title: article.title, body: article.body, latestEditDate: article.latestEditDate },
+      },
+      { new: true },
+    );
 
     if (!updatedArticle) {
       throw new Error('Article not found');
