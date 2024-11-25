@@ -2,6 +2,7 @@ import React from 'react';
 import './index.css';
 import { handleHyperlink } from '../../../../tool';
 import ProfilePicture from '../../profilePicture';
+import useEquippedRewards from '../../../../hooks/useEquippedRewards';
 
 /**
  * Interface representing the props for the QuestionBody component.
@@ -28,20 +29,25 @@ interface QuestionBodyProps {
  * @param askby The username of the question's author.
  * @param meta Additional metadata related to the question.
  */
-const QuestionBody = ({ views, text, askby, meta }: QuestionBodyProps) => (
-  <div id='questionBody' className='questionBody right_padding'>
-    <div className='bold_title answer_question_view'>{views} views</div>
-    <div className='answer_question_text'>{handleHyperlink(text)}</div>
-    <div className='answer_question_right'>
-      <div className='askedByText'>
-        <div className='question_author'>{askby}</div>
-        <div className='answer_question_meta'>asked {meta}</div>
-      </div>
-      <div className='profile-pic-container'>
-        <ProfilePicture username={askby} />
+const QuestionBody = ({ views, text, askby, meta }: QuestionBodyProps) => {
+  const { frame, title } = useEquippedRewards(askby);
+
+  return (
+    <div id='questionBody' className='questionBody right_padding'>
+      <div className='bold_title answer_question_view'>{views} views</div>
+      <div className='answer_question_text'>{handleHyperlink(text)}</div>
+      <div className='answer_question_right'>
+        <div className='askedByText'>
+          <div className='question_author'>{askby}</div>
+          <h5 className='userTitleText'>{title}</h5>
+          <div className='answer_question_meta'>asked {meta}</div>
+        </div>
+        <div className='profile-pic-container'>
+          <ProfilePicture equippedFrame={frame || ''} />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default QuestionBody;

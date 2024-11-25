@@ -17,7 +17,7 @@ const ProfilePage = () => {
       <div className='profile_header'>
         <div className='profile_info'>
           <div className='profile-pic-container'>
-            <ProfilePicture username={user.username} />
+            <ProfilePicture equippedFrame={user.equippedFrame} />
           </div>
           <h3>{user.username}</h3>
           {user.equippedTitle && <p className='equipped-title'>{user.equippedTitle}</p>}

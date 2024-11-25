@@ -69,15 +69,15 @@ const mockNewUserWithNotif: User = {
   blockedNotifications: [],
 };
 
-const mockUserWithEquippedFrame: User = {
+const mockUserWithEquippedRewards: User = {
   _id: new mongoose.Types.ObjectId(),
   username: 'UserA',
   password: 'abc123',
   totalPoints: 0,
   unlockedFrames: ['profile_frames-01.png', 'profile_frames-02.png'],
-  unlockedTitles: [],
+  unlockedTitles: ['Curious Explorer'],
   equippedFrame: 'profile_frames-02.png',
-  equippedTitle: '',
+  equippedTitle: 'Curious Explorer',
   notifications: [],
   blockedNotifications: [],
 };
@@ -673,20 +673,21 @@ describe('User API', () => {
     });
   });
 
-  describe('GET /getUserFrame/:username', () => {
-    it(`should return a String with the user's equipped frame when given a valid username`, async () => {
-      findUserSpy.mockResolvedValueOnce(mockUserWithEquippedFrame);
+  describe('GET /getUserEquippedRewards/:username', () => {
+    it(`should return an object with the user's equipped frame and title when given a valid username`, async () => {
+      findUserSpy.mockResolvedValueOnce(mockUserWithEquippedRewards);
       const response = await supertest(app).get(
-        `/user/getUserFrame/${mockUserWithEquippedFrame.username}`,
+        `/user/getUserEquippedRewards/${mockUserWithEquippedRewards.username}`,
       );
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual('profile_frames-02.png');
+      expect(response.body.equippedFrame).toEqual('profile_frames-02.png');
+      expect(response.body.equippedTitle).toEqual('Curious Explorer');
     });
 
     it('should return a 500 error when findUser returns null', async () => {
       findUserSpy.mockResolvedValueOnce(null);
-      const response = await supertest(app).get(`/user/getUserFrame/invalidusername`);
+      const response = await supertest(app).get(`/user/getUserEquippedRewards/invalidusername`);
 
       expect(response.status).toBe(500);
       expect(response.text).toEqual('Error when fetching equipped frame for user: invalidusername');

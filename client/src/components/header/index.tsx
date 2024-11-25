@@ -41,7 +41,7 @@ const Header = () => {
             {userHasUnreadNotifs() ? <div className='notif_indicator'> </div> : <></>}
           </button>
           <button className='profile_btn' onClick={handleProfile}>
-            <ProfilePicture username={user.username} />
+            <ProfilePicture equippedFrame={user.equippedFrame} />
           </button>
         </div>
       </div>

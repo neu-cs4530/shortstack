@@ -74,13 +74,19 @@
   align-items: center;
   justify-content: center;
   height: auto;
-  width: 16px;
+  width: 24px;
+}
+
+.comment-item .commentedBy {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 0.25em;
 }
 
 .comment-item .commentedByText {
-  display: inline-flex;
-  gap: 6px;
-  margin-bottom: 0.25em;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .comment-username {

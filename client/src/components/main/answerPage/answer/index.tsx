@@ -4,6 +4,7 @@ import CommentSection from '../../commentSection';
 import './index.css';
 import { Comment } from '../../../../types';
 import ProfilePicture from '../../profilePicture';
+import useEquippedRewards from '../../../../hooks/useEquippedRewards';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -32,22 +33,26 @@ interface AnswerProps {
  * @param comments An array of comments associated with the answer.
  * @param handleAddComment Function to handle adding a new comment.
  */
-const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerProps) => (
-  <div className='answer right_padding'>
-    <div id='answerText' className='answerText'>
-      {handleHyperlink(text)}
-    </div>
-    <div className='answerAuthor'>
-      <div className='answeredByText'>
-        <div className='answer_author'>{ansBy}</div>
-        <div className='answer_question_meta'>{meta}</div>
+const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerProps) => {
+  const { frame, title } = useEquippedRewards(ansBy);
+  return (
+    <div className='answer right_padding'>
+      <div id='answerText' className='answerText'>
+        {handleHyperlink(text)}
       </div>
-      <div className='profile-pic-container'>
-        <ProfilePicture username={ansBy} />
+      <div className='answerAuthor'>
+        <div className='answeredByText'>
+          <div className='answer_author'>{ansBy}</div>
+          <h5 className='userTitleText'>{title}</h5>
+          <div className='answer_question_meta'>{meta}</div>
+        </div>
+        <div className='profile-pic-container'>
+          <ProfilePicture equippedFrame={frame || ''} />
+        </div>
       </div>
+      <CommentSection comments={comments} handleAddComment={handleAddComment} />
     </div>
-    <CommentSection comments={comments} handleAddComment={handleAddComment} />
-  </div>
-);
+  );
+};
 
 export default AnswerView;

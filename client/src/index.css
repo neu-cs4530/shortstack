@@ -15,3 +15,10 @@ body,
 #root {
   height: 100%;
 }
+
+.userTitleText {
+  margin: 0px;
+  color:#843e00;
+  font-style:italic;
+  margin-bottom: 4px;
+}

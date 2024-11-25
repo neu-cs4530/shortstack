@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { getMetaData } from '../../../tool';
 import { Comment } from '../../../types';
 import './index.css';
 import useUserContext from '../../../hooks/useUserContext';
-import ProfilePicture from '../profilePicture';
+import CommentView from './comment';
 
 /**
  * Interface representing the props for the Comment Section component.
@@ -58,19 +57,7 @@ const CommentSection = ({ comments, handleAddComment }: CommentSectionProps) => 
         <div className='comments-container'>
           <ul className='comments-list'>
             {comments.length > 0 ? (
-              comments.map((comment, index) => (
-                <li key={index} className='comment-item'>
-                  <p className='comment-text'>{comment.text}</p>
-                  <div className='commentedByText'>
-                    <div className='profile-pic-container'>
-                      <ProfilePicture username={comment.commentBy} />
-                    </div>
-                    <small className='comment-meta'>
-                      {comment.commentBy}, {getMetaData(new Date(comment.commentDateTime))}
-                    </small>
-                  </div>
-                </li>
-              ))
+              comments.map((comment, index) => <CommentView comment={comment} key={index} />)
             ) : (
               <p className='no-comments'>No comments yet.</p>
             )}
