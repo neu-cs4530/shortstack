@@ -420,6 +420,18 @@ export interface PointsUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a notification settings update socket event.
+ * - username - The user who's notification settings were updated.
+ * - notificationType - The type of notification that was toggled
+ * - isBlocked - whether the setting was turned off or on.
+ */
+export interface NotificationSettingsUpdatePayload {
+  username: string;
+  notificationType: NotificationType;
+  isBlocked: boolean;
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -438,6 +450,7 @@ export interface ServerToClientEvents {
   unlockedRewardUpdate: (update: UnlockedRewardUpdatePayload) => void;
   pointsUpdate: (update: PointsUpdatePayload) => void;
   upvoteReceived: (username: string) => void;
+  notificationSettingsUpdate: (update: NotificationSettingsUpdatePayload) => void;
 }
 
 /**
