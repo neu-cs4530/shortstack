@@ -1,0 +1,19 @@
+.community-selector {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.bold_header {
+  font-size: 16px;
+  height: 18.5px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.sub_title {
+  font-size: 14px;
+  color: black;
+  margin-bottom: 5px;
+  font-style: italic;
+  margin-left: 10px;
+}

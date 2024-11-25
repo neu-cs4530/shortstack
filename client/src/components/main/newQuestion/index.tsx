@@ -53,7 +53,8 @@ const NewQuestionPage = () => {
         err={tagErr}
       />
       <div className='community-selector'>
-        <label htmlFor='communitySelect'>Post to Community (optional)</label>
+        <div className='bold_header'>Community</div>
+        <div className='sub_title'>Optionally post your question to a community</div>
         <select
           id='communitySelect'
           value={selectedCommunity || ''}

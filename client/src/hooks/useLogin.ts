@@ -42,6 +42,7 @@ const useLogin = () => {
   const clearInputs = () => {
     setPassword('');
     setUsername('');
+    setSignupErr('');
   };
 
   /**

@@ -35,7 +35,6 @@ const challengeController = (socket: FakeSOSocket) => {
       }
 
       response.forEach(uc => {
-        // TODO: if a challenge is completed, send a notification to the user
         if (uc.progress.length >= uc.challenge.actionAmount) {
           socket.emit('unlockedRewardUpdate', {
             username,
