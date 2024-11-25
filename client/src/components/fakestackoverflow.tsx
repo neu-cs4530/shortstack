@@ -19,6 +19,7 @@ import NewCommunityPage from './main/newCommunity';
 import useFakeStackOverflow from '../hooks/useFakeStackOverflow';
 import PollPage from './main/pollComponent';
 import CreatePollPage from './main/communityPage/community/poll/pollCreationPage';
+import NotificationSettingsPage from './main/notificationPage/notificationSettings';
 
 const ProtectedRoute = ({
   user,
@@ -59,6 +60,7 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             }>
             <Route path='/home' element={<QuestionPage />} />
             <Route path='/notifications' element={<NotificationPage />} />
+            <Route path='/notifications/settings' element={<NotificationSettingsPage />} />
             <Route path='tags' element={<TagPage />} />
             <Route path='/question/:qid' element={<AnswerPage />} />
             <Route path='/new/question' element={<NewQuestionPage />} />

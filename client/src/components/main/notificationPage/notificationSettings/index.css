@@ -1,0 +1,22 @@
+.settings_section {
+  margin-bottom: 1rem;
+  margin-left: 1rem;
+  padding: 0.5rem 0rem 0rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.settings_section h2 {
+  font-size: 1.25rem;
+  margin-top: 1rem;
+  color: #555;
+}
+
+.notification_list {
+  padding: 16px 24px 16px 24px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
