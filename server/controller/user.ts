@@ -15,13 +15,10 @@ import {
   findUser,
   saveUser,
   addPointsToUser,
-  saveNotification,
-  addNotificationToUser,
-  populateNotification,
-  usersToNotify,
   updateUserNotifsAsRead,
   equipReward,
   updateUsersUnlockedFrames,
+  notifyUsers,
   updateBlockedTypes,
 } from '../models/application';
 
@@ -210,7 +207,7 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Creates notifications and one to each users to be notified in the database.
+   * Adds a notification to each of the users to be notified in the database based on the given objectID.
    * If there is an error, the HTTP response's status is updated.
    *
    * @param req The NewNotificationRequest object containing an ObjectID and the notification to add.
@@ -228,48 +225,15 @@ const userController = (socket: FakeSOSocket) => {
     const notifInfo: Notification = req.body.notification;
 
     try {
-      // get list of usernames to add a notification to
-      const usernames = await usersToNotify(oid, notifInfo.notificationType);
+      const usernames = await notifyUsers(oid, notifInfo);
 
-      if ('error' in usernames || !usernames.length) {
-        throw new Error('Error retrieving users to notify');
+      if ('error' in usernames) {
+        throw new Error(usernames.error);
       }
 
-      // save a notification to database for each user
-      const notifsPromises = usernames.map(_ => saveNotification(notifInfo));
-      const notifsFromDb = (await Promise.all(notifsPromises)).map(notifResponse => {
-        if ('error' in notifResponse) {
-          throw new Error(notifResponse.error as string);
-        }
-        return notifResponse;
-      });
-
-      // add the notification to all users to be notified
-      const promiseNotifiedUsers = usernames.map((username, i) =>
-        addNotificationToUser(username, notifsFromDb[i]),
-      );
-      (await Promise.all(promiseNotifiedUsers)).map(userResponse => {
-        if (userResponse && 'error' in userResponse) {
-          throw new Error(userResponse.error as string);
-        }
-        return userResponse.username;
-      });
-
-      // populate the notifications to return
-      const promisePopulatedNotifs = notifsFromDb.map(notif =>
-        populateNotification(notif._id?.toString(), notif.sourceType),
-      );
-
-      const populatedNotifs = (await Promise.all(promisePopulatedNotifs)).map(notifResponse => {
-        if ('error' in notifResponse) {
-          throw new Error(notifResponse.error as string);
-        }
-        return notifResponse;
-      });
-
-      // Populates the fields of the notification that was added and emits the usernames who received notifications
+      // emits the usernames who received notifications
       socket.emit('notificationUpdate', { usernames });
-      res.json(populatedNotifs);
+      res.json(usernames);
     } catch (error) {
       res.status(500).send('Error when adding notification to user');
     }
@@ -308,7 +272,8 @@ const userController = (socket: FakeSOSocket) => {
    * Updates all of the isRead statuses of all notifications for a user to be read.
    *
    * @param req - The Request object containing the username as a parameter.
-   * @param res - The HTTP Response object used to send back the status showing the updates were successful.
+   * @param res - The HTTP Response object used to send back the frame's file name.
+   *
    */
   const markAllNotifsAsRead = async (req: Request, res: Response): Promise<void> => {
     const { username } = req.params;
@@ -327,6 +292,30 @@ const userController = (socket: FakeSOSocket) => {
         res.status(500).send(`Error while marking all notifs of user as read: ${err.message}`);
       } else {
         res.status(500).send('Error while marking all notifs of user as read');
+      }
+    }
+  };
+
+  /**
+   * Gets a user's equipped frame based on their username
+   * @param req - The request object containing the username as a parameter.
+   * @param res - The HTTP Response object used to send back the status showing the updates were successful.
+   *
+   * @returns - A Promise that resolves to void.
+   */
+  const getUserFrame = async (req: Request, res: Response): Promise<void> => {
+    const { username } = req.params;
+    try {
+      const user = await findUser(username);
+
+      if (!user) {
+        throw new Error('Could not find user with the given username');
+      }
+
+      res.status(200).json(user.equippedFrame);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching equipped frame for user: ${username}`);
       }
     }
   };
@@ -368,6 +357,7 @@ const userController = (socket: FakeSOSocket) => {
   router.get('/getUserNotifications/:username', getUserNotifications);
   router.put('/markAllNotifsAsRead/:username', markAllNotifsAsRead);
   router.put('/updateEquippedReward', equipRewardToUser);
+  router.get('/getUserFrame/:username', getUserFrame);
   router.put('/updateBlockedNotifications', updateBlockedNotifications);
 
   return router;

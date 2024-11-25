@@ -3,6 +3,7 @@ import { getMetaData } from '../../../tool';
 import { Comment } from '../../../types';
 import './index.css';
 import useUserContext from '../../../hooks/useUserContext';
+import ProfilePicture from '../profilePicture';
 
 /**
  * Interface representing the props for the Comment Section component.
@@ -60,9 +61,14 @@ const CommentSection = ({ comments, handleAddComment }: CommentSectionProps) => 
               comments.map((comment, index) => (
                 <li key={index} className='comment-item'>
                   <p className='comment-text'>{comment.text}</p>
-                  <small className='comment-meta'>
-                    {comment.commentBy}, {getMetaData(new Date(comment.commentDateTime))}
-                  </small>
+                  <div className='commentedByText'>
+                    <div className='profile-pic-container'>
+                      <ProfilePicture username={comment.commentBy} />
+                    </div>
+                    <small className='comment-meta'>
+                      {comment.commentBy}, {getMetaData(new Date(comment.commentDateTime))}
+                    </small>
+                  </div>
                 </li>
               ))
             ) : (

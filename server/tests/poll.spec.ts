@@ -27,6 +27,7 @@ const mockPoll: Poll = {
   createdBy: 'user123',
   pollDateTime: new Date(),
   pollDueDate: new Date(),
+  isClosed: false,
 };
 
 describe('Poll API', () => {
@@ -54,6 +55,7 @@ describe('Poll API', () => {
         createdBy: 'us',
         pollDateTime: new Date(),
         pollDueDate: new Date(),
+        isClosed: false,
       };
 
       fetchPollByIdSpy.mockResolvedValueOnce(mockPoll2);

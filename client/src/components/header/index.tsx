@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaRegBell, FaUserCircle } from 'react-icons/fa';
+import { FaRegBell } from 'react-icons/fa';
 import useHeader from '../../hooks/useHeader';
 import './index.css';
+import ProfilePicture from '../main/profilePicture';
 
 /**
  * Header component that renders the main title, a search bar and a notifications button.
@@ -11,7 +12,7 @@ import './index.css';
  * notifications page.
  */
 const Header = () => {
-  const { val, handleInputChange, handleKeyDown, userHasUnreadNotifs } = useHeader();
+  const { val, handleInputChange, handleKeyDown, userHasUnreadNotifs, user } = useHeader();
   const navigate = useNavigate();
 
   const handleNotifications = () => {
@@ -40,7 +41,7 @@ const Header = () => {
             {userHasUnreadNotifs() ? <div className='notif_indicator'> </div> : <></>}
           </button>
           <button className='profile_btn' onClick={handleProfile}>
-            <FaUserCircle size='32px' className='profile_icon' />
+            <ProfilePicture username={user.username} />
           </button>
         </div>
       </div>

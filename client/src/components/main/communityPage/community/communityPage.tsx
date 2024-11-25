@@ -5,6 +5,7 @@ import './communityPage.css';
 import useCommunityPage from '../../../../hooks/useCommunityPage';
 import CommunityArticleForm from './article/communityArticleForm';
 import CommunityBreadcrumb from './breadcrumb/communityBreadcrumb';
+import QuestionView from '../../questionPage/question';
 
 /**
  * Represents the community page component. Displays the questions, articles, and polls of a community.
@@ -28,10 +29,6 @@ const CommunityPage = () => {
     searchedArticles,
   } = useCommunityPage();
   const navigate = useNavigate();
-
-  const handleQuestionClick = (questionID: string) => {
-    navigate(`/question/${questionID}`);
-  };
 
   const handleArticleClick = (articleID: string) => {
     navigate(`/community/article/${articleID}`);
@@ -58,16 +55,11 @@ const CommunityPage = () => {
           </div>
           <hr />
           {questions.length > 0 ? (
-            <ul>
+            <>
               {questions.map((question: Question) => (
-                <li
-                  key={question._id}
-                  className='question-item'
-                  onClick={() => handleQuestionClick(question._id!)}>
-                  {question.title} - Asked by {question.askedBy}
-                </li>
+                <QuestionView q={question} key={question._id} />
               ))}
-            </ul>
+            </>
           ) : (
             <p>No questions found.</p>
           )}

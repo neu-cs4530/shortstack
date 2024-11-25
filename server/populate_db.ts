@@ -254,6 +254,17 @@ async function questionCreate(
 }
 
 /**
+ * Associate a community with a Question by updating the Question.
+ */
+async function associateQuestionWithCommunity(question: Question, community: Community) {
+  return await QuestionModel.findByIdAndUpdate(
+    { _id: question._id },
+    { community: community },
+    { new: true },
+  );
+}
+
+/**
  * Creates a new PollOption document in the database.
  *
  * @param text
@@ -282,6 +293,7 @@ async function pollOptionCreate(
  * @param createdBy
  * @param pollDateTime
  * @param pollDueDate
+ * @param isClosed
  * @returns A Promise that resolves to the created Poll document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -291,6 +303,7 @@ async function pollCreate(
   createdBy: string,
   pollDateTime: Date,
   pollDueDate: Date,
+  isClosed: boolean,
 ): Promise<Poll> {
   if (
     title === '' ||
@@ -306,6 +319,7 @@ async function pollCreate(
     createdBy: createdBy,
     pollDateTime: pollDateTime,
     pollDueDate: pollDueDate,
+    isClosed: isClosed,
   };
   return await PollModel.create(pollDetail);
 }
@@ -575,9 +589,9 @@ const populate = async () => {
     ];
     const p3_options = await Promise.all(po3_promise);
 
-    const P1 = await pollCreate(P1_TITLE, p1_options, U1.username, new Date('2024-10-30'), new Date('2024-11-26'));
-    const P2 = await pollCreate(P2_TITLE, p2_options, U2.username, new Date(), new Date('2024-11-26'));
-    const P3 = await pollCreate(P3_TITLE, p3_options, U3.username, new Date(), new Date('2024-11-11'));
+    const P1 = await pollCreate(P1_TITLE, p1_options, U1.username, new Date('2024-10-30'), new Date('2024-11-26'), false);
+    const P2 = await pollCreate(P2_TITLE, p2_options, U2.username, new Date(), new Date('2024-11-23'), false);
+    const P3 = await pollCreate(P3_TITLE, p3_options, U3.username, new Date(), new Date('2024-11-11'), true);
 
     const ART1 = await articleCreate(ART1_TITLE, ART1_BODY);
     const ART2 = await articleCreate(ART2_TITLE, ART2_BODY);
@@ -591,9 +605,9 @@ const populate = async () => {
 
     const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10], []);
 
-    await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2]);
-    await communityCreate('CS Majors', [U4, U5, U6, U7, U9].map(u => u.username), [Q1, Q2, Q3], [P2, P3], [ART3]);
-    await communityCreate('Northeastern CS4950', [U8, U4].map(u => u.username), [], [], []);
+    const COM1 = await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2]);
+    const COM2 = await communityCreate('CS Majors', [U4, U5, U6, U7, U9].map(u => u.username), [Q1, Q2, Q3], [P2, P3], [ART3]);
+    const COM3 = await communityCreate('Northeastern CS4950', [U8, U4].map(u => u.username), [], [], []);
 
     // challenges
     const CHAL1 = await challengeCreate(CHAL1_DESCRIPTION, CHAL1_AMT, 'answer', CHAL1_REWARD);
@@ -621,6 +635,11 @@ const populate = async () => {
     await userChallengeCreate(U2.username, CHAL4, [currentDate]); // in progress (1/5)
     await userChallengeCreate(U2.username, CHAL5, []); // in progress (0/10)
     await userChallengeCreate(U2.username, CHAL6, [...tenDates, ...tenDates]) // in progress (20/25) (upvotes)
+
+    await associateQuestionWithCommunity(Q4, COM1);
+    await associateQuestionWithCommunity(Q1, COM2);
+    await associateQuestionWithCommunity(Q2, COM2);
+    await associateQuestionWithCommunity(Q3, COM2);
 
     console.log('Database populated');
   } catch (err) {

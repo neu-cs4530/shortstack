@@ -34,14 +34,18 @@ const VoteComponent = ({ question }: VoteComponentProps) => {
       if (question._id) {
         if (type === 'upvote') {
           await upvoteQuestion(question._id, user.username);
-          await addPoints(question.askedBy, 1);
-          const upvoteNotif: Notification = {
-            notificationType: NotificationType.Upvote,
-            sourceType: 'Question',
-            source: { _id: question._id } as Question,
-            isRead: false,
-          };
-          await notifyUsers(question._id, upvoteNotif);
+
+          // Only add points if the user is upvoting, not cancelling their vote.
+          if (!question.upVotes.includes(user.username)) {
+            await addPoints(question.askedBy, 1);
+            const upvoteNotif: Notification = {
+              notificationType: NotificationType.Upvote,
+              sourceType: 'Question',
+              source: { _id: question._id } as Question,
+              isRead: false,
+            };
+            await notifyUsers(question._id, upvoteNotif);
+          }
         } else if (type === 'downvote') {
           await downvoteQuestion(question._id, user.username);
         }
