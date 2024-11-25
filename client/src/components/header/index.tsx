@@ -26,11 +26,14 @@ const Header = () => {
   return (
     <div id='header' className='header'>
       <div className='headerContents'>
-        <div className='title'>Fake Stack Overflow</div>
+        <div className='logoContainer'>
+          <img src='./Short Stack Logo.png' alt='Short Stack Logo' className='shortStackLogo' />
+          <div className='title'>ShortStack</div>
+        </div>
         <div className='headerButtons'>
           <input
             id='searchBar'
-            placeholder='Search ...'
+            placeholder='Search for Questions...'
             type='text'
             value={val}
             onChange={handleInputChange}
