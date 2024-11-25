@@ -1,4 +1,4 @@
-import { Notification, User, UserEquippedRewards } from '../types';
+import { Notification, NotificationType, User, UserEquippedRewards } from '../types';
 import api from './config';
 
 const USER_API_URL = `${process.env.REACT_APP_SERVER_URL}/user`;
@@ -156,6 +156,29 @@ const getUserEquippedRewards = async (username: string): Promise<UserEquippedRew
   return res.data;
 };
 
+/**
+ * Updates a users blocked NotificationTypes by adding or removing the given type to the user's
+ * blocked notifications depending on if the type was previously blocked/unblocked.
+ *
+ * @param username - the username of the user to block/unblock the notification type.
+ * @param type - the notification type to block/unblock.
+ * @returns - A promise that resolves to the user's updated list of blocked NotificationTypes.
+ * @throws Error if there is an issue updating the notifications with the given username.
+ */
+const updateBlockedNotifications = async (
+  username: string,
+  type: NotificationType,
+): Promise<NotificationType[]> => {
+  const data = { username, type };
+  const res = await api.put(`${USER_API_URL}/updateBlockedNotifications`, data);
+
+  if (res.status !== 200) {
+    throw new Error(`Error when updating blocked notifications for: ${username}`);
+  }
+
+  return res.data;
+};
+
 export {
   addUser,
   loginUser,
@@ -165,4 +188,5 @@ export {
   getUserNotifications,
   markAllNotifsAsRead,
   getUserEquippedRewards,
+  updateBlockedNotifications,
 };

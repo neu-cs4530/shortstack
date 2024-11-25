@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import AnswerModel from './models/answers';
 import QuestionModel from './models/questions';
 import TagModel from './models/tags';
-import { Answer, Article, Challenge, ChallengeType, Comment, Community, Notification, NotificationType, Poll, PollOption, Question, Tag, User, UserChallenge } from './types';
+import { Answer, Article, Challenge, ChallengeType, Comment, Community, FRAMES, Notification, NotificationType, Poll, PollOption, Question, Tag, User, UserChallenge } from './types';
 import {
   Q1_DESC,
   Q1_TXT,
@@ -72,6 +72,10 @@ import {
   CHAL6_DESCRIPTION,
   CHAL6_AMT,
   CHAL6_REWARD,
+  ART4_TITLE,
+  ART4_BODY,
+  ART5_TITLE,
+  ART5_BODY,
 } from './data/posts_strings';
 import CommentModel from './models/comments';
 import UserModel from './models/users';
@@ -107,6 +111,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
  * @param equippedFrame
  * @param equippedTitle
  * @param notifications
+ * @param blockedNotifications
  * @returns A Promise that resolves to the created User document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -119,6 +124,7 @@ async function userCreate(
   equippedFrame: string,
   equippedTitle: string,
   notifications: Notification[],
+  blockedNotifications: NotificationType[],
 ): Promise<User> {
   if (username === '' || password === '')
     throw new Error('Invalid User Format');
@@ -131,6 +137,7 @@ async function userCreate(
     equippedFrame: equippedFrame,
     equippedTitle: equippedTitle,
     notifications: notifications,
+    blockedNotifications: blockedNotifications,
   };
   return await UserModel.create(userDetail);
 }
@@ -332,12 +339,16 @@ async function pollCreate(
 async function articleCreate(
   title: string,
   body: string,
+  createdDate: Date,
+  latestEditDate: Date,
 ): Promise<Article> {
   if (title === '' || body === '')
     throw new Error('Invalid Article Format');
   const articleDetail: Article = {
     title: title,
     body: body,
+    createdDate,
+    latestEditDate
   };
   return await ArticleModel.create(articleDetail);
 }
@@ -552,15 +563,14 @@ const populate = async () => {
     const N6_2 = await notificationCreate(NotificationType.NewReward, false);
     const N6_3 = await notificationCreate(NotificationType.NewReward, true);
 
-    // TODO: add profile frames once filepaths are available
-    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [CHAL1_REWARD, CHAL2_REWARD], '', CHAL1_REWARD, [N1_1, N2_1]);
-    const U2 = await userCreate('saltyPeter', 'abc123', 1000, [], [CHAL1_REWARD, CHAL3_REWARD], '', CHAL3_REWARD, [N3_1, N4_1, N1_2, N2_2]);
-    const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5_1, N6_1]);
-    const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', []);
-    const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1_3, N5_2]);
-    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4000, [], [], '', '', [N6_2, N1_4, N4_2, N6_3]);
-    const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2_3]);
-    const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3_2]);
+    const U1 = await userCreate('Joji John', 'qwertyu', 50, [], [CHAL1_REWARD, CHAL2_REWARD], '', CHAL1_REWARD, [N1_1, N2_1], []);
+    const U2 = await userCreate('saltyPeter', 'abc123', 990, [FRAMES[0].name], [CHAL1_REWARD, CHAL3_REWARD], '', CHAL3_REWARD, [N3_1, N4_1, N1_2, N2_2], []);
+    const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5_1, N6_1], []);
+    const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', [], []);
+    const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1_3, N5_2], []);
+    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4000, [FRAMES[0].name, FRAMES[1].name], [], '', '', [N6_2, N1_4, N4_2, N6_3], []);
+    const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2_3], []);
+    const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3_2], []);
 
     const po1_promise = [
       pollOptionCreate('Windows', [U2.username, U3.username]), 
@@ -590,9 +600,11 @@ const populate = async () => {
     const P2 = await pollCreate(P2_TITLE, p2_options, U2.username, new Date(), new Date('2024-11-23'), false);
     const P3 = await pollCreate(P3_TITLE, p3_options, U3.username, new Date(), new Date('2024-11-11'), true);
 
-    const ART1 = await articleCreate(ART1_TITLE, ART1_BODY);
-    const ART2 = await articleCreate(ART2_TITLE, ART2_BODY);
-    const ART3 = await articleCreate(ART3_TITLE, ART3_BODY);
+    const ART1 = await articleCreate(ART1_TITLE, ART1_BODY, new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), new Date());
+    const ART2 = await articleCreate(ART2_TITLE, ART2_BODY, new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), new Date(Date.now() - 60 * 1000));
+    const ART3 = await articleCreate(ART3_TITLE, ART3_BODY, new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), new Date(Date.now() - 1 * 24 * 60 * 60 * 1000));
+    const ART4 = await articleCreate(ART4_TITLE, ART4_BODY, new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), new Date(Date.now() - 60 * 60 * 1000));
+    const ART5 = await articleCreate(ART5_TITLE, ART5_BODY, new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), new Date(Date.now() - 30 * 60 * 1000));
 
     // community notifications
     const N7 = await notificationCreate(NotificationType.NewPoll, true, 'Poll', P2);
@@ -600,9 +612,9 @@ const populate = async () => {
     const N9 = await notificationCreate(NotificationType.NewArticle, false, 'Article', ART3);
     const N10 = await notificationCreate(NotificationType.ArticleUpdate, true, 'Article', ART2);
 
-    const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10]);
+    const U9 = await userCreate('communityMember', 'pass1234', 0, [], [], '', '', [N7, N8, N9, N10], []);
 
-    const COM1 = await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2]);
+    const COM1 = await communityCreate('Tech Enthusiasts', [U1, U2, U3, U4, U9].map(u => u.username), [Q4], [P1], [ART1, ART2, ART4, ART5]);
     const COM2 = await communityCreate('CS Majors', [U4, U5, U6, U7, U9].map(u => u.username), [Q1, Q2, Q3], [P2, P3], [ART3]);
     const COM3 = await communityCreate('Northeastern CS4950', [U8, U4].map(u => u.username), [], [], []);
 

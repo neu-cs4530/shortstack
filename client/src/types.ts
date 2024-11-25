@@ -16,6 +16,7 @@ export interface User {
   equippedFrame: string;
   equippedTitle: string;
   notifications: Notification[];
+  blockedNotifications: NotificationType[];
 }
 
 /**
@@ -207,6 +208,18 @@ export interface PointsUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a notification settings update socket event.
+ * - username - The user who's notification settings were updated.
+ * - notificationType - The type of notification that was toggled
+ * - isBlocked - whether the setting was turned off or on.
+ */
+export interface NotificationSettingsUpdatePayload {
+  username: string;
+  notificationType: NotificationType;
+  isBlocked: boolean;
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -225,6 +238,7 @@ export interface ServerToClientEvents {
   unlockedRewardUpdate: (update: UnlockedRewardUpdatePayload) => void;
   pointsUpdate: (update: PointsUpdatePayload) => void;
   upvoteReceived: (username: string) => void;
+  notificationSettingsUpdate: (update: NotificationSettingsUpdatePayload) => void;
 }
 
 /**
@@ -232,12 +246,21 @@ export interface ServerToClientEvents {
  * - _id - The unique identifier for the article. Optional field
  * - title - The title of the article.
  * - body - The content of the article.
+ * - createdDate - The date the article was created. Optional field
+ * - latestEditDate - The date the article was most recently edited. Optional field
  */
 export interface Article {
   _id?: string;
   title: string;
   body: string;
+  createdDate?: Date;
+  latestEditDate?: Date;
 }
+
+/**
+ * Type representing options for sorting articles.
+ */
+export type ArticleSortOption = 'Newest' | 'Oldest' | 'Recently Edited';
 
 /**
  * Interface representing a Community, which contains:

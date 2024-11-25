@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose';
+import { NotificationType } from '../../types';
 /**
  * Mongoose schema for the User collection.
  *
@@ -11,6 +12,8 @@ import { Schema } from 'mongoose';
  * - `unlockedTitles`: An array of the string titles the user has unlocked.
  * - `equippedFrame`: The filepath of the frame the user has equipped.
  * - `equippedTitle`: The string of the title the user has equipped.
+ * - `notifications`: The notifications the user has.
+ * - `blockedNotifications`: The NotificationTypes the user doesn't want to receive notifications for.
  */
 const userSchema: Schema = new Schema(
   {
@@ -38,6 +41,7 @@ const userSchema: Schema = new Schema(
       default: '',
     },
     notifications: [{ type: Schema.Types.ObjectId, ref: 'Notification' }],
+    blockedNotifications: [{ type: String, enum: NotificationType }],
   },
   { collection: 'User' },
 );

@@ -834,6 +834,15 @@ export const addNotificationToUser = async (
     if (!notif || !notif.notificationType || notif.isRead === undefined || notif.isRead === null) {
       throw new Error('Invalid notification');
     }
+    const user = await UserModel.findOne({ username });
+    if (user === null) {
+      throw new Error('User not found');
+    }
+
+    if (user.blockedNotifications.includes(notif.notificationType)) {
+      return user;
+    }
+
     const result = await UserModel.findOneAndUpdate(
       { username },
       { $push: { notifications: { $each: [notif._id], $position: 0 } } },
@@ -892,6 +901,40 @@ export const notifyUsers = async (
     return usernames;
   } catch (error) {
     return { error: 'Error when adding notifications to users' };
+  }
+};
+
+/**
+ * Toggles whether a NotificationType is blocked for a user.
+ *
+ * @param {string} username - The username of the user to block/unblock the type
+ * @param {Notification} type - The NotificationType to block/unblock
+ *
+ * @returns {Promise<UserResponse>} - The updated user or an error message
+ */
+export const updateBlockedTypes = async (
+  username: string,
+  type: NotificationType,
+): Promise<UserResponse> => {
+  try {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    const operation = user.blockedNotifications.includes(type)
+      ? { $pull: { blockedNotifications: type } }
+      : { $push: { blockedNotifications: type } };
+
+    const result = await UserModel.findOneAndUpdate({ username }, operation, { new: true });
+
+    if (!result) {
+      return { error: 'Error when updating blocked notification types' };
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error updating blocked notification types' };
   }
 };
 
@@ -1266,13 +1309,13 @@ export const updateArticleById = async (
   article: Article,
 ): Promise<ArticleResponse> => {
   try {
-    const newArticle: Article = {
-      ...article,
-      _id: new ObjectId(articleID),
-    };
-    const updatedArticle = await ArticleModel.findOneAndReplace({ _id: articleID }, newArticle, {
-      new: true,
-    });
+    const updatedArticle = await ArticleModel.findOneAndUpdate(
+      { _id: articleID },
+      {
+        $set: { title: article.title, body: article.body, latestEditDate: article.latestEditDate },
+      },
+      { new: true },
+    );
 
     if (!updatedArticle) {
       throw new Error('Article not found');

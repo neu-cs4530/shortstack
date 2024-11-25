@@ -5,6 +5,7 @@ import useCommunityArticle from '../../../../../hooks/useCommunityArticle';
 import CommunityArticleForm from './communityArticleForm';
 import { Article } from '../../../../../types';
 import CommunityBreadcrumb from '../breadcrumb/communityBreadcrumb';
+import { getMetaData } from '../../../../../tool';
 
 /**
  * The CommunityArticlePage component displays the articles within the community.
@@ -34,6 +35,11 @@ const CommunityArticlePage = () => {
           </button>
         )}
         <h2 id='articleTitle'>{article.title}</h2>
+        <h5 className='metadata-label'>Created: {getMetaData(new Date(article.createdDate!))}</h5>
+        <h5 className='metadata-label'>
+          Last Edited: {getMetaData(new Date(article.latestEditDate!))}
+        </h5>
+        <span style={{ marginTop: '8px', borderBottom: '2px solid #007bff' }} />
         <ReactMarkdown>{article.body}</ReactMarkdown>
       </>
     );

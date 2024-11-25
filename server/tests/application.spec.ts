@@ -45,6 +45,7 @@ import {
   updateUsersUnlockedFrames,
   notifyUsers,
   closeExpiredPolls,
+  updateBlockedTypes,
 } from '../models/application';
 import {
   Answer,
@@ -87,6 +88,7 @@ const newUser: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const userA: User = {
@@ -99,6 +101,7 @@ const userA: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const tag1: Tag = {
@@ -283,6 +286,7 @@ const userAWithNotifs: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [rewardNotif, pollNotif],
+  blockedNotifications: [],
 };
 
 const challenge1: Challenge = {
@@ -1379,6 +1383,91 @@ describe('application module', () => {
         }
       });
     });
+
+    describe('updateBlockedTypes', () => {
+      test('updateBlockedTypes with an initially unblocked type should return the updated user with the type blocked', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(UserModel).toReturn(
+          { ...userA, blockedNotifications: [NotificationType.AnswerComment] },
+          'findOneAndUpdate',
+        );
+        const result = (await updateBlockedTypes('UserA', NotificationType.AnswerComment)) as User;
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.blockedNotifications).toEqual([NotificationType.AnswerComment]);
+      });
+
+      test('updateBlockedTypes with already blocked type return the updated user with the type unblocked', async () => {
+        mockingoose(UserModel).toReturn(
+          {
+            ...userA,
+            blockedNotifications: [NotificationType.Upvote, NotificationType.ArticleUpdate],
+          },
+          'findOne',
+        );
+        mockingoose(UserModel).toReturn(
+          {
+            ...userA,
+            blockedNotifications: [NotificationType.Upvote],
+          },
+          'findOneAndUpdate',
+        );
+        const result = (await updateBlockedTypes('UserA', NotificationType.ArticleUpdate)) as User;
+
+        expect(result.username).toEqual(newUser.username);
+        expect(result.password).toEqual(newUser.password);
+        expect(result.blockedNotifications).toEqual([NotificationType.Upvote]);
+      });
+
+      test('updateBlockedTypes should return an error object if findOne returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('updateBlockedTypes should return an error object if findOne returns an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOne');
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('updateBlockedTypes should return an error object if findOneAndUpdate returns null', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('updateBlockedTypes should return an error object if findOneAndUpdate returns an error', async () => {
+        mockingoose(UserModel).toReturn(userA, 'findOne');
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = await updateBlockedTypes('UserA', NotificationType.ArticleUpdate);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+    });
   });
 
   describe('Article model', () => {
@@ -1433,7 +1522,7 @@ describe('application module', () => {
 
         mockingoose(ArticleModel).toReturn(
           { ...mockArticle, _id: mockArticleId },
-          'findOneAndReplace',
+          'findOneAndUpdate',
         );
 
         const result = (await updateArticleById(mockArticleId.toString(), mockArticle)) as Article;
@@ -1442,14 +1531,14 @@ describe('application module', () => {
         expect(result.title).toBe('new title');
         expect(result.body).toBe('new body');
       });
-      test('updateArticleById should return and error if findOneAndReplace returns null', async () => {
+      test('updateArticleById should return and error if findOneAndUpdate returns null', async () => {
         const mockArticleId = new ObjectId();
         const mockArticle: Article = {
           title: 'new title',
           body: 'new body',
         };
 
-        mockingoose(ArticleModel).toReturn(null, 'findOneAndReplace');
+        mockingoose(ArticleModel).toReturn(null, 'findOneAndUpdate');
 
         const result = await updateArticleById(mockArticleId.toString(), mockArticle);
 
@@ -1894,6 +1983,7 @@ describe('application module', () => {
     describe('addNotificationToUser', () => {
       test('addNotificationToUser should return the updated user', async () => {
         const updatedUser = { ...userA, notifications: [questionNotif] };
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userA);
         jest.spyOn(UserModel, 'findOneAndUpdate').mockResolvedValueOnce(updatedUser);
 
         const result = (await addNotificationToUser('UserA', questionNotif)) as User;
@@ -1902,7 +1992,45 @@ describe('application module', () => {
         expect(result.notifications).toContain(questionNotif);
       });
 
+      test('addNotificationToUser should return the user without updating if notification type is in users blocked types', async () => {
+        const userWithBlockedType = {
+          ...userA,
+          blockedNotifications: [NotificationType.PollClosed],
+        };
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userWithBlockedType);
+
+        const result = (await addNotificationToUser('UserA', pollNotif)) as User;
+
+        expect(result.username).toEqual('UserA');
+        expect(result.notifications.length).toEqual(0);
+      });
+
+      test('addNotificationToUser should return an object with error if findOne throws an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOne');
+
+        const result = await addNotificationToUser('UserA', questionNotif);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addNotificationToUser should return an object with error if findOne returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await addNotificationToUser('UserA', questionNotif);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
       test('addNotificationToUser should return an object with error if findOneAndUpdate throws an error', async () => {
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userA);
         mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
 
         const result = await addNotificationToUser('UserA', questionNotif);
@@ -1915,6 +2043,7 @@ describe('application module', () => {
       });
 
       test('addNotificationToUser should return an object with error if findOneAndUpdate returns null', async () => {
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userA);
         mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
 
         const result = await addNotificationToUser('UserA', questionNotif);
