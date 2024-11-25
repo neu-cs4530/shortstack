@@ -1,4 +1,4 @@
-import { Notification, User } from '../types';
+import { Notification, User, UserEquippedRewards } from '../types';
 import api from './config';
 
 const USER_API_URL = `${process.env.REACT_APP_SERVER_URL}/user`;
@@ -143,14 +143,14 @@ const markAllNotifsAsRead = async (username: string): Promise<Notification[]> =>
 };
 
 /**
- * Fetches the user's equipped frame based on their username.
+ * Fetches the user's equipped frame and equipped title based on their username.
  * @param username - the username of the whose frame we want to fetch.
- * @returns the promise of a string containing the file name of the equipped frame.
+ * @returns the promise of strings containing the file name of the equipped frame and the equipped title
  */
-const getUserFrame = async (username: string): Promise<string> => {
-  const res = await api.get(`${USER_API_URL}/getUserFrame/${username}`);
+const getUserEquippedRewards = async (username: string): Promise<UserEquippedRewards> => {
+  const res = await api.get(`${USER_API_URL}/getUserEquippedRewards/${username}`);
   if (res.status !== 200) {
-    throw new Error(`Error when fetching the frame for user: ${username}`);
+    throw new Error(`Error when fetching the equipped rewards for user: ${username}`);
   }
 
   return res.data;
@@ -164,5 +164,5 @@ export {
   notifyUsers,
   getUserNotifications,
   markAllNotifsAsRead,
-  getUserFrame,
+  getUserEquippedRewards,
 };

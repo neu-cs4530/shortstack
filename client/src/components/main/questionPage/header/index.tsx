@@ -32,7 +32,7 @@ const QuestionHeader = ({ titleText, qcnt, setQuestionOrder }: QuestionHeaderPro
       <div className='bold_title'>{titleText}</div>
       <AskQuestionButton />
     </div>
-    <div className='space_between right_padding'>
+    <div className='question_views_button_row'>
       <div id='question_count'>{qcnt} questions</div>
       <div className='btns'>
         {Object.keys(orderTypeDisplayName).map((order, idx) => (

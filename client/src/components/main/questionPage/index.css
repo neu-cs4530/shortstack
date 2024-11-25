@@ -1,7 +1,12 @@
 .btns {
-  margin-right: 15%;
+  margin-right: 24px;
 }
 
 .question_list:last-child {
   border-bottom: #000000 1px dashed;
+}
+
+.question_list {
+  padding-left: 24px;
+  padding-right: 24px;
 }

@@ -5,6 +5,7 @@ import { getMetaData } from '../../../../tool';
 import { Question } from '../../../../types';
 import useCommunityDetails from '../../../../hooks/useCommunityDetails';
 import ProfilePicture from '../../profilePicture';
+import useEquippedRewards from '../../../../hooks/useEquippedRewards';
 
 /**
  * Interface representing the props for the Question component.
@@ -25,6 +26,7 @@ interface QuestionProps {
 const QuestionView = ({ q }: QuestionProps) => {
   const navigate = useNavigate();
   const community = useCommunityDetails(q.community);
+  const { frame, title } = useEquippedRewards(q.askedBy);
 
   /**
    * Function to navigate to the home page with the specified tag as a search parameter.
@@ -88,10 +90,11 @@ const QuestionView = ({ q }: QuestionProps) => {
       <div className='lastActivity'>
         <div className='askedByText'>
           <div className='question_author'>{q.askedBy}</div>
+          <h5 className='userTitleText'>{title}</h5>
           <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
         </div>
         <div className='profile-pic-container'>
-          <ProfilePicture username={q.askedBy} />
+          <ProfilePicture equippedFrame={frame || ''} />
         </div>
       </div>
     </div>

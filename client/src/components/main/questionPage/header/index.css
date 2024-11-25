@@ -1,0 +1,8 @@
+.question_views_button_row {
+  padding: 24px;
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}

@@ -439,3 +439,14 @@ export interface PollVoteData {
   optionId: string;
   username: string;
 }
+
+/**
+ * Interface representing a user's equipped rewards, which include a frame and a title.
+ *
+ * equippedFrame - the file name of the equipped frame image.
+ * equippedTitle - the title currently equipped by the user.
+ */
+export interface UserEquippedRewards {
+  equippedFrame: string;
+  equippedTitle: string;
+}

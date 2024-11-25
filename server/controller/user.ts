@@ -295,13 +295,13 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Gets a user's equipped frame based on their username
+   * Gets a user's equipped frame and title based on their username.
    * @param req - The request object containing the username as a parameter.
-   * @param res - The HTTP Response object used to send back the status showing the updates were successful.
+   * @param res - The HTTP Response object used to send back the object containing the frame and title.
    *
    * @returns - A Promise that resolves to void.
    */
-  const getUserFrame = async (req: Request, res: Response): Promise<void> => {
+  const getUserEquippedRewards = async (req: Request, res: Response): Promise<void> => {
     const { username } = req.params;
     try {
       const user = await findUser(username);
@@ -310,7 +310,9 @@ const userController = (socket: FakeSOSocket) => {
         throw new Error('Could not find user with the given username');
       }
 
-      res.status(200).json(user.equippedFrame);
+      res
+        .status(200)
+        .json({ equippedFrame: user.equippedFrame, equippedTitle: user.equippedTitle });
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching equipped frame for user: ${username}`);
@@ -325,7 +327,7 @@ const userController = (socket: FakeSOSocket) => {
   router.get('/getUserNotifications/:username', getUserNotifications);
   router.put('/markAllNotifsAsRead/:username', markAllNotifsAsRead);
   router.put('/updateEquippedReward', equipRewardToUser);
-  router.get('/getUserFrame/:username', getUserFrame);
+  router.get('/getUserEquippedRewards/:username', getUserEquippedRewards);
 
   return router;
 };
