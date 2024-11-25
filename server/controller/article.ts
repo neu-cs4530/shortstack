@@ -60,6 +60,9 @@ const articleController = (socket: FakeSOSocket) => {
     }
 
     try {
+      // update recently edited date to now
+      newArticle.latestEditDate = new Date();
+
       const updatedArticle = await updateArticleById(articleID, newArticle);
 
       if (updatedArticle && 'error' in updatedArticle) {

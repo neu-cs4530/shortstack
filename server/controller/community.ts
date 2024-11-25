@@ -260,6 +260,9 @@ const communityController = (socket: FakeSOSocket) => {
     }
 
     try {
+      article.createdDate = new Date();
+      article.latestEditDate = new Date();
+
       const savedArticle = await saveAndAddArticleToCommunity(communityId, article);
 
       if (savedArticle && 'error' in savedArticle) {

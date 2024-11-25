@@ -1431,7 +1431,7 @@ describe('application module', () => {
 
         mockingoose(ArticleModel).toReturn(
           { ...mockArticle, _id: mockArticleId },
-          'findOneAndReplace',
+          'findOneAndUpdate',
         );
 
         const result = (await updateArticleById(mockArticleId.toString(), mockArticle)) as Article;
@@ -1440,14 +1440,14 @@ describe('application module', () => {
         expect(result.title).toBe('new title');
         expect(result.body).toBe('new body');
       });
-      test('updateArticleById should return and error if findOneAndReplace returns null', async () => {
+      test('updateArticleById should return and error if findOneAndUpdate returns null', async () => {
         const mockArticleId = new ObjectId();
         const mockArticle: Article = {
           title: 'new title',
           body: 'new body',
         };
 
-        mockingoose(ArticleModel).toReturn(null, 'findOneAndReplace');
+        mockingoose(ArticleModel).toReturn(null, 'findOneAndUpdate');
 
         const result = await updateArticleById(mockArticleId.toString(), mockArticle);
 
