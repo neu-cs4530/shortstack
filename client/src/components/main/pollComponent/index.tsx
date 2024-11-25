@@ -8,11 +8,13 @@ import ProfilePicture from '../profilePicture';
 
 /**
  * PollPage component that displays the poll title and the PollVoting or PollResults component.
- * The PollPage component will only show the PollVoting component if the user has not voted yet.
+ * The PollPage component will only show the PollVoting component if the user has not voted yet
+ * and if the poll is still open.
  * After submitting a vote, the user will see the PollResults component.
+ * When the poll closes, the user will see the PollResults component.
  */
 const PollPage = () => {
-  const { poll, voted, selectedOption, voteButtonClick, onOptionChange } = usePoll();
+  const { poll, pollIsClosed, voted, selectedOption, voteButtonClick, onOptionChange } = usePoll();
 
   return (
     poll && (
@@ -34,11 +36,11 @@ const PollPage = () => {
                 <h5 className='usernameText'>{poll.createdBy}</h5>
               </div>
               <h5 className='greyText'>
-                Created on: {getMetaData(new Date(poll.pollDateTime))}, Ends:{' '}
+                Created: {getMetaData(new Date(poll.pollDateTime))}, End{pollIsClosed ? 'ed' : 's'}:{' '}
                 {getMetaData(new Date(poll.pollDueDate))}
               </h5>
             </div>
-            {!voted ? (
+            {!voted && !pollIsClosed ? (
               <PollVoting
                 selectedOption={selectedOption}
                 voteButtonClick={voteButtonClick}

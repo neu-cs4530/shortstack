@@ -13,8 +13,9 @@ const equipRewardSpy = jest.spyOn(util, 'equipReward');
 const usersToNotifySpy = jest.spyOn(util, 'usersToNotify');
 const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
 const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
-const populateNotificationSpy = jest.spyOn(util, 'populateNotification');
+const notifyUsersSpy = jest.spyOn(util, 'notifyUsers');
 const updateUserNotifsAsReadSpy = jest.spyOn(util, 'updateUserNotifsAsRead');
+const updateBlockedTypesSpy = jest.spyOn(util, 'updateBlockedTypes');
 
 const newUser: User = {
   username: 'UserA',
@@ -25,6 +26,7 @@ const newUser: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const mockNewUser: User = {
@@ -37,6 +39,7 @@ const mockNewUser: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 const mockRewardNotif: Notification = {
@@ -63,6 +66,7 @@ const mockNewUserWithNotif: User = {
   equippedFrame: '',
   equippedTitle: '',
   notifications: [mockRewardNotif],
+  blockedNotifications: [],
 };
 
 const mockUserWithEquippedFrame: User = {
@@ -75,6 +79,7 @@ const mockUserWithEquippedFrame: User = {
   equippedFrame: 'profile_frames-02.png',
   equippedTitle: '',
   notifications: [],
+  blockedNotifications: [],
 };
 
 describe('User API', () => {
@@ -427,13 +432,12 @@ describe('User API', () => {
         ...mockNewUser,
         notifications: [mockPollNotif],
       });
-      populateNotificationSpy.mockResolvedValueOnce(mockPollNotif);
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
 
       // Asserting the response
       expect(response.status).toBe(200);
-      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
+      expect(response.body[0]).toEqual('UserA');
     });
 
     it('should return the notifications that were added if multiple users to be notified', async () => {
@@ -456,15 +460,13 @@ describe('User API', () => {
         ...mockNewUser,
         notifications: [mockPollNotifB],
       });
-      populateNotificationSpy.mockResolvedValueOnce(mockPollNotif);
-      populateNotificationSpy.mockResolvedValueOnce(mockPollNotifB);
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
 
       // Asserting the response
       expect(response.status).toBe(200);
-      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
-      expect(response.body[1]._id).toEqual(mockPollNotifB._id?.toString());
+      expect(response.body).toContain('UserA');
+      expect(response.body).toContain('UserB');
     });
 
     it('should return bad request if missing oid', async () => {
@@ -608,18 +610,12 @@ describe('User API', () => {
       expect(response.status).toBe(500);
     });
 
-    it('should return 500 if error object returned by `populateNotification`', async () => {
+    it('should return 500 if error object returned by `notifyUsers`', async () => {
       const mockReqBody = {
         oid: '672e289cee67e0b36e0ef440',
         notification: mockPollNotif,
       };
-      usersToNotifySpy.mockResolvedValueOnce(['UserA']);
-      saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
-      addNotificationToUserSpy.mockResolvedValueOnce({
-        ...mockNewUser,
-        notifications: [mockPollNotif],
-      });
-      populateNotificationSpy.mockResolvedValueOnce({ error: 'Error populating notification' });
+      notifyUsersSpy.mockResolvedValueOnce({ error: 'Error notifying users' });
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
 
@@ -694,6 +690,76 @@ describe('User API', () => {
 
       expect(response.status).toBe(500);
       expect(response.text).toEqual('Error when fetching equipped frame for user: invalidusername');
+    });
+  });
+
+  describe('PUT /updateBlockedNotifications', () => {
+    afterEach(async () => {
+      await mongoose.connection.close(); // Ensure the connection is properly closed
+    });
+
+    afterAll(async () => {
+      await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+    });
+
+    it('should return the updated blocked notification types', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        type: NotificationType.ArticleUpdate,
+      };
+      updateBlockedTypesSpy.mockResolvedValueOnce({
+        ...mockNewUser,
+        blockedNotifications: [NotificationType.ArticleUpdate],
+      });
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual([NotificationType.ArticleUpdate]);
+    });
+
+    it('should return bad request if missing username', async () => {
+      const mockReqBody = {
+        type: NotificationType.ArticleUpdate,
+      };
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return bad request if missing type to block', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+      };
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 500 if error object returned by `updateBlockedTypes`', async () => {
+      const mockReqBody = {
+        username: 'UserA',
+        type: NotificationType.NewPoll,
+      };
+      updateBlockedTypesSpy.mockResolvedValueOnce({ error: 'Error updating blocked types' });
+      // Making the request
+      const response = await supertest(app)
+        .put('/user/updateBlockedNotifications')
+        .send(mockReqBody);
+
+      // Asserting the response
+      expect(response.status).toBe(500);
     });
   });
 });

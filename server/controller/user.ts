@@ -7,6 +7,7 @@ import {
   FRAMES,
   NewNotificationRequest,
   Notification,
+  ToggleBlockedTypeRequest,
   User,
   UserResponse,
 } from '../types';
@@ -14,13 +15,11 @@ import {
   findUser,
   saveUser,
   addPointsToUser,
-  saveNotification,
-  addNotificationToUser,
-  populateNotification,
-  usersToNotify,
   updateUserNotifsAsRead,
   equipReward,
   updateUsersUnlockedFrames,
+  notifyUsers,
+  updateBlockedTypes,
 } from '../models/application';
 
 const userController = (socket: FakeSOSocket) => {
@@ -208,7 +207,7 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Creates notifications and one to each users to be notified in the database.
+   * Adds a notification to each of the users to be notified in the database based on the given objectID.
    * If there is an error, the HTTP response's status is updated.
    *
    * @param req The NewNotificationRequest object containing an ObjectID and the notification to add.
@@ -226,48 +225,15 @@ const userController = (socket: FakeSOSocket) => {
     const notifInfo: Notification = req.body.notification;
 
     try {
-      // get list of usernames to add a notification to
-      const usernames = await usersToNotify(oid, notifInfo.notificationType);
+      const usernames = await notifyUsers(oid, notifInfo);
 
-      if ('error' in usernames || !usernames.length) {
-        throw new Error('Error retrieving users to notify');
+      if ('error' in usernames) {
+        throw new Error(usernames.error);
       }
 
-      // save a notification to database for each user
-      const notifsPromises = usernames.map(_ => saveNotification(notifInfo));
-      const notifsFromDb = (await Promise.all(notifsPromises)).map(notifResponse => {
-        if ('error' in notifResponse) {
-          throw new Error(notifResponse.error as string);
-        }
-        return notifResponse;
-      });
-
-      // add the notification to all users to be notified
-      const promiseNotifiedUsers = usernames.map((username, i) =>
-        addNotificationToUser(username, notifsFromDb[i]),
-      );
-      (await Promise.all(promiseNotifiedUsers)).map(userResponse => {
-        if (userResponse && 'error' in userResponse) {
-          throw new Error(userResponse.error as string);
-        }
-        return userResponse.username;
-      });
-
-      // populate the notifications to return
-      const promisePopulatedNotifs = notifsFromDb.map(notif =>
-        populateNotification(notif._id?.toString(), notif.sourceType),
-      );
-
-      const populatedNotifs = (await Promise.all(promisePopulatedNotifs)).map(notifResponse => {
-        if ('error' in notifResponse) {
-          throw new Error(notifResponse.error as string);
-        }
-        return notifResponse;
-      });
-
-      // Populates the fields of the notification that was added and emits the usernames who received notifications
+      // emits the usernames who received notifications
       socket.emit('notificationUpdate', { usernames });
-      res.json(populatedNotifs);
+      res.json(usernames);
     } catch (error) {
       res.status(500).send('Error when adding notification to user');
     }
@@ -354,6 +320,36 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Updates a users blocked NotificationTypes. Adds the notification type to the users blockedNotifications
+   * if not already blocked. Otherwise, removes the type from the users blockedNotifications.
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The ToggleBlockedTypeRequest object containing username and type to block/unblock.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateBlockedNotifications = async (req: ToggleBlockedTypeRequest, res: Response) => {
+    if (!req.body.username || !req.body.type) {
+      res.status(400).send('Invalid request');
+      return;
+    }
+
+    const { username, type } = req.body;
+
+    try {
+      const status = await updateBlockedTypes(username, type);
+      if ('error' in status) {
+        throw new Error(status.error as string);
+      }
+
+      res.json(status.blockedNotifications);
+    } catch (error) {
+      res.status(500).send('Error when updating blocked notification types');
+    }
+  };
+
   router.post('/addUser', addUser);
   router.post('/login', loginUser);
   router.post('/addPoints', addPoints);
@@ -362,6 +358,7 @@ const userController = (socket: FakeSOSocket) => {
   router.put('/markAllNotifsAsRead/:username', markAllNotifsAsRead);
   router.put('/updateEquippedReward', equipRewardToUser);
   router.get('/getUserFrame/:username', getUserFrame);
+  router.put('/updateBlockedNotifications', updateBlockedNotifications);
 
   return router;
 };

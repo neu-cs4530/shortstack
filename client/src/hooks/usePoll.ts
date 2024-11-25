@@ -7,6 +7,8 @@ import { getPollById, voteOnPoll } from '../services/pollService';
 /**
  * Custom hook for managing the state and logic of a poll.
  *
+ * @returns poll - The poll object.
+ * @returns pollIsClosed - the boolean indicating whether the poll has closed or not.
  * @returns voted - the boolean indicating whether the user has voted on the poll.
  * @returns setVoted - the function to update the poll's voted state.
  * @returns selectedOption - the PollOption the user currently has selected while voted.
@@ -20,6 +22,7 @@ const usePoll = () => {
   const [voted, setVoted] = useState(false);
   const [selectedOption, setSelectedOption] = useState<PollOption | undefined>(undefined);
   const [poll, setPoll] = useState<Poll | undefined>(undefined);
+  const [pollIsClosed, setPollIsClosed] = useState<boolean>(false);
   const { user, socket } = useUserContext();
 
   useEffect(() => {
@@ -31,6 +34,8 @@ const usePoll = () => {
           opt.usersVoted.includes(user.username),
         );
         setVoted(hasVoted);
+        const closed = fetchedPoll.isClosed || new Date(fetchedPoll.pollDueDate) <= new Date();
+        setPollIsClosed(closed);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
@@ -114,6 +119,8 @@ const usePoll = () => {
           opt.usersVoted.includes(user.username),
         );
         setVoted(hasVoted);
+        const closed = updatedPoll.isClosed || new Date(updatedPoll.pollDueDate) <= new Date();
+        setPollIsClosed(closed);
       }
     };
 
@@ -126,6 +133,7 @@ const usePoll = () => {
 
   return {
     poll,
+    pollIsClosed,
     voted,
     setVoted,
     selectedOption,
