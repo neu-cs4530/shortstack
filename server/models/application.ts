@@ -834,6 +834,15 @@ export const addNotificationToUser = async (
     if (!notif || !notif.notificationType || notif.isRead === undefined || notif.isRead === null) {
       throw new Error('Invalid notification');
     }
+    const user = await UserModel.findOne({ username });
+    if (user === null) {
+      throw new Error('User not found');
+    }
+
+    if (user.blockedNotifications.includes(notif.notificationType)) {
+      return user;
+    }
+
     const result = await UserModel.findOneAndUpdate(
       { username },
       { $push: { notifications: { $each: [notif._id], $position: 0 } } },

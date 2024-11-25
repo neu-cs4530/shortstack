@@ -1979,6 +1979,7 @@ describe('application module', () => {
     describe('addNotificationToUser', () => {
       test('addNotificationToUser should return the updated user', async () => {
         const updatedUser = { ...userA, notifications: [questionNotif] };
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userA);
         jest.spyOn(UserModel, 'findOneAndUpdate').mockResolvedValueOnce(updatedUser);
 
         const result = (await addNotificationToUser('UserA', questionNotif)) as User;
@@ -1987,7 +1988,45 @@ describe('application module', () => {
         expect(result.notifications).toContain(questionNotif);
       });
 
+      test('addNotificationToUser should return the user without updating if notification type is in users blocked types', async () => {
+        const userWithBlockedType = {
+          ...userA,
+          blockedNotifications: [NotificationType.PollClosed],
+        };
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userWithBlockedType);
+
+        const result = (await addNotificationToUser('UserA', pollNotif)) as User;
+
+        expect(result.username).toEqual('UserA');
+        expect(result.notifications.length).toEqual(0);
+      });
+
+      test('addNotificationToUser should return an object with error if findOne throws an error', async () => {
+        mockingoose(UserModel).toReturn(new Error('error'), 'findOne');
+
+        const result = await addNotificationToUser('UserA', questionNotif);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
+      test('addNotificationToUser should return an object with error if findOne returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await addNotificationToUser('UserA', questionNotif);
+
+        if (result && 'error' in result) {
+          expect(true).toBeTruthy();
+        } else {
+          expect(false).toBeTruthy();
+        }
+      });
+
       test('addNotificationToUser should return an object with error if findOneAndUpdate throws an error', async () => {
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userA);
         mockingoose(UserModel).toReturn(new Error('error'), 'findOneAndUpdate');
 
         const result = await addNotificationToUser('UserA', questionNotif);
@@ -2000,6 +2039,7 @@ describe('application module', () => {
       });
 
       test('addNotificationToUser should return an object with error if findOneAndUpdate returns null', async () => {
+        jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(userA);
         mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
 
         const result = await addNotificationToUser('UserA', questionNotif);
