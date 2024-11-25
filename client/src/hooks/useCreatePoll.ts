@@ -45,12 +45,17 @@ const useCreatePoll = () => {
       return;
     }
 
+    const localDate = new Date(`${dueDate}T00:00:00`);
+    const timezoneOffset = localDate.getTimezoneOffset();
+    const utcDate = new Date(localDate.getTime() + timezoneOffset * 60000);
+
     const newPoll: Poll = {
       title,
       options: options.map(option => ({ text: option, usersVoted: [] })),
       createdBy: user.username,
       pollDateTime: new Date(),
-      pollDueDate: new Date(dueDate),
+      pollDueDate: utcDate,
+      isClosed: false,
     };
 
     try {

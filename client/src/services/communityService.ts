@@ -134,6 +134,7 @@ const addPollToCommunity = async (communityId: string, poll: Poll): Promise<Poll
       createdBy: poll.createdBy,
       pollDateTime: poll.pollDateTime,
       pollDueDate: poll.pollDueDate,
+      isClosed: poll.isClosed,
     },
   };
   const res = await api.post(`${COMMUNITY_API_URL}/addPoll/${communityId}`, data);

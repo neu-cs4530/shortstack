@@ -849,6 +849,53 @@ export const addNotificationToUser = async (
 };
 
 /**
+ * Given an objectID and notification, adds a new notification object to every user who should be notified.
+ *
+ * @param {string} oid - The object ID used to determine users to notify
+ * @param {Notification} notification - The notification to add to users
+ *
+ * @returns {Promise<string[] | { error: string }>} - The notified usernames or an error message
+ */
+export const notifyUsers = async (
+  oid: string | undefined,
+  notification: Notification,
+): Promise<string[] | { error: string }> => {
+  try {
+    if (!oid) {
+      throw new Error('Invalid object id');
+    }
+    // get list of usernames to add a notification to
+    const usernames = await usersToNotify(oid, notification.notificationType);
+
+    if ('error' in usernames || !usernames.length) {
+      throw new Error('Error retrieving users to notify');
+    }
+
+    const notifsPromises = usernames.map(_ => saveNotification(notification));
+    const notifsFromDb = (await Promise.all(notifsPromises)).map(notifResponse => {
+      if ('error' in notifResponse) {
+        throw new Error(notifResponse.error as string);
+      }
+      return notifResponse;
+    });
+
+    // add the notification to all users to be notified
+    const promiseNotifiedUsers = usernames.map((username, i) =>
+      addNotificationToUser(username, notifsFromDb[i]),
+    );
+    (await Promise.all(promiseNotifiedUsers)).map(userResponse => {
+      if (userResponse && 'error' in userResponse) {
+        throw new Error(userResponse.error as string);
+      }
+      return userResponse.username;
+    });
+    return usernames;
+  } catch (error) {
+    return { error: 'Error when adding notifications to users' };
+  }
+};
+
+/**
  * Update the notification to indicate that it has been read.
  * @param nid - The id of the notification to update
  * @returns {Promise<NotificationResponse>} - The updated notification that has been marked as read.
@@ -1263,9 +1310,9 @@ export const fetchAllCommunities = async (): Promise<Community[] | { error: stri
 /**
  * Fetches a poll by id
  * @param pollId - The ID of the poll to fetch
- * @returns The poll, or an error if the poll was not found
+ * @returns {Promise<PollResponse>} - The poll, or an error if the poll was not found
  */
-export const fetchPollById = async (pollId: string): Promise<Poll | { error: string }> => {
+export const fetchPollById = async (pollId: string): Promise<PollResponse> => {
   try {
     const poll = await PollModel.findOne({ _id: new ObjectId(pollId) }).populate([
       { path: 'options', model: PollOptionModel },
@@ -1308,6 +1355,10 @@ export const addVoteToPollOption = async (
       return { error: 'Poll not found' };
     }
 
+    if (poll.isClosed || new Date(poll.pollDueDate) <= new Date()) {
+      return { error: 'Unable to vote in closed poll' };
+    }
+
     const hasVoted = poll.options.some(option => option.usersVoted.includes(username));
 
     if (hasVoted) {
@@ -1336,6 +1387,43 @@ export const addVoteToPollOption = async (
     return updatedPoll;
   } catch (error) {
     return { error: 'Error when adding vote to poll option' };
+  }
+};
+
+/**
+ * Checks for any expired polls and updated their status to closed if found.
+ *
+ * @returns {Promise<Poll[] | { error: string }>} - The polls closed, or an error message
+ */
+export const closeExpiredPolls = async (): Promise<Poll[] | { error: string }> => {
+  try {
+    const pollsToClose = await PollModel.find({
+      pollDueDate: { $lte: new Date() },
+      isClosed: false,
+    });
+
+    const promiseClosedPolls = pollsToClose.map(poll =>
+      PollModel.findOneAndUpdate(
+        { _id: poll._id },
+        { $set: { isClosed: true } },
+        { new: true },
+      ).populate([
+        {
+          path: 'options',
+          model: PollOptionModel,
+        },
+      ]),
+    );
+    const closedPolls = (await Promise.all(promiseClosedPolls)).map(poll => {
+      if (!poll) {
+        throw new Error('Poll not found');
+      }
+      return poll;
+    });
+
+    return closedPolls;
+  } catch (error) {
+    return { error: (error as Error).message };
   }
 };
 
@@ -1430,6 +1518,7 @@ export const saveAndAddPollToCommunity = async (
       createdBy: poll.createdBy,
       pollDateTime: poll.pollDateTime,
       pollDueDate: poll.pollDueDate,
+      isClosed: poll.isClosed,
     });
 
     const updatedCommunity = await CommunityModel.findOneAndUpdate(

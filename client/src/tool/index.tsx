@@ -33,6 +33,35 @@ const getDateHelper = (date: Date): string => {
 };
 
 /**
+ * Helper function to format the date meta date for events in the future.
+ *
+ * @param date - The date object to compare with the current date.
+ */
+const getFutureMetaData = (date: Date): string => {
+  const now = new Date();
+  const diffs = Math.floor((date.getTime() - now.getTime()) / 1000);
+
+  if (diffs < 60) {
+    return `in ${diffs} seconds`;
+  }
+  if (diffs < 60 * 60) {
+    return `in ${Math.floor(diffs / 60)} minutes`;
+  }
+  if (diffs < 60 * 60 * 24) {
+    const h = Math.floor(diffs / 3600);
+    return `in ${h} hours`;
+  }
+  if (diffs < 60 * 60 * 24 * 365) {
+    return `${MONTHS[date.getMonth()]} ${getDateHelper(date)} at ${date
+      .toTimeString()
+      .slice(0, 8)}`;
+  }
+  return `${MONTHS[date.getMonth()]} ${getDateHelper(
+    date,
+  )}, ${date.getFullYear()} at ${date.toTimeString().slice(0, 8)}`;
+};
+
+/**
  * Function to get a human-readable metadata string representing the time difference
  * between now and the given date.
  *
@@ -40,7 +69,10 @@ const getDateHelper = (date: Date): string => {
  */
 const getMetaData = (date: Date): string => {
   const now = new Date();
-  const diffs = Math.floor(Math.abs(now.getTime() - date.getTime()) / 1000);
+  const diffs = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffs < 0) {
+    return getFutureMetaData(date);
+  }
 
   if (diffs < 60) {
     return `${diffs} seconds ago`;

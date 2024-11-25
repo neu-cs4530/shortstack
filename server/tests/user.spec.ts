@@ -13,7 +13,7 @@ const equipRewardSpy = jest.spyOn(util, 'equipReward');
 const usersToNotifySpy = jest.spyOn(util, 'usersToNotify');
 const saveNotificationSpy = jest.spyOn(util, 'saveNotification');
 const addNotificationToUserSpy = jest.spyOn(util, 'addNotificationToUser');
-const populateNotificationSpy = jest.spyOn(util, 'populateNotification');
+const notifyUsersSpy = jest.spyOn(util, 'notifyUsers');
 const updateUserNotifsAsReadSpy = jest.spyOn(util, 'updateUserNotifsAsRead');
 
 const newUser: User = {
@@ -427,13 +427,12 @@ describe('User API', () => {
         ...mockNewUser,
         notifications: [mockPollNotif],
       });
-      populateNotificationSpy.mockResolvedValueOnce(mockPollNotif);
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
 
       // Asserting the response
       expect(response.status).toBe(200);
-      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
+      expect(response.body[0]).toEqual('UserA');
     });
 
     it('should return the notifications that were added if multiple users to be notified', async () => {
@@ -456,15 +455,13 @@ describe('User API', () => {
         ...mockNewUser,
         notifications: [mockPollNotifB],
       });
-      populateNotificationSpy.mockResolvedValueOnce(mockPollNotif);
-      populateNotificationSpy.mockResolvedValueOnce(mockPollNotifB);
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
 
       // Asserting the response
       expect(response.status).toBe(200);
-      expect(response.body[0]._id).toEqual(mockPollNotif._id?.toString());
-      expect(response.body[1]._id).toEqual(mockPollNotifB._id?.toString());
+      expect(response.body).toContain('UserA');
+      expect(response.body).toContain('UserB');
     });
 
     it('should return bad request if missing oid', async () => {
@@ -608,18 +605,12 @@ describe('User API', () => {
       expect(response.status).toBe(500);
     });
 
-    it('should return 500 if error object returned by `populateNotification`', async () => {
+    it('should return 500 if error object returned by `notifyUsers`', async () => {
       const mockReqBody = {
         oid: '672e289cee67e0b36e0ef440',
         notification: mockPollNotif,
       };
-      usersToNotifySpy.mockResolvedValueOnce(['UserA']);
-      saveNotificationSpy.mockResolvedValueOnce(mockPollNotif);
-      addNotificationToUserSpy.mockResolvedValueOnce({
-        ...mockNewUser,
-        notifications: [mockPollNotif],
-      });
-      populateNotificationSpy.mockResolvedValueOnce({ error: 'Error populating notification' });
+      notifyUsersSpy.mockResolvedValueOnce({ error: 'Error notifying users' });
       // Making the request
       const response = await supertest(app).post('/user/notify').send(mockReqBody);
 
