@@ -14,7 +14,7 @@ PORT=8000
 ```
 To populate a local database, make sure you have the mongoDB service running and a connection in Compass with the URI: `mongodb://localhost:27017`
 
-Run `npm run populate` to populate your local database. Likewise, `npm run depopulate` will remove the local database.
+Run `npm run populate` in the `./server` directory to populate your local database. Likewise, `npm run depopulate` will remove the local database.
 
 In the `/client` directory, add a `.env` file with the following lines:
 ```
