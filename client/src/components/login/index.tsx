@@ -22,7 +22,8 @@ const Login = () => {
 
   return (
     <div className='container'>
-      <h2>Welcome to FakeStackOverflow!</h2>
+      <img src='./Short Stack Logo.png' alt='Short Stack Logo' id='loginLogo' />
+      <h2>Welcome to ShortStack!</h2>
       {hasAccount ? (
         <h4>
           Please login or{' '}
