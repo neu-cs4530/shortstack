@@ -22,7 +22,7 @@ REACT_APP_SERVER_URL=http://localhost:8000
 ```
 Now you can run `npm run start` in the `./client` and `./server` directories, this will start the frontend server on `localhost:3000` and the backend server on `localhost:8000`.
 
-Navigate to [localhost:3000](localhost:3000) in your preferred browser.
+Navigate to [localhost:3000](http://localhost:3000) in your preferred browser.
 
 
 ## Database Architecture
