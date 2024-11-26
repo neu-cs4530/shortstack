@@ -165,7 +165,7 @@ const CommunityPage = () => {
         <CommunityBreadcrumb
           communityID={communityID}
           subPageType={'Community'}
-          styleOverride={{ paddingLeft: '0' }}
+          paddingLeftOverride={0}
         />
         <div>
           <h5>Community:</h5>

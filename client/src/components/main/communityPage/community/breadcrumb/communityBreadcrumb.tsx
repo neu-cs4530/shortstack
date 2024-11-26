@@ -14,14 +14,13 @@ const CommunityBreadcrumb = ({
   objectID,
   subPageType,
   currentPageTitle,
-  styleOverride,
+  paddingLeftOverride,
 }: {
   communityID?: string;
   objectID?: string;
   subPageType: CommunitySubpageType;
   currentPageTitle?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  styleOverride?: any;
+  paddingLeftOverride?: number;
 }) => {
   const { handleNavigateToCommunity, handleNavigateToCommunityList, communityTitle } =
     useCommunityBreadcrumb({
@@ -32,7 +31,7 @@ const CommunityBreadcrumb = ({
 
   return (
     communityTitle && (
-      <div className='breadcrumb-container' style={styleOverride}>
+      <div className='breadcrumb-container' style={{ paddingLeft: paddingLeftOverride }}>
         <h3 className='breadcrumb-link' onClick={handleNavigateToCommunityList}>
           Communities
         </h3>
