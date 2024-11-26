@@ -1,4 +1,4 @@
-import useCommunityBreadcrumb from '../../../../../hooks/useCommunityBreadcrumb';
+import useCommunityDetails from '../../../../../hooks/useCommunityDetails';
 import { CommunitySubpageType } from '../../../../../types';
 import './communityBreadcrumb.css';
 
@@ -23,7 +23,7 @@ const CommunityBreadcrumb = ({
   paddingLeftOverride?: number;
 }) => {
   const { handleNavigateToCommunity, handleNavigateToCommunityList, communityTitle } =
-    useCommunityBreadcrumb({
+    useCommunityDetails({
       communityID,
       objectID,
       subPageType,

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
@@ -25,7 +24,10 @@ interface QuestionProps {
  */
 const QuestionView = ({ q }: QuestionProps) => {
   const navigate = useNavigate();
-  const community = useCommunityDetails(q.community);
+  const { handleNavigateToCommunity, communityTitle } = useCommunityDetails({
+    objectID: q._id,
+    subPageType: 'Question',
+  });
   const { frame, title } = useEquippedRewards(q.askedBy);
 
   /**
@@ -76,14 +78,14 @@ const QuestionView = ({ q }: QuestionProps) => {
             </button>
           ))}
         </div>
-        {community && (
+        {communityTitle && (
           <div
             className='question_community'
             onClick={e => {
               e.stopPropagation();
-              navigate(`/community/${community._id}`);
+              handleNavigateToCommunity();
             }}>
-            <span className='community_label'>Community:</span> {community.name}
+            <span className='community_label'>Community:</span> {communityTitle}
           </div>
         )}
       </div>

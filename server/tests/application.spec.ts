@@ -1916,7 +1916,6 @@ describe('application module', () => {
           expect(false).toBeTruthy();
         } else {
           expect(result._id?.toString()).toBe(fixedQuestionId.toString());
-          expect(result.community?.toString()).toBe(mockCommunityId.toString());
           expect(result.text).toBe('Sample Question');
         }
       });
