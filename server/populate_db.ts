@@ -557,7 +557,7 @@ const populate = async () => {
     const U3 = await userCreate('abhi3241', 'se35ls($knf^%^gxe', 30, [], [], '', '', [N5_1, N6_1], []);
     const U4 = await userCreate('alia', 'OverflowAccount', 0, [], [], '', '', [], []);
     const U5 = await userCreate('monkeyABC', 'password', 20, [], [], '', '', [N1_3, N5_2], []);
-    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4998, [FRAMES[0].name, FRAMES[1].name], [], '', '', [N6_2, N1_4, N4_2, N6_3], []);
+    const U6 = await userCreate('elephantCDE', 'elephantsForLife', 4998, [FRAMES[0].name, FRAMES[1].name], [CHAL1_REWARD, CHAL3_REWARD], '', '', [N6_2, N1_4, N4_2, N6_3], []);
     const U7 = await userCreate('abaya', '1234567890', 150, [], [], '', '', [N2_3], []);
     const U8 = await userCreate('mackson3332', 'verystronglongpassword', 30, [], [], '', '', [N3_2], []);
 
@@ -633,6 +633,13 @@ const populate = async () => {
     await userChallengeCreate(U2.username, CHAL4, [currentDate]); // in progress (1/5)
     await userChallengeCreate(U2.username, CHAL5, []); // in progress (0/10)
     await userChallengeCreate(U2.username, CHAL6, [...tenDates, ...tenDates]) // in progress (20/25) (upvotes)
+
+    await userChallengeCreate(U6.username, CHAL1, [currentDate]); // completed (1/1)
+    await userChallengeCreate(U6.username, CHAL2, [...fiveDates, currentDate, currentDate, currentDate, currentDate]); // in progress (9/10)
+    await userChallengeCreate(U6.username, CHAL3, [currentDate]); // completed (1/1)
+    await userChallengeCreate(U6.username, CHAL4, [currentDate]); // in progress (1/5)
+    await userChallengeCreate(U6.username, CHAL5, []); // in progress (0/10)
+    await userChallengeCreate(U6.username, CHAL6, [...tenDates, ...tenDates, currentDate, currentDate, currentDate]) // in progress (23/25) (upvotes)
 
     console.log('Database populated');
   } catch (err) {
