@@ -67,7 +67,6 @@ export interface Tag {
  * - downVotes - An array of usernames that have downvoted the question.
  * - comments - Object IDs of comments that have been added to the question by users, or comments themselves if populated.
  * - subscribers - The usernames of subscribed users
- * - community - The community the question belongs to
  */
 export interface Question {
   _id?: ObjectId;
@@ -82,7 +81,6 @@ export interface Question {
   downVotes: string[];
   comments: Comment[] | ObjectId[];
   subscribers: string[];
-  community?: Community;
 }
 
 /**

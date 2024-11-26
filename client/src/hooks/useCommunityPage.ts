@@ -168,7 +168,7 @@ const useCommunityPage = () => {
     }
 
     setSearchedAndSortedArticles(updatedArticles);
-  }, [articles, articleSortOption, searchedAndSortedArticles, searchBarValue]);
+  }, [articles, articleSortOption, searchBarValue]);
 
   /**
    * Function to handle changes in the input field.

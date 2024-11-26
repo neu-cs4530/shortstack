@@ -38,7 +38,6 @@ const questionSchema: Schema = new Schema(
     downVotes: [{ type: String }],
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     subscribers: [{ type: String }],
-    community: { type: Schema.Types.ObjectId, ref: 'Community' },
   },
   { collection: 'Question' },
 );
