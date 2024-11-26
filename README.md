@@ -30,4 +30,4 @@ Navigate to [localhost:3000](http://localhost:3000) in your preferred browser.
 The schemas for the database are documented in the directory `server/models/schema`.
 A class diagram for the schema definition is linked below:
 
-https://drive.google.com/file/d/1W0-bXBFXSd81ZJYxVlYHQ--JJetGBdhv/view?usp=sharing
+https://drive.google.com/file/d/1c4RFD-MW9UC3w10rGNp_bjD5Y4gq0kTg/view?usp=sharing
