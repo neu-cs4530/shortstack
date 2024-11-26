@@ -4,7 +4,7 @@ import { getCommunityByObjectId, getCommunityDetails } from '../services/communi
 import { CommunityObjectType, CommunitySubpageType } from '../types';
 
 /**
- * Hook for handling the logic for a CommunityBreadcrumb.
+ * Hook for handling the logic for retrieving community details for a community object.
  * @param communityID - The ID of the community the user is navigating.
  * @param objectID - The ID of the object within a community that the user is viewing.
  * @param subPageType - The type of subpage the user is in within a community.
