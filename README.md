@@ -1,14 +1,33 @@
-The individual and team project for this class are designed to mirror the experiences of a software engineer joining a new development team: you will be “onboarded” to our codebase, make several individual contributions, and then form a team to propose, develop and implement new features. The codebase that we’ll be developing on is a Fake Stack Overflow project (let’s call it HuskyFlow). You will get an opportunity to work with the starter code which provides basic skeleton for the app and then additional features will be proposed and implemented by you! All implementation will take place in the TypeScript programming language, using React for the user interface.
+## Deployed Site
+Visit https://cs4530-f24-808.onrender.com/ to view the deployed site.
 
-Refer to the [Project Overview](https://neu-se.github.io/CS4530-Fall-2024/assignments/project-overview) for more instructions on the project deliverables and expectations.
+## Running the Application
+### To run the application locally:
 
-{ : .note } Refer to [IP1](https://neu-se.github.io/CS4530-Fall-2024/assignments/ip1) and [IP2](https://neu-se.github.io/CS4530-Fall-2024/assignments/ip2) for instructions related to setting up MongoDB, setting environment variables, and running the client and server.
+Run `npm install` in the `./client` and `./server` directories.
 
-{ : .note } The fields of the Schemas were changed. As a result, features such as view counts will not work on database entries that were made in IP1 and IP2. If you want to test features, delete old database entries and make new questions either through manually making it in the client or run populate_db.ts.
+In the `/server` directory, add a `.env` file with the following lines:
+```
+MONGODB_URI=mongodb://127.0.0.1:27017
+CLIENT_URL=http://localhost:3000
+PORT=8000
+```
+To populate a local database, make sure you have the mongoDB service running and a connection in Compass with the URI: `mongodb://localhost:27017`
+
+Run `npm run populate` to populate your local database. Likewise, `npm run depopulate` will remove the local database.
+
+In the `/client` directory, add a `.env` file with the following lines:
+```
+REACT_APP_SERVER_URL=http://localhost:8000
+```
+Now you can run `npm run start` in the `./client` and `./server` directories, this will start the frontend server on `localhost:3000` and the backend server on `localhost:8000`.
+
+Navigate to [localhost:3000](localhost:3000) in your preferred browser.
+
 
 ## Database Architecture
 
 The schemas for the database are documented in the directory `server/models/schema`.
-A class diagram for the schema definition is shown below:
+A class diagram for the schema definition is linked below:
 
-![Class Diagram](class-diagram.png)
+https://drive.google.com/file/d/1W0-bXBFXSd81ZJYxVlYHQ--JJetGBdhv/view?usp=sharing
