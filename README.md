@@ -1,6 +1,9 @@
 ## Deployed Site
 Visit https://cs4530-f24-808.onrender.com/ to view the deployed site.
 
+## The project at a glance:
+[ShortStack.pdf](https://github.com/user-attachments/files/18548217/ShortStack.Poster.1.pdf)
+
 ## Running the Application
 ### To run the application locally:
 
