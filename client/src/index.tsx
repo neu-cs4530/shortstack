@@ -18,6 +18,11 @@ const App = () => {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line no-alert
+    alert('NOTE! May take a few minutes for the server to spin up after inactivity :)');
+  }, []);
+
+  useEffect(() => {
     if (!socket) {
       setSocket(io(serverURL));
     }
